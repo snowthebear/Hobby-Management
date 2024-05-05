@@ -45,7 +45,7 @@ class FirebaseController: NSObject, DatabaseProtocol {
     
     func signInWithEmail(email: String, password: String, completion: @escaping (Result<User, Error>) -> Void) {
         Auth.auth().signIn(withEmail: email, password: password) { [weak self] authResult, error in
-            guard let self = self else {
+            guard self != nil else {
                 completion(.failure(AuthError.userNotFound))
                 return
             }

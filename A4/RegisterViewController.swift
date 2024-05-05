@@ -24,8 +24,8 @@ class RegisterViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         configurePasswordTextField()
-        passwordTextField.textContentType = .none
-        confirmPasswordTextField.textContentType = .none
+        passwordTextField.textContentType = .password
+        confirmPasswordTextField.textContentType = .password
         
         passwordTextField.autocorrectionType = .no
         passwordTextField.spellCheckingType = .no
@@ -61,7 +61,11 @@ class RegisterViewController: UIViewController {
             db.collection("users").document(user.uid).setData([
                 "Full Name": self.nameTextField.text ?? "",
                 "email": self.emailTextField.text ?? "",
-                "Hobby(s)": []
+                "Hobby(s)": [],
+                "following": 0,
+                "followers": 0,
+                "total posts": 0
+                
             ]) { error in
                 if let error = error {
                     self.showAlert(title: "Database Error", message: error.localizedDescription)
@@ -72,10 +76,9 @@ class RegisterViewController: UIViewController {
                     }
                 }
             }
-            
         }
-        
     }
+    
     
     func isValidEmail(_ email: String) -> Bool {
         let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
@@ -145,7 +148,7 @@ class RegisterViewController: UIViewController {
         passwordTextField.rightView = passwordVisibilityButton
         passwordTextField.rightViewMode = .always
         passwordTextField.isSecureTextEntry = true
-        passwordTextField.textContentType = .none
+        passwordTextField.textContentType = .password
 
         // Confirmation password field
         let confirmVisibilityButton = UIButton(type: .system)
@@ -155,8 +158,7 @@ class RegisterViewController: UIViewController {
         confirmPasswordTextField.rightView = confirmVisibilityButton
         confirmPasswordTextField.rightViewMode = .always
         confirmPasswordTextField.isSecureTextEntry = true
-        
-        confirmPasswordTextField.textContentType = .none
+        confirmPasswordTextField.textContentType = .password
         
     }
 

@@ -6,15 +6,24 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 
 
 class HomeTableViewController: UITableViewController {
+    var currentUser: FirebaseAuth.User?
+    var userEmail: String?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         self.navigationItem.hidesBackButton = true
+        print ("home user = \(currentUser)")
+        if let user = UserManager.shared.currentUser {
+            if currentUser == nil{
+                currentUser = user
+            }
+        }
         
         
         // Uncomment the following line to preserve selection between presentations

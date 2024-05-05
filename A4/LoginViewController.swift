@@ -46,7 +46,9 @@ class LoginViewController: UIViewController {
             switch result {
             case .success(let user):
                 // User signed in successfully, now fetch the team
-                currentUser = user
+                self.currentUser = user
+                UserManager.shared.currentUser = user
+                print ("login user = \(user)")
                 self.performSegue(withIdentifier: "showHomeLogin", sender: self)
                 
             case .failure(let error):
@@ -60,16 +62,11 @@ class LoginViewController: UIViewController {
     }
     
     
-    
-    
     @IBAction func signupButton(_ sender: Any) {
-        
     }
     
     
     @IBAction func googleSignInButton(_ sender: Any) {
-        
-        
 
         guard let clientID = FirebaseApp.app()?.options.clientID else {
             return
@@ -79,7 +76,7 @@ class LoginViewController: UIViewController {
 
         GIDSignIn.sharedInstance.configuration = config
         
-        let shouldPromptAccountSelection = !getKeepMeSignedInPreference()
+        _ = !getKeepMeSignedInPreference()
         GIDSignIn.sharedInstance.signIn(withPresenting: self) { signInResult, error in
             if let error = error {
                 print("Google Sign-In error: \(error.localizedDescription)")
@@ -106,11 +103,18 @@ class LoginViewController: UIViewController {
                 
                 
                 guard let user = authResult?.user else { return }
+                self.currentUser = user
+                UserManager.shared.currentUser = user
+                print ("user = \(user), current user = \(self.currentUser)")
                 let db = Firestore.firestore()
                 db.collection("users").document(user.uid).setData([
                     "Full Name": user.displayName!,
                     "email": user.email!,
-                    "Hobby(s)": []
+                    "Hobby(s)": [],
+                    "following": 0,
+                    "followers": 0,
+                    "total posts": 0
+                    
                 ]) { error in
                     if let error = error {
                         print("Error saving user data: \(error.localizedDescription)")
@@ -203,6 +207,17 @@ class LoginViewController: UIViewController {
                 }
             } else {
                 completion(false)
+            }
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showHomeLogin",
+           let tabBarController = segue.destination as? UITabBarController {
+            // Access the desired tab by index, assuming the target is at index 0
+            if let destination = tabBarController.viewControllers?.first(where: { $0 is HomeTableViewController }) as? HomeTableViewController {
+                destination.currentUser = currentUser
+                destination.userEmail = emailTextField.text
             }
         }
     }
