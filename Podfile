@@ -20,6 +20,7 @@ target 'A4' do
   pod 'Firebase/Analytics'
   pod 'Firebase/Messaging'
 
+  pod 'Charts'
   
 end
 
