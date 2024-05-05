@@ -20,7 +20,6 @@ class LoginViewController: UIViewController {
     var firebaseController = FirebaseController()
     var currentUser: FirebaseAuth.User?
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationItem.hidesBackButton = true

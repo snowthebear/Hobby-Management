@@ -19,4 +19,5 @@ class ProfileViewController: UIViewController {
 
             // Setup the rest of the profile UI elements
         }
+    
 }

@@ -25,7 +25,6 @@ protocol DatabaseListener: AnyObject {
     var listenerType: ListenerType {get set}
 }
  
-
 protocol DatabaseProtocol: AnyObject {
     func cleanup()
     

@@ -29,6 +29,7 @@ class MulticastDelegate <T> {
     }
 }
 
+
 private class WeakObjectWrapper: Equatable, Hashable {
     weak var value: AnyObject?
     

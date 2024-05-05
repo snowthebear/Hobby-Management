@@ -75,7 +75,6 @@ class RegisterViewController: UIViewController {
             
         }
         
-            
     }
     
     func isValidEmail(_ email: String) -> Bool {
