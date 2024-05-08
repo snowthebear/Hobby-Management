@@ -26,6 +26,7 @@
 		7F4763E72BE7B90F007BA9AC /* GoogleService-Info-2.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7F4763E62BE7B90F007BA9AC /* GoogleService-Info-2.plist */; };
 		7F4763E92BE7BBE0007BA9AC /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7F4763E82BE7BBE0007BA9AC /* LaunchScreen.storyboard */; };
 		7F4763EB2BE914C4007BA9AC /* HamburgerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4763EA2BE914C4007BA9AC /* HamburgerViewController.swift */; };
+		7F7081832BEBA33D00E8F590 /* EditProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F7081822BEBA33D00E8F590 /* EditProfileViewController.swift */; };
 		7FD484062BE73E1000C46142 /* MulticastDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FD484022BE73E1000C46142 /* MulticastDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -50,6 +51,7 @@
 		7F4763E62BE7B90F007BA9AC /* GoogleService-Info-2.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-2.plist"; sourceTree = "<group>"; };
 		7F4763E82BE7BBE0007BA9AC /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		7F4763EA2BE914C4007BA9AC /* HamburgerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HamburgerViewController.swift; sourceTree = "<group>"; };
+		7F7081822BEBA33D00E8F590 /* EditProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfileViewController.swift; sourceTree = "<group>"; };
 		7FD483D02BE730C900C46142 /* A4.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = A4.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FD484022BE73E1000C46142 /* MulticastDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MulticastDelegate.swift; sourceTree = "<group>"; };
 		9A137F085A9FDC909FD7BA3E /* Pods-A4.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-A4.debug.xcconfig"; path = "Target Support Files/Pods-A4/Pods-A4.debug.xcconfig"; sourceTree = "<group>"; };
@@ -121,6 +123,7 @@
 				7F4763E42BE7B8ED007BA9AC /* BarChartView.swift */,
 				7F4763CA2BE7B6E5007BA9AC /* UserManager.swift */,
 				7F4763EA2BE914C4007BA9AC /* HamburgerViewController.swift */,
+				7F7081822BEBA33D00E8F590 /* EditProfileViewController.swift */,
 				7FD483D12BE730C900C46142 /* Products */,
 				7F4763DC2BE7B824007BA9AC /* Info.plist */,
 				7F4763E62BE7B90F007BA9AC /* GoogleService-Info-2.plist */,
@@ -263,6 +266,7 @@
 				7F4763DB2BE7B7EB007BA9AC /* DatabaseProtocol.swift in Sources */,
 				7F4763C52BE7B691007BA9AC /* LoginViewController.swift in Sources */,
 				7F4763CF2BE7B735007BA9AC /* SceneDelegate.swift in Sources */,
+				7F7081832BEBA33D00E8F590 /* EditProfileViewController.swift in Sources */,
 				7F4763CB2BE7B6E5007BA9AC /* UserManager.swift in Sources */,
 				7FD484062BE73E1000C46142 /* MulticastDelegate.swift in Sources */,
 				7F4763D32BE7B77A007BA9AC /* FirebaseController.swift in Sources */,

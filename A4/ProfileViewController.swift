@@ -10,18 +10,19 @@ import UIKit
 import Charts
 import FirebaseAuth
 
-class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, HamburgerViewControllerDelegate {
-
-    
-
+class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, HamburgerViewControllerDelegate, UIGestureRecognizerDelegate {
     
     var hamburgerViewController: HamburgerViewController? //initialize the delegate
+    
     
     var currentUser: FirebaseAuth.User?
     var userEmail: String?
     
+    private var isHamburgerMenuShown: Bool = false
 
+    
     @IBOutlet weak var leadingConstraintForHM: NSLayoutConstraint!
+    
     @IBOutlet weak var hamburgerView: UIView!
     @IBOutlet weak var backViewForHamburger: UIView!
     
@@ -45,12 +46,21 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     private func hideHamburgerView(){
-        UIView.animate(withDuration: 0.3) {
-                self.leadingConstraintForHM.constant = -280  // Adjust depending on your layout
+        
+        UIView.animate(withDuration: 0.2, animations: {
+            self.leadingConstraintForHM.constant = 10
                 self.view.layoutIfNeeded()
-            } completion: { _ in
+        }) {(status) in
+            
+            UIView.animate(withDuration: 0.2, animations: {
+                self.leadingConstraintForHM.constant = -280
+                self.view.layoutIfNeeded()
+            }) { (status) in
+                self.backViewForHamburger.alpha = 0.75
                 self.backViewForHamburger.isHidden = true
+                self.isHamburgerMenuShown = !self.backViewForHamburger.isHidden
             }
+        }
     }
     
     @IBAction func tappedOnHamburgerBackView(_ sender: Any) {
@@ -58,12 +68,17 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
 //        self.backViewForHamburger.isHidden = !self.backViewForHamburger.isHidden
 
     }
+    
+    @objc func handleBackTap() {
+        hideHamburgerMenu()
+   }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 //        self.tabBarController?.navigationItem.hidesBackButton = true
         self.tabBarController?.navigationController?.isNavigationBarHidden = true
 //        self.backViewForHamburger.isHidden = true
+
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -74,7 +89,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        hamburgerViewController?.currentUser = self.currentUser
         setupUI()
         customBarChartView.setupChart()
         loadDailyData()
@@ -91,12 +106,46 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         
         print ("profile user = \(self.currentUser)")
         
+//        let backTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleBackTap))
+//        backTapGesture.delegate = self
+//        backViewForHamburger.addGestureRecognizer(backTapGesture)
+//        backViewForHamburger.isUserInteractionEnabled = true
+        
     }
     
     @IBAction func showHamburgerMenu(_ sender: Any) {
         self.backViewForHamburger.isHidden = !self.backViewForHamburger.isHidden
+        self.backViewForHamburger.alpha = 0.75
+        
+        UIView.animate(withDuration: 0.2, animations: {
+            self.leadingConstraintForHM.constant = 10
+            self.view.layoutIfNeeded()
+        }) {(status) in
+            UIView.animate(withDuration: 0.2, animations: {
+                if self.backViewForHamburger.isHidden == false {
+                    self.leadingConstraintForHM.constant = 0
+                    self.view.layoutIfNeeded()
+                }
+                else {
+                    self.leadingConstraintForHM.constant = -280
+                    self.view.layoutIfNeeded()
+ 
+                }
+                
+            }) { (status) in
+//                self.backViewForHamburger.isHidden = !self.backViewForHamburger.isHidden
+                self.isHamburgerMenuShown = !self.backViewForHamburger.isHidden
+            }
+        }
+        
     }
     
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        if touch.view == backViewForHamburger {
+            return true
+        }
+        return false
+    }
     
     @objc func handleImageTap() {
         let alert = UIAlertController(title: "Select an option", message: nil,  preferredStyle: .actionSheet)
@@ -228,5 +277,76 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             }
         }
     }
-
+    
+    private var beginPoint:CGFloat = 0.0
+    private var differences:CGFloat = 0.0
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        print("???")
+        if (self.isHamburgerMenuShown) {
+            if let touch = touches.first {
+                let location = touch.location(in: backViewForHamburger)
+                beginPoint = location.x
+                 
+            }
+        }
+        else{
+            return
+        }
+        
+    }
+    
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if (self.isHamburgerMenuShown) {
+            if let touch = touches.first {
+                let location = touch.location(in: backViewForHamburger)
+                let dx = beginPoint - location.x
+                
+                if (dx > 0 && dx < 280  ){
+                    self.leadingConstraintForHM.constant = -dx
+                    differences = dx
+                    self.backViewForHamburger.alpha = 0.75 - (0.75*differences/280)
+                }
+            }
+        }
+        
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        print("!!!")
+        if (self.isHamburgerMenuShown) {
+            if let touch = touches.first {
+                if (differences < 15) {
+                    self.leadingConstraintForHM.constant = 0
+                    return
+                }
+                
+                if (differences > 150){
+                    UIView.animate(withDuration: 0.1, animations: {
+                        self.leadingConstraintForHM.constant = -280
+                    }) { (status) in
+                        self.backViewForHamburger.alpha = 0.0
+                        self.isHamburgerMenuShown = false
+                        self.backViewForHamburger.isHidden = true
+                    }
+                }
+                else{
+                    
+                    UIView.animate(withDuration: 0.1, animations: {
+                        self.leadingConstraintForHM.constant = 0
+                    }) { (status) in
+                        self.backViewForHamburger.alpha = 0.75
+                        self.isHamburgerMenuShown = true
+                        self.backViewForHamburger.isHidden = false
+                    }
+                }
+ 
+                 
+            }
+        }
+    }
+    
+    
+    
+    
 }

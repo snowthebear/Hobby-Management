@@ -6,3 +6,13 @@
 //
 
 import Foundation
+import UIKit
+import FirebaseAuth
+
+class EditProfileViewController: UIViewController {
+    
+    var currentUser: FirebaseAuth.User?
+    
+    
+    
+}
