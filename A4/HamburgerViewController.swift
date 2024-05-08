@@ -10,6 +10,8 @@ import FirebaseAuth
 
 protocol HamburgerViewControllerDelegate {
     func hideHamburgerMenu()
+    func editProfile()
+    func logout()
 }
  
 class HamburgerViewController: UIViewController {
@@ -29,6 +31,16 @@ class HamburgerViewController: UIViewController {
     @IBOutlet weak var nameLabel: UILabel!
     
     @IBAction func logoutButton(_ sender: Any) {
+        let alert = UIAlertController(title: "Confirm Logout", message:  "Are you sure you want to log out?",  preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+                
+        alert.addAction(UIAlertAction(title: "Logout", style: .destructive, handler: { _ in
+            self.delegate?.logout()
+        }))
+        
+        present(alert, animated: true)
+        
     }
     
     
@@ -72,30 +84,31 @@ class HamburgerViewController: UIViewController {
 //        }
     }
     
-    @IBAction func editProfileButtonn(_ sender: Any) {
+    @IBAction func editProfileButton(_ sender: Any) {
         self.delegate?.hideHamburgerMenu()
-        performSegue(withIdentifier: "editProfileSegue", sender: self)
+        self.delegate?.editProfile()
+//        performSegue(withIdentifier: "editProfileSegue", sender: self)
     }
     
 
 
 
-    // MARK: - Navigation
-
+//    // MARK: - Navigation
+//
     // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-        print("self user = \(self.currentUser)")
-        if segue.identifier == "editProfileSegue" {
-            if let destination = segue.destination as? EditProfileViewController {
-                destination.modalPresentationStyle = .fullScreen
-                destination.currentUser = self.currentUser
-//                self.hamburgerViewController = controller
-//                self.hamburgerViewController?.delegate = self
-            }
-        }
-    }
+//    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+//        // Get the new view controller using segue.destination.
+//        // Pass the selected object to the new view controller.
+//        print("self user = \(self.currentUser)")
+//        if segue.identifier == "editProfileSegue" {
+//            if let destination = segue.destination as? EditProfileViewController {
+//                destination.modalPresentationStyle = .fullScreen
+//                destination.currentUser = self.currentUser
+////                self.hamburgerViewController = controller
+////                self.hamburgerViewController?.delegate = self
+//            }
+//        }
+//    }
 
 
 }

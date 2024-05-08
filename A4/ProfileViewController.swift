@@ -19,7 +19,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     var userEmail: String?
     
     private var isHamburgerMenuShown: Bool = false
-
+    
     
     @IBOutlet weak var leadingConstraintForHM: NSLayoutConstraint!
     
@@ -40,6 +40,38 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     @IBAction func changeSegment(_ sender: UISegmentedControl) {
         updateChartData()
     }
+    
+    func editProfile() {
+        self.performSegue(withIdentifier: "editProfileSegue", sender: self)
+    }
+    
+    func logout() {
+        do {
+            try Auth.auth().signOut()
+            // Also remove any other user-related data if necessary
+            UserDefaults.standard.removeObject(forKey: "userAuthToken")
+            UserDefaults.standard.synchronize()
+            
+            // Navigate to login screen
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let loginViewController = storyboard.instantiateViewController(withIdentifier: "LoginViewController") as! LoginViewController
+            loginViewController.modalPresentationStyle = .fullScreen
+//            loginViewController.modalPresentationStyle = .fullScreen
+            
+            // Access the window property from the scene delegate if using UISceneDelegate
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let sceneDelegate = windowScene.delegate as? SceneDelegate {
+                sceneDelegate.window?.rootViewController = loginViewController
+                sceneDelegate.window?.makeKeyAndVisible()
+            }
+        } catch let signOutError as NSError {
+            print("Error signing out: %@", signOutError)
+            // Optionally, show an alert to the user about the error
+        }
+    }
+    
+
+    
     
     func hideHamburgerMenu() {
         self.hideHamburgerView()
@@ -65,7 +97,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     @IBAction func tappedOnHamburgerBackView(_ sender: Any) {
         self.hideHamburgerView()
-//        self.backViewForHamburger.isHidden = !self.backViewForHamburger.isHidden
 
     }
     
@@ -274,6 +305,15 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             if let controller = segue.destination as? HamburgerViewController {
                 self.hamburgerViewController = controller
                 self.hamburgerViewController?.delegate = self
+            }
+        }
+        
+        if segue.identifier == "editProfileSegue" {
+            if let destination = segue.destination as? EditProfileViewController {
+                destination.modalPresentationStyle = .fullScreen
+                destination.currentUser = self.currentUser
+//                self.hamburgerViewController = controller
+//                self.hamburgerViewController?.delegate = self
             }
         }
     }
