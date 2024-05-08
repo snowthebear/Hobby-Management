@@ -10,10 +10,20 @@ import UIKit
 import Charts
 import FirebaseAuth
 
-class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, HamburgerViewControllerDelegate {
+
+    
+
+    
+    var hamburgerViewController: HamburgerViewController? //initialize the delegate
     
     var currentUser: FirebaseAuth.User?
     var userEmail: String?
+    
+
+    @IBOutlet weak var leadingConstraintForHM: NSLayoutConstraint!
+    @IBOutlet weak var hamburgerView: UIView!
+    @IBOutlet weak var backViewForHamburger: UIView!
     
     @IBOutlet weak var displayNameLabel: UILabel!
     @IBOutlet weak var followersLabel: UILabel!
@@ -30,12 +40,46 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         updateChartData()
     }
     
+    func hideHamburgerMenu() {
+        self.hideHamburgerView()
+    }
+    
+    private func hideHamburgerView(){
+        UIView.animate(withDuration: 0.3) {
+                self.leadingConstraintForHM.constant = -280  // Adjust depending on your layout
+                self.view.layoutIfNeeded()
+            } completion: { _ in
+                self.backViewForHamburger.isHidden = true
+            }
+    }
+    
+    @IBAction func tappedOnHamburgerBackView(_ sender: Any) {
+        self.hideHamburgerView()
+//        self.backViewForHamburger.isHidden = !self.backViewForHamburger.isHidden
+
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+//        self.tabBarController?.navigationItem.hidesBackButton = true
+        self.tabBarController?.navigationController?.isNavigationBarHidden = true
+//        self.backViewForHamburger.isHidden = true
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.backViewForHamburger.isHidden = true
+    }
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationItem.hidesBackButton = true
+
         setupUI()
         customBarChartView.setupChart()
         loadDailyData()
+        
+        self.backViewForHamburger.isHidden = true
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleImageTap))
         profilePictureView.addGestureRecognizer(tapGesture)
@@ -43,8 +87,16 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         configureProfileImageView()
         addUploadHintImage()
         print ("user = \(UserManager.shared.currentUser)")
+        self.currentUser = UserManager.shared.currentUser
+        
+        print ("profile user = \(self.currentUser)")
         
     }
+    
+    @IBAction func showHamburgerMenu(_ sender: Any) {
+        self.backViewForHamburger.isHidden = !self.backViewForHamburger.isHidden
+    }
+    
     
     @objc func handleImageTap() {
         let alert = UIAlertController(title: "Select an option", message: nil,  preferredStyle: .actionSheet)
@@ -166,6 +218,15 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             hintLabel.centerXAnchor.constraint(equalTo: profilePictureView.centerXAnchor),
             hintLabel.centerYAnchor.constraint(equalTo: profilePictureView.centerYAnchor)
         ])
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if (segue.identifier == "hamburgerSegue") {
+            if let controller = segue.destination as? HamburgerViewController {
+                self.hamburgerViewController = controller
+                self.hamburgerViewController?.delegate = self
+            }
+        }
     }
 
 }

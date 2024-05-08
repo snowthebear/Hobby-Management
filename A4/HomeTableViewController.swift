@@ -13,11 +13,15 @@ import FirebaseAuth
 class HomeTableViewController: UITableViewController {
     var currentUser: FirebaseAuth.User?
     var userEmail: String?
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.tabBarController?.navigationItem.hidesBackButton = true
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        self.navigationItem.hidesBackButton = true
+     
         print ("home user = \(currentUser)")
         if let user = UserManager.shared.currentUser {
             if currentUser == nil{
