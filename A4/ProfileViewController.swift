@@ -8,12 +8,17 @@
 import Foundation
 import UIKit
 import Charts
+import Firebase
 import FirebaseAuth
+import TOCropViewController
+import SDWebImage
 
-class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, HamburgerViewControllerDelegate, UIGestureRecognizerDelegate {
+
+class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, HamburgerViewControllerDelegate, UIGestureRecognizerDelegate, TOCropViewControllerDelegate {
     
     var hamburgerViewController: HamburgerViewController? //initialize the delegate
-    
+    var usersReference = Firestore.firestore().collection("users")
+    var storageReference = Storage.storage().reference()
     
     var currentUser: FirebaseAuth.User?
     var userEmail: String?
@@ -41,6 +46,54 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         updateChartData()
     }
     
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        hamburgerViewController?.currentUser = self.currentUser
+        setupUI()
+        customBarChartView.setupChart()
+        loadDailyData()
+        
+        self.backViewForHamburger.isHidden = true
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleImageTap))
+        profilePictureView.addGestureRecognizer(tapGesture)
+        profilePictureView.isUserInteractionEnabled = true
+        configureProfileImageView()
+        addUploadHintImage()
+        setupProfilePicture()
+        
+        self.currentUser = UserManager.shared.currentUser
+        self.displayNameLabel.text = self.currentUser?.displayName
+        
+//        if self.usersReference.document("\(userID)").collection("profile picture").document("\(timestamp)") != nil
+//        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.tabBarController?.navigationController?.isNavigationBarHidden = true
+
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.backViewForHamburger.isHidden = true
+    }
+    
+    func setProfilePicture() -> UIImage {
+        return self.profilePictureView.image!
+    }
+
+    func setName() -> String {
+        return self.currentUser?.displayName ?? "Unknown"
+    }
+
+    private func setupUI() {
+        view.backgroundColor = .white
+    }
+    
+    
     func editProfile() {
         self.performSegue(withIdentifier: "editProfileSegue", sender: self)
     }
@@ -56,7 +109,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             let loginViewController = storyboard.instantiateViewController(withIdentifier: "LoginViewController") as! LoginViewController
             loginViewController.modalPresentationStyle = .fullScreen
-//            loginViewController.modalPresentationStyle = .fullScreen
+            // loginViewController.modalPresentationStyle = .fullScreen
             
             // Access the window property from the scene delegate if using UISceneDelegate
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
@@ -71,10 +124,12 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
 
-    
-    
     func hideHamburgerMenu() {
         self.hideHamburgerView()
+    }
+    
+    @objc func handleBackTap() {
+        hideHamburgerMenu()
     }
     
     private func hideHamburgerView(){
@@ -100,49 +155,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
 
     }
     
-    @objc func handleBackTap() {
-        hideHamburgerMenu()
-   }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-//        self.tabBarController?.navigationItem.hidesBackButton = true
-        self.tabBarController?.navigationController?.isNavigationBarHidden = true
-//        self.backViewForHamburger.isHidden = true
-
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        self.backViewForHamburger.isHidden = true
-    }
-    
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        hamburgerViewController?.currentUser = self.currentUser
-        setupUI()
-        customBarChartView.setupChart()
-        loadDailyData()
-        
-        self.backViewForHamburger.isHidden = true
-        
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleImageTap))
-        profilePictureView.addGestureRecognizer(tapGesture)
-        profilePictureView.isUserInteractionEnabled = true
-        configureProfileImageView()
-        addUploadHintImage()
-        print ("user = \(UserManager.shared.currentUser)")
-        self.currentUser = UserManager.shared.currentUser
-        
-        print ("profile user = \(self.currentUser)")
-        
-//        let backTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleBackTap))
-//        backTapGesture.delegate = self
-//        backViewForHamburger.addGestureRecognizer(backTapGesture)
-//        backViewForHamburger.isUserInteractionEnabled = true
-        
-    }
     
     @IBAction func showHamburgerMenu(_ sender: Any) {
         self.backViewForHamburger.isHidden = !self.backViewForHamburger.isHidden
@@ -178,6 +190,42 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         return false
     }
     
+    
+    private func configureProfileImageView() {
+        // Make the image view circular
+        profilePictureView.layer.cornerRadius = profilePictureView.frame.size.width / 2
+        profilePictureView.clipsToBounds = true
+        
+        // Set content mode to ScaleAspectFill
+        profilePictureView.contentMode = .scaleAspectFill
+        
+        profilePictureView.layer.borderWidth = 0.5
+        profilePictureView.layer.borderColor = UIColor.black.cgColor
+        
+        if profilePictureView.image == nil {
+            profilePictureView.image = UIImage(named: "default_picture")
+        }
+    }
+    
+    private func addUploadHintImage() {
+        guard profilePictureView.subviews.first(where: { $0 is UIImageView }) == nil else { return } // Avoid adding the hint multiple times
+
+        let hintLabel = UILabel()
+        hintLabel.text = "+"
+        hintLabel.font = UIFont.boldSystemFont(ofSize: 24)
+        hintLabel.textColor = UIColor.gray.withAlphaComponent(0.3) // Set a subtle color
+        hintLabel.translatesAutoresizingMaskIntoConstraints = false
+        hintLabel.textAlignment = .right
+        profilePictureView.addSubview(hintLabel)
+
+        // Center the label within the profile image view
+        NSLayoutConstraint.activate([
+            hintLabel.centerXAnchor.constraint(equalTo: profilePictureView.centerXAnchor),
+            hintLabel.centerYAnchor.constraint(equalTo: profilePictureView.centerYAnchor)
+        ])
+    }
+    
+    
     @objc func handleImageTap() {
         let alert = UIAlertController(title: "Select an option", message: nil,  preferredStyle: .actionSheet)
         
@@ -201,7 +249,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     func pickImageFrom(_ sourceType: UIImagePickerController.SourceType) {
         let imagePicker = UIImagePickerController()
         imagePicker.sourceType = sourceType
-        imagePicker.allowsEditing = true
+        imagePicker.allowsEditing = false
         imagePicker.delegate = self
         present(imagePicker, animated: true)
     }
@@ -209,15 +257,67 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         
         dismiss(animated: true)
-        if let pickedImage = info[.editedImage] as? UIImage {
-            profilePictureView.image = pickedImage
+        if let pickedImage = info[.originalImage] as? UIImage {
+            let cropViewController = TOCropViewController(croppingStyle: .circular, image: pickedImage)
+            cropViewController.delegate = self
+            self.present(cropViewController, animated: true, completion: nil)
+        
+        }
+    }
+
+    func cropViewController(_ cropViewController: TOCropViewController, didCropToCircularImage image: UIImage, with cropRect: CGRect, angle: Int) {
+        profilePictureView.image = image
+        
+        let timestamp = UInt(Date().timeIntervalSince1970)
+        let filename = "\(timestamp).jpg"
+        
+        guard let data = image.jpegData(compressionQuality: 0.8) else {
+            displayMessage(title: "Error", message: "Image data could not be compressed")
+            return
+        }
+        
+        guard let userID = self.currentUser?.uid else {
+            displayMessage(title: "Error", message: "No user logged in!")
+            return
+        }
+        
+        let imageRef = storageReference.child("\(userID)/\(timestamp)")
+        let metadata = StorageMetadata()
+        metadata.contentType = "image/jpg"
+        
+        let uploadTask = imageRef.putData(data, metadata: metadata)
+        
+        uploadTask.observe(.success) { [weak self] snapshot in
+            imageRef.downloadURL { (url, error) in
+                if let downloadURL = url {
+                    self?.usersReference.document(userID).setData(["profilePictureURL": downloadURL.absoluteString], merge: true)
+                }
+            }
+        }
+        
+        uploadTask.observe(.failure) { snapshot in
+            self.displayMessage(title: "Error", message: "\(String(describing: snapshot.error))")
+        }
+
+        _ = setProfilePicture()
+        cropViewController.dismiss(animated: true, completion: nil)
+        
+    }
+    
+    func setupProfilePicture() {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        usersReference.document(userID).getDocument { [weak self] (document, error) in
+            if let document = document, document.exists {
+                if let profilePictureURL = document.data()?["profilePictureURL"] as? String {
+                    self?.profilePictureView.sd_setImage(with: URL(string: profilePictureURL), completed: nil)
+                }
+            } else {
+                print("Document does not exist or error occurred: \(String(describing: error))")
+            }
         }
     }
     
-
-    private func setupUI() {
-        view.backgroundColor = .white
-    }
     
     func updateChartData() {
         switch progressSegmentedControl.selectedSegmentIndex {
@@ -266,45 +366,14 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         customBarChartView.notifyDataSetChanged() // Refresh chart
     }
     
-    private func configureProfileImageView() {
-        // Make the image view circular
-        profilePictureView.layer.cornerRadius = profilePictureView.frame.size.width / 2
-        profilePictureView.clipsToBounds = true
-        
-        // Set content mode to ScaleAspectFill
-        profilePictureView.contentMode = .scaleAspectFill
-        
-        profilePictureView.layer.borderWidth = 0.5
-        profilePictureView.layer.borderColor = UIColor.black.cgColor
-        
-        if profilePictureView.image == nil {
-            profilePictureView.image = UIImage(named: "defaultProfile")
-        }
-    }
     
-    private func addUploadHintImage() {
-        guard profilePictureView.subviews.first(where: { $0 is UIImageView }) == nil else { return } // Avoid adding the hint multiple times
-
-        let hintLabel = UILabel()
-        hintLabel.text = "+"
-        hintLabel.font = UIFont.boldSystemFont(ofSize: 24)
-        hintLabel.textColor = UIColor.gray.withAlphaComponent(0.3) // Set a subtle color
-        hintLabel.translatesAutoresizingMaskIntoConstraints = false
-        hintLabel.textAlignment = .right
-        profilePictureView.addSubview(hintLabel)
-
-        // Center the label within the profile image view
-        NSLayoutConstraint.activate([
-            hintLabel.centerXAnchor.constraint(equalTo: profilePictureView.centerXAnchor),
-            hintLabel.centerYAnchor.constraint(equalTo: profilePictureView.centerYAnchor)
-        ])
-    }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if (segue.identifier == "hamburgerSegue") {
             if let controller = segue.destination as? HamburgerViewController {
                 self.hamburgerViewController = controller
                 self.hamburgerViewController?.delegate = self
+                controller.currentUser = self.currentUser
             }
         }
         
@@ -322,7 +391,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     private var differences:CGFloat = 0.0
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        print("???")
         if (self.isHamburgerMenuShown) {
             if let touch = touches.first {
                 let location = touch.location(in: backViewForHamburger)
@@ -330,7 +398,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                  
             }
         }
-        else{
+        else {
             return
         }
         
@@ -353,14 +421,12 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        print("!!!")
         if (self.isHamburgerMenuShown) {
+            if (differences < 15) {
+                self.leadingConstraintForHM.constant = 0
+                return
+            }
             if let touch = touches.first {
-                if (differences < 15) {
-                    self.leadingConstraintForHM.constant = 0
-                    return
-                }
-                
                 if (differences > 150){
                     UIView.animate(withDuration: 0.1, animations: {
                         self.leadingConstraintForHM.constant = -280
@@ -370,7 +436,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                         self.backViewForHamburger.isHidden = true
                     }
                 }
-                else{
+                else {
                     
                     UIView.animate(withDuration: 0.1, animations: {
                         self.leadingConstraintForHM.constant = 0
@@ -380,13 +446,8 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                         self.backViewForHamburger.isHidden = false
                     }
                 }
- 
-                 
             }
         }
     }
-    
-    
-    
     
 }

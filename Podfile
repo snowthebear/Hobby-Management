@@ -21,6 +21,10 @@ target 'A4' do
   pod 'Firebase/Messaging'
 
   pod 'Charts'
+
+  pod 'TOCropViewController'
+  pod 'SDWebImage'
+
   
 end
 

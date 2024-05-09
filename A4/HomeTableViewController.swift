@@ -11,7 +11,7 @@ import FirebaseAuth
 
 
 class HomeTableViewController: UITableViewController {
-    var currentUser: FirebaseAuth.User?
+    var currentUser: User?
     var userEmail: String?
     
     override func viewWillAppear(_ animated: Bool) {

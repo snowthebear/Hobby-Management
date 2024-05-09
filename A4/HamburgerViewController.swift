@@ -12,6 +12,8 @@ protocol HamburgerViewControllerDelegate {
     func hideHamburgerMenu()
     func editProfile()
     func logout()
+    func setProfilePicture() -> UIImage
+    func setName() -> String
 }
  
 class HamburgerViewController: UIViewController {
@@ -40,23 +42,22 @@ class HamburgerViewController: UIViewController {
         }))
         
         present(alert, animated: true)
-        
     }
     
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("user = \(self.currentUser)")
+        
         self.setupHamburgerUI()
         self.topView.isHidden = false
         self.downView.isHidden = false
-        print("view hamburger")
-        // Do any additional setup after loading the view.
+        self.configureProfileImageView()
+
     }
+
     
     private func setupHamburgerUI(){
-        print("setup hamburger")
         self.mainBackgroundView.clipsToBounds = true
         
 //        self.profileImageView.layer.cornerRadius = profileImageView.frame.size.width / 2
@@ -69,25 +70,37 @@ class HamburgerViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        setupCircularProfileImage()
-        print("disinita")
+        setupPicture()
+        configureProfileImageView()
+        setName()
+        
+    }
+    
+    private func configureProfileImageView() {
+        // Make the image view circular
+        profileImageView.layer.cornerRadius = profileImageView.frame.size.width / 2
+        profileImageView.clipsToBounds = true
+        
+        // Set content mode to ScaleAspectFill
+        profileImageView.contentMode = .scaleAspectFill
+        
+        if profileImageView.image == nil {
+            profileImageView.image = UIImage(named: "default_picture")
+        }
     }
 
-    private func setupCircularProfileImage() {
-        profileImageView.clipsToBounds = true
-        profileImageView.layer.cornerRadius = profileImageView.frame.size.width / 2
-        
-        self.profileImageView.contentMode = .scaleAspectFill
-        
-//        if self.profileImageView.image == nil{
-//            profileImageView.image = UIImage(named: "default_picture")
-//        }
-    }
     
     @IBAction func editProfileButton(_ sender: Any) {
         self.delegate?.hideHamburgerMenu()
         self.delegate?.editProfile()
-//        performSegue(withIdentifier: "editProfileSegue", sender: self)
+    }
+    
+    func setupPicture(){
+        self.profileImageView.image = self.delegate?.setProfilePicture()
+    }
+    
+    func setName(){
+        self.nameLabel.text = self.delegate?.setName()
     }
     
 

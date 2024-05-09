@@ -14,7 +14,6 @@ import FirebaseFirestore
 
 
 
-
 class LoginViewController: UIViewController {
     
     var firebaseController = FirebaseController()
@@ -115,6 +114,7 @@ class LoginViewController: UIViewController {
                     "followers": 0,
                     "total posts": 0
                     
+                    
                 ]) { error in
                     if let error = error {
                         print("Error saving user data: \(error.localizedDescription)")
@@ -122,8 +122,7 @@ class LoginViewController: UIViewController {
                         print("User registered successfully and data saved to Firestore")
                     }
                 }
-                
-                
+
                 // Successfully signed in
                 self.performSegue(withIdentifier: "showHomeLogin", sender: self)
             }
