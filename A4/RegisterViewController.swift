@@ -7,11 +7,14 @@
 
 import Foundation
 import UIKit
+import Firebase
 import FirebaseAuth
 import FirebaseFirestore
 
 
 class RegisterViewController: UIViewController {
+    
+    var firebaseController = FirebaseController()
     
     @IBOutlet weak var nameTextField: UITextField!
     
@@ -21,62 +24,75 @@ class RegisterViewController: UIViewController {
     
     @IBOutlet weak var confirmPasswordTextField: UITextField!
     
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         configurePasswordTextField()
-        passwordTextField.textContentType = .password
-        confirmPasswordTextField.textContentType = .password
-        
-        passwordTextField.autocorrectionType = .no
-        passwordTextField.spellCheckingType = .no
-        passwordTextField.autocapitalizationType = .none
-        confirmPasswordTextField.autocorrectionType = .no
-        confirmPasswordTextField.spellCheckingType = .no
-        confirmPasswordTextField.autocapitalizationType = .none
+//        passwordTextField.textContentType = .password
+//        confirmPasswordTextField.textContentType = .password
+//        
+//        passwordTextField.autocorrectionType = .no
+//        passwordTextField.spellCheckingType = .no
+//        passwordTextField.autocapitalizationType = .none
+//        confirmPasswordTextField.autocorrectionType = .no
+//        confirmPasswordTextField.spellCheckingType = .no
+//        confirmPasswordTextField.autocapitalizationType = .none
         
     }
     
     @IBAction func registerButton(_ sender: Any) {
 
         // Register the user with Firebase Authentication
+        
+
+        // Register the user with Firebase Authentication
+        guard let name = nameTextField.text, !name.isEmpty,
+              let email = emailTextField.text, !email.isEmpty,
+              let password = passwordTextField.text, !password.isEmpty,
+              let confirmPassword = confirmPasswordTextField.text, !confirmPassword.isEmpty else {
+            showAlert(title: "Input Error", message: "All fields are required.")
+            return
+        }
+        
+        guard password == confirmPassword else {
+            showAlert(title: "Input Error", message: "Passwords do not match.")
+            return
+        }
+
+        // Ensure valid email
+        guard isValidEmail(email) else {
+            showAlert(title: "Input Error", message: "Invalid email format.")
+            return
+        }
+
+        // Ensure password is at least 6 characters
+        guard password.count >= 6 else {
+            showAlert(title: "Input Error", message: "Password must be at least 6 characters.")
+            return
+        }
+        
         let activityIndicator = UIActivityIndicatorView(style: .large)
         activityIndicator.center = view.center
         view.addSubview(activityIndicator)
         activityIndicator.startAnimating()
 
-        // Register the user with Firebase Authentication
-        Auth.auth().createUser(withEmail: emailTextField.text!, password: passwordTextField.text!) { authResult, error in
+
+        firebaseController.signUpWithEmail(email: email, password: password, displayName: name) { [weak self] result in
             activityIndicator.stopAnimating()
-            if let error = error {
-                self.showAlert(title: "Registration Error", message: error.localizedDescription)
-                return
-            }
+            guard let self = self else { return }
 
-            guard let user = authResult?.user else {
-                self.showAlert(title: "Registration Error", message: "User registration failed.")
-                return
-            }
-
-            let db = Firestore.firestore()
-            db.collection("users").document(user.uid).setData([
-                "Full Name": self.nameTextField.text ?? "",
-                "email": self.emailTextField.text ?? "",
-                "Hobby(s)": [],
-                "following": 0,
-                "followers": 0,
-                "total posts": 0
-                
-            ]) { error in
-                if let error = error {
-                    self.showAlert(title: "Database Error", message: error.localizedDescription)
-                } else {
-                    self.showAlert(title: "Registration Successful", message: "You have registered successfully!"){
-                        self.performSegue(withIdentifier: "showLogin", sender: self)
-                            
-                    }
+            switch result {
+            case .success(let user):
+                self.showAlert(title: "Registration Successful", message: "You have registered successfully!") {
+                    self.performSegue(withIdentifier: "showLogin", sender: self)
                 }
+                
+            case .failure(let error):
+                self.showAlert(title: "Registration Error", message: error.localizedDescription)
             }
         }
+        
     }
     
     
@@ -96,7 +112,7 @@ class RegisterViewController: UIViewController {
     
     override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
         if identifier == "showLogin" {
-            // Perform validation to check if segue should be performed
+      
             guard let name = nameTextField.text, !name.isEmpty,
                   let email = emailTextField.text, !email.isEmpty,
                   let password = passwordTextField.text, !password.isEmpty,
@@ -147,8 +163,8 @@ class RegisterViewController: UIViewController {
         passwordVisibilityButton.addTarget(self, action: #selector(togglePasswordVisibility(_:)), for: .touchUpInside)
         passwordTextField.rightView = passwordVisibilityButton
         passwordTextField.rightViewMode = .always
-        passwordTextField.isSecureTextEntry = true
-        passwordTextField.textContentType = .password
+//        passwordTextField.isSecureTextEntry = true
+//        passwordTextField.textContentType = .password
 
         // Confirmation password field
         let confirmVisibilityButton = UIButton(type: .system)
@@ -157,8 +173,8 @@ class RegisterViewController: UIViewController {
         confirmVisibilityButton.addTarget(self, action: #selector(toggleConfirmPasswordVisibility(_:)), for: .touchUpInside)
         confirmPasswordTextField.rightView = confirmVisibilityButton
         confirmPasswordTextField.rightViewMode = .always
-        confirmPasswordTextField.isSecureTextEntry = true
-        confirmPasswordTextField.textContentType = .password
+//        confirmPasswordTextField.isSecureTextEntry = true
+//        confirmPasswordTextField.textContentType = .password
         
     }
 

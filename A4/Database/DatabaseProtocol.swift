@@ -32,6 +32,6 @@ protocol DatabaseProtocol: AnyObject {
     func removeListener(listener: DatabaseListener)
 
     func signInWithEmail(email: String, password: String, completion: @escaping (Result<User, Error>) -> Void)
-    func signUpWithEmail(email: String, password: String, completion: @escaping (Result<User, Error>) -> Void)
+    func signUpWithEmail(email: String, password: String, displayName: String, completion: @escaping (Result<User, Error>) -> Void)
 }
 

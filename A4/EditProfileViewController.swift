@@ -14,6 +14,12 @@ import TOCropViewController
 class EditProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, TOCropViewControllerDelegate {
     
     var currentUser: FirebaseAuth.User?
+    var displayName: String?
+    
+    var usersReference = Firestore.firestore().collection("users")
+    var storageReference = Storage.storage().reference()
+    
+    var changePicture:Bool = false
     
     @IBOutlet weak var profilePictureView: UIImageView!
     
@@ -43,44 +49,123 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
     }
     
     @IBAction func saveButton(_ sender: Any) {
+        var updates: [String: Any] = [:]
+        
+        guard let user = self.currentUser else { return }
+        
+        
+        let displayName = nameTextField.text ?? ""
+        let email = emailTextField.text ?? ""
+        
+        let userDocRef = usersReference.document(user.uid)
+        
+        
+        if displayName != user.displayName {
+            updates = ["displayName": displayName]
+        }
+        
+        // Update email (This requires re-authentication, simplified here)
+        if user.email != email {
+            user.updateEmail(to: email) { error in
+                if let error = error {
+                    print("Failed to update email: \(error.localizedDescription)")
+                    self.displayMessage(title: "Error", message: "Failed to update email: \(error.localizedDescription)")
+                    return
+                }
+                updates["email"] = email
+                userDocRef.updateData(updates) { error in
+                    if let error = error {
+                        print("Error updating document: \(error)")
+                    } else {
+                        print("Document successfully updated")
+                        self.navigationController?.popViewController(animated: true)
+                    }
+                }
+            }
+        } else {
+            userDocRef.updateData(updates) { error in
+                if let error = error {
+                    print("Error updating document: \(error)")
+                } else {
+                    print("Document successfully updated")
+                    self.navigationController?.popViewController(animated: true)
+                }
+            }
+        }
+        
+        guard let userID = self.currentUser?.uid else {
+            displayMessage(title: "Error", message: "No user logged in!")
+            return
+        }
+        
+        if self.changePicture == true {
+            if let newImage = profilePictureView.image, let imageData = newImage.jpegData(compressionQuality: 0.8) {
+                let timestamp = UInt(Date().timeIntervalSince1970)
+                let filename = "\(timestamp).jpg"
+                
+                let imageRef = storageReference.child("\(userID)/\(timestamp)")
+                let metadata = StorageMetadata()
+                metadata.contentType = "image/jpg"
+                
+                let uploadTask = imageRef.putData(imageData, metadata: metadata)
+                
+                uploadTask.observe(.success) { snapshot in
+                    imageRef.downloadURL { (url, error) in
+                        if let downloadURL = url {
+                            userDocRef.updateData(["profilePictureURL": downloadURL.absoluteString])
+                        }
+                    }
+                }
+                
+                uploadTask.observe(.failure) { snapshot in
+                    self.displayMessage(title: "Error", message: "\(String(describing: snapshot.error))")
+                }
+            }
+        }
     }
+    
     
     @IBAction func changePasswordButtonn(_ sender: Any) {
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        nameTextField.text = self.currentUser?.displayName
-        emailTextField.text = self.currentUser?.email
-        
+
         self.configureProfileImageView()
-        
-        // Load the current user data
-//        loadUserData()
+        self.loadUserData()
 
     }
     
+    func loadUserData() {
+        guard let user = currentUser else { return }
+        
+        // Set email
+        emailTextField.text = user.email
+        nameTextField.text = user.displayName
+        
+        // Fetch and set the display name and profile image from Firestore
+        let db = Firestore.firestore()
+        let userDocRef = db.collection("users").document(user.uid)
+        userDocRef.getDocument { [weak self] (document, error) in
+            guard let self = self else { return }
+            if let document = document, document.exists {
+                let data = document.data()
+                self.nameTextField.text = data?["displayName"] as? String
+                
+                if let profileImageUrl = data?["profilePictureURL"] as? String {
+                    self.loadProfileImage(urlString: profileImageUrl)
+                }
+            } else {
+                print("Document does not exist or error: \(error?.localizedDescription ?? "Unknown error")")
+            }
+        }
+    }
     
-//    func loadUserData() {
-//        guard let user = currentUser else { return }
-//        
-//        // Set email
-//        emailTextField.text = user.email
-//        
-//        // Fetch and set the display name and profile image from Firestore
-//        let db = Firestore.firestore()
-//        let userDocRef = db.collection("users").document(user.uid)
-//        userDocRef.getDocument { (document, error) in
-//            if let document = document, document.exists {
-//                let data = document.data()
-//                self.nameTextField.text = data?["Full Name"] as? String
-//                
-//                if let profileImageUrl = data?["profileImageUrl"] as? String {
-//                    self.loadProfileImage(urlString: profileImageUrl)
-//                }
-//            }
-//        }
-//    }
+    func loadProfileImage(urlString: String) {
+        guard let url = URL(string: urlString) else { return }
+        profilePictureView.sd_setImage(with: url, placeholderImage: UIImage(named: "default_picture"), options: .continueInBackground, completed: nil)
+    }
+
     
     private func configureProfileImageView() {
         // Make the image view circular
@@ -138,8 +223,8 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
     }
     
     func cropViewController(_ cropViewController: TOCropViewController, didCropToCircularImage image: UIImage, with cropRect: CGRect, angle: Int) {
-        print("a")
         profilePictureView.image = image
+        self.changePicture = true
         cropViewController.dismiss(animated: true, completion: nil)
     }
     

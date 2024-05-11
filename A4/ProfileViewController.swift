@@ -22,6 +22,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     var currentUser: FirebaseAuth.User?
     var userEmail: String?
+//    var name: String?
     
     private var isHamburgerMenuShown: Bool = false
     
@@ -61,19 +62,22 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         profilePictureView.isUserInteractionEnabled = true
         configureProfileImageView()
         addUploadHintImage()
-        setupProfilePicture()
+        setupProfile()
+        setProfilePicture()
         
         self.currentUser = UserManager.shared.currentUser
         self.displayNameLabel.text = self.currentUser?.displayName
         
-//        if self.usersReference.document("\(userID)").collection("profile picture").document("\(timestamp)") != nil
-//        
+        print("viewDidLoad")
+        loadUserData()
+        
+
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.tabBarController?.navigationController?.isNavigationBarHidden = true
-
+        loadUserData()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -82,11 +86,11 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     func setProfilePicture() -> UIImage {
-        return self.profilePictureView.image!
+        return self.profilePictureView.image ?? UIImage(named: "default_picture")!
     }
 
     func setName() -> String {
-        return self.currentUser?.displayName ?? "Unknown"
+        return self.displayNameLabel.text ?? "Unknown"
     }
 
     private func setupUI() {
@@ -96,6 +100,8 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     func editProfile() {
         self.performSegue(withIdentifier: "editProfileSegue", sender: self)
+        print("cc")
+        setupProfile()
     }
     
     func logout() {
@@ -120,6 +126,27 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         } catch let signOutError as NSError {
             print("Error signing out: %@", signOutError)
             // Optionally, show an alert to the user about the error
+        }
+    }
+    
+    func setupProfile() {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        usersReference.document(userID).getDocument { [weak self] (document, error) in
+            if let document = document, document.exists {
+                if let profilePictureURL = document.data()?["profilePictureURL"] as? String {
+                    self?.profilePictureView.sd_setImage(with: URL(string: profilePictureURL), completed: nil)
+                }
+                if let userData = document.data() {
+                    UserManager.shared.userData = userData
+                    if let displayName = userData["displayName"] as? String {
+                        self?.displayNameLabel.text = displayName
+                        
+                    }
+                }
+            } else {
+                print("Document does not exist or error occurred: \(String(describing: error))")
+            }
         }
     }
     
@@ -157,6 +184,9 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     
     @IBAction func showHamburgerMenu(_ sender: Any) {
+        hamburgerViewController?.setupPicture()
+        hamburgerViewController?.setName()
+        
         self.backViewForHamburger.isHidden = !self.backViewForHamburger.isHidden
         self.backViewForHamburger.alpha = 0.75
         
@@ -266,6 +296,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
 
     func cropViewController(_ cropViewController: TOCropViewController, didCropToCircularImage image: UIImage, with cropRect: CGRect, angle: Int) {
+        
         profilePictureView.image = image
         
         let timestamp = UInt(Date().timeIntervalSince1970)
@@ -311,6 +342,12 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             if let document = document, document.exists {
                 if let profilePictureURL = document.data()?["profilePictureURL"] as? String {
                     self?.profilePictureView.sd_setImage(with: URL(string: profilePictureURL), completed: nil)
+                }
+                if let userData = document.data() {
+                    UserManager.shared.userData = userData
+                    if let displayName = userData["displayName"] as? String {
+                        self?.displayNameLabel.text = displayName
+                    }
                 }
             } else {
                 print("Document does not exist or error occurred: \(String(describing: error))")
@@ -381,6 +418,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             if let destination = segue.destination as? EditProfileViewController {
                 destination.modalPresentationStyle = .fullScreen
                 destination.currentUser = self.currentUser
+                destination.displayName = self.displayNameLabel.text
 //                self.hamburgerViewController = controller
 //                self.hamburgerViewController?.delegate = self
             }
@@ -448,6 +486,35 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                 }
             }
         }
+    }
+    
+    func loadUserData() {
+        guard let user = currentUser else { return }
+        
+        // Set email
+        self.displayNameLabel.text = user.displayName
+        
+        // Fetch and set the display name and profile image from Firestore
+        let userDocRef = usersReference.document(user.uid)
+        userDocRef.getDocument { [weak self] (document, error) in
+            guard let self = self else { return }
+            if let document = document, document.exists {
+                let data = document.data()
+                self.displayNameLabel.text = data?["displayName"] as? String
+                
+                if let profileImageUrl = data?["profilePictureURL"] as? String {
+                    self.loadProfileImage(urlString: profileImageUrl)
+                }
+            } else {
+                print("Document does not exist or error: \(error?.localizedDescription ?? "Unknown error")")
+            }
+        }
+    }
+    
+    func loadProfileImage(urlString: String) {
+        print("masuk sini")
+        guard let url = URL(string: urlString) else { return }
+        profilePictureView.sd_setImage(with: url, placeholderImage: UIImage(named: "default_picture"), options: .continueInBackground, completed: nil)
     }
     
 }

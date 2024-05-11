@@ -53,6 +53,8 @@ class HamburgerViewController: UIViewController {
         self.topView.isHidden = false
         self.downView.isHidden = false
         self.configureProfileImageView()
+        setName()
+        setupPicture()
 
     }
 
@@ -60,19 +62,15 @@ class HamburgerViewController: UIViewController {
     private func setupHamburgerUI(){
         self.mainBackgroundView.clipsToBounds = true
         
-//        self.profileImageView.layer.cornerRadius = profileImageView.frame.size.width / 2
-//        self.profileImageView.clipsToBounds = true
-//        
-//        self.profileImageView.contentMode = .scaleAspectFill
-//        
-        
     }
     
     override func viewDidLayoutSubviews() {
+        
         super.viewDidLayoutSubviews()
         setupPicture()
         configureProfileImageView()
         setName()
+        
         
     }
     

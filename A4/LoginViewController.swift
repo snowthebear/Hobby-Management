@@ -47,7 +47,8 @@ class LoginViewController: UIViewController {
                 // User signed in successfully, now fetch the team
                 self.currentUser = user
                 UserManager.shared.currentUser = user
-                print ("login user = \(user)")
+                self.fetchUserDataAndProceed(user: user)
+
                 self.performSegue(withIdentifier: "showHomeLogin", sender: self)
                 
             case .failure(let error):
@@ -93,42 +94,80 @@ class LoginViewController: UIViewController {
             // Create the credential with unwrapped tokens
             let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: accessToken)
             
-            // Authenticate with Firebase using the Google credential
-            Auth.auth().signIn(with: credential) { authResult, error in
-                if let error = error {
-                    print("Firebase Sign-In error: \(error.localizedDescription)")
-                    return
-                }
-                
-                
-                guard let user = authResult?.user else { return }
-                self.currentUser = user
-                UserManager.shared.currentUser = user
-                print ("user = \(user), current user = \(self.currentUser)")
-                let db = Firestore.firestore()
-                db.collection("users").document(user.uid).setData([
-                    "Full Name": user.displayName!,
-                    "email": user.email!,
-                    "Hobby(s)": [],
-                    "following": 0,
-                    "followers": 0,
-                    "total posts": 0
-                    
-                    
-                ]) { error in
-                    if let error = error {
-                        print("Error saving user data: \(error.localizedDescription)")
-                    } else {
-                        print("User registered successfully and data saved to Firestore")
-                    }
-                }
+            
+            self.firebaseController.signInWithGoogle(idToken: idToken, accessToken: accessToken) { [weak self] result in
+                guard let self = self else { return }
 
-                // Successfully signed in
-                self.performSegue(withIdentifier: "showHomeLogin", sender: self)
+                switch result {
+                case .success(let user):
+                    self.currentUser = user
+                    UserManager.shared.currentUser = user
+                    self.fetchUserDataAndProceed(user: user)
+                    self.performSegue(withIdentifier: "showHomeLogin", sender: self)
+                    
+                case .failure(let error):
+                    print("Error signing in with Google: \(error.localizedDescription)")
+                    self.displayMessage(title: "Login Error", message: "Failed to sign in. Please try again.")
+                }
+            }
+            
+            
+            // Authenticate with Firebase using the Google credential
+//            Auth.auth().signIn(with: credential) { authResult, error in
+//                if let error = error {
+//                    print("Firebase Sign-In error: \(error.localizedDescription)")
+//                    return
+//                }
+//                
+//                
+//                guard let user = authResult?.user else { return }
+//                self.currentUser = user
+//                UserManager.shared.currentUser = user
+//                
+////                self.fetchUserDataAndProceed(user: user)
+//                self.checkIfUserDocumentExistsAndProceed(user: user)
+////                print("--> \(self.fetchUserDataAndProceed(user: user))")
+////                let db = Firestore.firestore()
+////                db.collection("users").document(user.uid).setData([
+////                    "Full Name": user.displayName!,
+////                    "email": user.email!,
+////                    "Hobby(s)": [],
+////                    "following": 0,
+////                    "followers": 0,
+////                    "total posts": 0
+////                    
+////                    
+////                ]) { error in
+////                    if let error = error {
+////                        print("Error saving user data: \(error.localizedDescription)")
+////                    } else {
+////                        print("User registered successfully and data saved to Firestore")
+////                    }
+////                }
+////
+////                // Successfully signed in
+//                self.performSegue(withIdentifier: "showHomeLogin", sender: self)
+//            }
+        }
+    }
+    func fetchUserDataAndProceed(user: FirebaseAuth.User) {
+        let db = Firestore.firestore()
+        db.collection("users").document(user.uid).getDocument { [weak self] document, error in
+            guard let self = self else { return }
+
+            if let document = document, document.exists {
+                // Use the fetched user data
+                let userData = document.data()
+                UserManager.shared.userData = userData
+                
+           
+            } else {
+                print("User document does not exist or error: \(error?.localizedDescription ?? "Unknown error")")
+                self.displayMessage(title: "Error", message: "Failed to fetch user data.")
             }
         }
     }
-    
+
 
     func setKeepMeSignedInPreference(_ keepSignedIn: Bool) {
         UserDefaults.standard.set(keepSignedIn, forKey: "KeepMeSignedIn")
@@ -217,6 +256,7 @@ class LoginViewController: UIViewController {
             if let destination = tabBarController.viewControllers?.first(where: { $0 is HomeTableViewController }) as? HomeTableViewController {
                 destination.currentUser = currentUser
                 destination.userEmail = emailTextField.text
+                
             }
         }
     }
