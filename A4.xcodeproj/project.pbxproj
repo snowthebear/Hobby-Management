@@ -8,6 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		0744CE617F87E29F56C84779 /* Pods_A4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3213F5E2AFAB0BC088B86E08 /* Pods_A4.framework */; };
+		7F3616BF2BEFA35E007C155B /* AllHobbiesTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F3616BE2BEFA35E007C155B /* AllHobbiesTableViewController.swift */; };
+		7F3616C12BEFA702007C155B /* UserHobbiesTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F3616C02BEFA702007C155B /* UserHobbiesTableViewController.swift */; };
+		7F3616C32BEFB0B2007C155B /* SearchTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F3616C22BEFB0B2007C155B /* SearchTableViewController.swift */; };
+		7F3616C52BF21D75007C155B /* Hobby.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F3616C42BF21D75007C155B /* Hobby.swift */; };
+		7F3616C72BF2388A007C155B /* UserList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F3616C62BF2388A007C155B /* UserList.swift */; };
 		7F4763C02BE7B62C007BA9AC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7F4763BF2BE7B62C007BA9AC /* Main.storyboard */; };
 		7F4763C52BE7B691007BA9AC /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4763C42BE7B691007BA9AC /* LoginViewController.swift */; };
 		7F4763CB2BE7B6E5007BA9AC /* UserManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4763CA2BE7B6E5007BA9AC /* UserManager.swift */; };
@@ -32,6 +37,11 @@
 
 /* Begin PBXFileReference section */
 		3213F5E2AFAB0BC088B86E08 /* Pods_A4.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_A4.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7F3616BE2BEFA35E007C155B /* AllHobbiesTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllHobbiesTableViewController.swift; sourceTree = "<group>"; };
+		7F3616C02BEFA702007C155B /* UserHobbiesTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserHobbiesTableViewController.swift; sourceTree = "<group>"; };
+		7F3616C22BEFB0B2007C155B /* SearchTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTableViewController.swift; sourceTree = "<group>"; };
+		7F3616C42BF21D75007C155B /* Hobby.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hobby.swift; sourceTree = "<group>"; };
+		7F3616C62BF2388A007C155B /* UserList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserList.swift; sourceTree = "<group>"; };
 		7F4763BF2BE7B62C007BA9AC /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		7F4763C42BE7B691007BA9AC /* LoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		7F4763CA2BE7B6E5007BA9AC /* UserManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserManager.swift; sourceTree = "<group>"; };
@@ -115,6 +125,8 @@
 				7F4763BF2BE7B62C007BA9AC /* Main.storyboard */,
 				7F4763E82BE7BBE0007BA9AC /* LaunchScreen.storyboard */,
 				7F4763CA2BE7B6E5007BA9AC /* UserManager.swift */,
+				7F3616C42BF21D75007C155B /* Hobby.swift */,
+				7F3616C62BF2388A007C155B /* UserList.swift */,
 				7F4763D42BE7B795007BA9AC /* displayMessage.swift */,
 				7F4763D22BE7B77A007BA9AC /* FirebaseController.swift */,
 				7F4763CC2BE7B704007BA9AC /* RegisterViewController.swift */,
@@ -124,6 +136,9 @@
 				7F4763E42BE7B8ED007BA9AC /* BarChartView.swift */,
 				7F4763EA2BE914C4007BA9AC /* HamburgerViewController.swift */,
 				7F7081822BEBA33D00E8F590 /* EditProfileViewController.swift */,
+				7F3616C22BEFB0B2007C155B /* SearchTableViewController.swift */,
+				7F3616C02BEFA702007C155B /* UserHobbiesTableViewController.swift */,
+				7F3616BE2BEFA35E007C155B /* AllHobbiesTableViewController.swift */,
 				7FD483D12BE730C900C46142 /* Products */,
 				7F4763DC2BE7B824007BA9AC /* Info.plist */,
 				7F4763E62BE7B90F007BA9AC /* GoogleService-Info-2.plist */,
@@ -261,6 +276,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7F4763D52BE7B795007BA9AC /* displayMessage.swift in Sources */,
+				7F3616C12BEFA702007C155B /* UserHobbiesTableViewController.swift in Sources */,
 				7F4763E32BE7B8D5007BA9AC /* ProfileViewController.swift in Sources */,
 				7F4763EB2BE914C4007BA9AC /* HamburgerViewController.swift in Sources */,
 				7F4763DB2BE7B7EB007BA9AC /* DatabaseProtocol.swift in Sources */,
@@ -270,9 +286,13 @@
 				7F4763CB2BE7B6E5007BA9AC /* UserManager.swift in Sources */,
 				7FD484062BE73E1000C46142 /* MulticastDelegate.swift in Sources */,
 				7F4763D32BE7B77A007BA9AC /* FirebaseController.swift in Sources */,
+				7F3616BF2BEFA35E007C155B /* AllHobbiesTableViewController.swift in Sources */,
+				7F3616C52BF21D75007C155B /* Hobby.swift in Sources */,
 				7F4763CD2BE7B704007BA9AC /* RegisterViewController.swift in Sources */,
 				7F4763D12BE7B75C007BA9AC /* HomeTableViewController.swift in Sources */,
+				7F3616C32BEFB0B2007C155B /* SearchTableViewController.swift in Sources */,
 				7F4763DF2BE7B860007BA9AC /* AppDelegate.swift in Sources */,
+				7F3616C72BF2388A007C155B /* UserList.swift in Sources */,
 				7F4763E52BE7B8ED007BA9AC /* BarChartView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

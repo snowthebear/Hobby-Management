@@ -6,3 +6,16 @@
 //
 
 import Foundation
+import FirebaseFirestoreSwift
+
+class UserList: NSObject, Codable {
+    @DocumentID var id: String?
+    var name: String?
+    var hobbies: [Hobby]
+    
+    override init() {
+        self.hobbies = []
+        super.init()
+    }
+
+}

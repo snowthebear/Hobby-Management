@@ -9,20 +9,22 @@ import Foundation
 import Firebase
 import FirebaseAuth
 
-enum DatabaseChange{
+enum DatabaseChange {
     case add
     case remove
     case update
 }
 
 enum ListenerType {
-    case team
-    case heroes
+    case hobbies
+    case list
     case all
 }
 
 protocol DatabaseListener: AnyObject {
     var listenerType: ListenerType {get set}
+    func onUserListChange(change: DatabaseChange, userHobbies: [Hobby])
+    func onAllHobbyChange(change: DatabaseChange, hobbies: [Hobby])
 }
  
 protocol DatabaseProtocol: AnyObject {
@@ -30,6 +32,17 @@ protocol DatabaseProtocol: AnyObject {
     
     func addListener(listener: DatabaseListener)
     func removeListener(listener: DatabaseListener)
+    
+    func addHobby(name: String, interest: Interest) -> Hobby
+    func deleteHobby(hobby: Hobby)
+    
+    var currentUserList: UserList? {get set}
+    
+    func addUserList(listName: String) -> UserList
+    func deleteUserList(list: UserList)
+    func addHobbyToUserList(hobby: Hobby, userList: UserList) -> Bool
+    func removeHobbyToUserList(hobby: Hobby, userList: UserList)
+    
 
     func signInWithEmail(email: String, password: String, completion: @escaping (Result<User, Error>) -> Void)
     func signUpWithEmail(email: String, password: String, displayName: String, completion: @escaping (Result<User, Error>) -> Void)
