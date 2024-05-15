@@ -12,6 +12,7 @@ import FirebaseAuth
 
 class HomeTableViewController: UITableViewController {
     var currentUser: User?
+    var currentUserList: UserList?
     var userEmail: String?
     
     override func viewWillAppear(_ animated: Bool) {
@@ -28,6 +29,15 @@ class HomeTableViewController: UITableViewController {
                 currentUser = user
             }
         }
+        
+        if let list = UserManager.shared.currentUserList {
+            if currentUserList == nil {
+                currentUserList = list
+            }
+        }
+        
+        print ("home list = \(currentUserList)")
+        print("user manager list = \(UserManager.shared.currentUserList)")
         
         
         // Uncomment the following line to preserve selection between presentations

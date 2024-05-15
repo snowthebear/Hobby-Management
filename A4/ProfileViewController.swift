@@ -21,6 +21,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     var storageReference = Storage.storage().reference()
     
     var currentUser: FirebaseAuth.User?
+    var currentUserLisr: UserList?
     var userEmail: String?
 //    var name: String?
     
@@ -66,18 +67,28 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         setProfilePicture()
         
         self.currentUser = UserManager.shared.currentUser
-        self.displayNameLabel.text = self.currentUser?.displayName
+        self.currentUserLisr = UserManager.shared.currentUserList
+        
+        print("list = \(self.currentUserLisr)")
+//        self.displayNameLabel.text = self.currentUser?.displayName
         
         print("viewDidLoad")
-        loadUserData()
+//        loadUserData()
+        
+        Task {
+            await loadUserData()
+        }
         
 
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        Task {
+            await loadUserData()
+        }
         super.viewWillAppear(animated)
         self.tabBarController?.navigationController?.isNavigationBarHidden = true
-        loadUserData()
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -488,27 +499,43 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         }
     }
     
-    func loadUserData() {
+    func loadUserData() async{
         guard let user = currentUser else { return }
         
-        // Set email
-        self.displayNameLabel.text = user.displayName
         
-        // Fetch and set the display name and profile image from Firestore
         let userDocRef = usersReference.document(user.uid)
-        userDocRef.getDocument { [weak self] (document, error) in
-            guard let self = self else { return }
-            if let document = document, document.exists {
-                let data = document.data()
-                self.displayNameLabel.text = data?["displayName"] as? String
-                
-                if let profileImageUrl = data?["profilePictureURL"] as? String {
-                    self.loadProfileImage(urlString: profileImageUrl)
+            do {
+                let document = try await userDocRef.getDocument()
+                if let data = document.data() {
+                    DispatchQueue.main.async { [weak self] in
+                        self?.displayNameLabel.text = data["displayName"] as? String
+                        if let profileImageUrl = data["profilePictureURL"] as? String {
+                            self?.loadProfileImage(urlString: profileImageUrl)
+                        }
+                    }
                 }
-            } else {
-                print("Document does not exist or error: \(error?.localizedDescription ?? "Unknown error")")
+            } catch {
+                print("Error fetching document: \(error.localizedDescription)")
             }
-        }
+        
+        // Set email
+//        self.displayNameLabel.text = user.displayName
+        
+//        // Fetch and set the display name and profile image from Firestore
+//        let userDocRef = usersReference.document(user.uid)
+//        userDocRef.getDocument { [weak self] (document, error) in
+//            guard let self = self else { return }
+//            if let document = document, document.exists {
+//                let data = document.data()
+//                self.displayNameLabel.text = data?["displayName"] as? String
+//                
+//                if let profileImageUrl = data?["profilePictureURL"] as? String {
+//                    self.loadProfileImage(urlString: profileImageUrl)
+//                }
+//            } else {
+//                print("Document does not exist or error: \(error?.localizedDescription ?? "Unknown error")")
+//            }
+//        }
     }
     
     func loadProfileImage(urlString: String) {

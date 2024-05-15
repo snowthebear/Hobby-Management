@@ -18,6 +18,7 @@ class LoginViewController: UIViewController {
     
     var firebaseController = FirebaseController()
     var currentUser: FirebaseAuth.User?
+    var currentUserList: UserList?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -55,10 +56,7 @@ class LoginViewController: UIViewController {
                 print("Error signing in: \(error.localizedDescription)")
                 self.displayMessage(title: "Login Error", message: "Failed to sign in. Please check your credentials and try again.")
             }
-            
-            
         }
-        
     }
     
     
@@ -73,10 +71,13 @@ class LoginViewController: UIViewController {
         }
 
         let config = GIDConfiguration(clientID: clientID)
+        let scopes = ["https://www.googleapis.com/auth/calendar"]
+
 
         GIDSignIn.sharedInstance.configuration = config
         
         _ = !getKeepMeSignedInPreference()
+        
         GIDSignIn.sharedInstance.signIn(withPresenting: self) { signInResult, error in
             if let error = error {
                 print("Google Sign-In error: \(error.localizedDescription)")
@@ -103,6 +104,7 @@ class LoginViewController: UIViewController {
                     self.currentUser = user
                     UserManager.shared.currentUser = user
                     self.fetchUserDataAndProceed(user: user)
+                    self.fetchCalendarEvents(accessToken: accessToken)
                     self.performSegue(withIdentifier: "showHomeLogin", sender: self)
                     
                 case .failure(let error):
@@ -110,63 +112,86 @@ class LoginViewController: UIViewController {
                     self.displayMessage(title: "Login Error", message: "Failed to sign in. Please try again.")
                 }
             }
-            
-            
-            // Authenticate with Firebase using the Google credential
-//            Auth.auth().signIn(with: credential) { authResult, error in
-//                if let error = error {
-//                    print("Firebase Sign-In error: \(error.localizedDescription)")
-//                    return
-//                }
-//                
-//                
-//                guard let user = authResult?.user else { return }
-//                self.currentUser = user
-//                UserManager.shared.currentUser = user
-//                
-////                self.fetchUserDataAndProceed(user: user)
-//                self.checkIfUserDocumentExistsAndProceed(user: user)
-////                print("--> \(self.fetchUserDataAndProceed(user: user))")
-////                let db = Firestore.firestore()
-////                db.collection("users").document(user.uid).setData([
-////                    "Full Name": user.displayName!,
-////                    "email": user.email!,
-////                    "Hobby(s)": [],
-////                    "following": 0,
-////                    "followers": 0,
-////                    "total posts": 0
-////                    
-////                    
-////                ]) { error in
-////                    if let error = error {
-////                        print("Error saving user data: \(error.localizedDescription)")
-////                    } else {
-////                        print("User registered successfully and data saved to Firestore")
-////                    }
-////                }
-////
-////                // Successfully signed in
-//                self.performSegue(withIdentifier: "showHomeLogin", sender: self)
-//            }
         }
     }
+    
+    
+    
     func fetchUserDataAndProceed(user: FirebaseAuth.User) {
         let db = Firestore.firestore()
         db.collection("users").document(user.uid).getDocument { [weak self] document, error in
             guard let self = self else { return }
 
             if let document = document, document.exists {
-                // Use the fetched user data
                 let userData = document.data()
                 UserManager.shared.userData = userData
+                print("User data = \(userData ?? [:])")
                 
-           
+                if let userListId = userData?["userListId"] as? String {
+                    self.firebaseController.userListRef?.document(userListId).getDocument { document, error in
+                        if let document = document, document.exists {
+                            self.firebaseController.parseUserListSnapshot(snapshot: document)
+                            UserManager.shared.currentUserList = self.firebaseController.currentUserList
+//                            self.performSegue(withIdentifier: "showHomeLogin", sender: self)
+                        } else {
+                            print("No user list found or error: \(error?.localizedDescription ?? "Unknown error")")
+                            self.displayMessage(title: "Error", message: "No user list found.")
+                        }
+                    }
+                } else {
+                    print("No user list ID found in user document.")
+                    self.displayMessage(title: "Error", message: "No user list found.")
+                }
             } else {
                 print("User document does not exist or error: \(error?.localizedDescription ?? "Unknown error")")
                 self.displayMessage(title: "Error", message: "Failed to fetch user data.")
             }
         }
+        
+//        db.collection("users").document(user.uid).getDocument { [weak self] document, error in
+//            guard let self = self else { return }
+//
+//            if let document = document, document.exists {
+//                // Use the fetched user data
+//                let userData = document.data()
+//                UserManager.shared.userData = userData
+//                print("user data = \(userData)")
+//                
+//           
+//            } else {
+//                print("User document does not exist or error: \(error?.localizedDescription ?? "Unknown error")")
+//                self.displayMessage(title: "Error", message: "Failed to fetch user data.")
+//            }
+//        }
     }
+    
+    
+    
+    func fetchCalendarEvents(accessToken: String) {
+        let urlString = "https://www.googleapis.com/calendar/v3/calendars/primary/events"
+        guard let url = URL(string: urlString) else { return }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                print("Error fetching calendar events: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+            
+            // Parse JSON Data
+            do {
+                let jsonResponse = try JSONSerialization.jsonObject(with: data, options: [])
+                print(jsonResponse) // Here, handle the parsed data as needed
+            } catch {
+                print("Error parsing calendar data: \(error.localizedDescription)")
+            }
+        }
+        task.resume()
+    }
+
 
 
     func setKeepMeSignedInPreference(_ keepSignedIn: Bool) {
@@ -255,7 +280,9 @@ class LoginViewController: UIViewController {
             // Access the desired tab by index, assuming the target is at index 0
             if let destination = tabBarController.viewControllers?.first(where: { $0 is HomeTableViewController }) as? HomeTableViewController {
                 destination.currentUser = currentUser
+                destination.currentUserList = self.currentUserList
                 destination.userEmail = emailTextField.text
+                
                 
             }
         }

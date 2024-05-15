@@ -1071,6 +1071,11 @@ PODS:
     - FirebaseCoreExtension (~> 10.0)
     - GoogleUtilities/Environment (~> 7.12)
     - GTMSessionFetcher/Core (< 4.0, >= 2.1)
+  - GoogleAPIClientForREST/Calendar (1.6.0):
+    - GoogleAPIClientForREST/Core
+    - GTMSessionFetcher (>= 1.6.1)
+  - GoogleAPIClientForREST/Core (1.6.0):
+    - GTMSessionFetcher (>= 1.6.1)
   - GoogleAppMeasurement (10.25.0):
     - GoogleAppMeasurement/AdIdSupport (= 10.25.0)
     - GoogleUtilities/AppDelegateSwizzler (~> 7.11)
@@ -1208,7 +1213,11 @@ PODS:
   - GTMAppAuth (4.1.1):
     - AppAuth/Core (~> 1.7)
     - GTMSessionFetcher/Core (< 4.0, >= 3.3)
+  - GTMSessionFetcher (3.4.1):
+    - GTMSessionFetcher/Full (= 3.4.1)
   - GTMSessionFetcher/Core (3.4.1)
+  - GTMSessionFetcher/Full (3.4.1):
+    - GTMSessionFetcher/Core
   - leveldb-library (1.22.5)
   - nanopb (2.30910.0):
     - nanopb/decode (= 2.30910.0)
@@ -1234,7 +1243,9 @@ DEPENDENCIES:
   - Firebase/Messaging
   - Firebase/Storage
   - FirebaseFirestoreSwift
+  - GoogleAPIClientForREST/Calendar (~> 1.6.0)
   - GoogleSignIn
+  - GTMSessionFetcher/Core (~> 3.4)
   - SDWebImage
   - TOCropViewController
 
@@ -1260,6 +1271,7 @@ SPEC REPOS:
     - FirebaseMessaging
     - FirebaseSharedSwift
     - FirebaseStorage
+    - GoogleAPIClientForREST
     - GoogleAppMeasurement
     - GoogleDataTransport
     - GoogleSignIn
@@ -1297,6 +1309,7 @@ SPEC CHECKSUMS:
   FirebaseMessaging: 88950ba9485052891ebe26f6c43a52bb62248952
   FirebaseSharedSwift: 0274086954b1b2d5fd7e829eccc587044d72a4ba
   FirebaseStorage: 44f4e25073f6fa0d4d8c09f5bec299ee9e4eb985
+  GoogleAPIClientForREST: 5183df28e7bcb7b7b41ebd558e16083cfed60d99
   GoogleAppMeasurement: 9abf64b682732fed36da827aa2a68f0221fd2356
   GoogleDataTransport: 6c09b596d841063d76d4288cc2d2f42cc36e1e2a
   GoogleSignIn: d4281ab6cf21542b1cfaff85c191f230b399d2db
@@ -1313,6 +1326,6 @@ SPEC CHECKSUMS:
   SwiftAlgorithms: 38dda4731d19027fdeee1125f973111bf3386b53
   TOCropViewController: 80b8985ad794298fb69d3341de183f33d1853654
 
-PODFILE CHECKSUM: 46765634e433786146a6064c4ad959c1d8a2e142
+PODFILE CHECKSUM: ef9cab05f4dd432f6b065ba2a366bfe2abef30bd
 
 COCOAPODS: 1.15.2

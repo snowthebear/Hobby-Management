@@ -13,6 +13,8 @@
 		7F3616C32BEFB0B2007C155B /* SearchTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F3616C22BEFB0B2007C155B /* SearchTableViewController.swift */; };
 		7F3616C52BF21D75007C155B /* Hobby.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F3616C42BF21D75007C155B /* Hobby.swift */; };
 		7F3616C72BF2388A007C155B /* UserList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F3616C62BF2388A007C155B /* UserList.swift */; };
+		7F3616C92BF4D5AC007C155B /* CalendarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F3616C82BF4D5AC007C155B /* CalendarViewController.swift */; };
+		7F3616CD2BF4E418007C155B /* EventCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F3616CC2BF4E418007C155B /* EventCollectionViewCell.swift */; };
 		7F4763C02BE7B62C007BA9AC /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7F4763BF2BE7B62C007BA9AC /* Main.storyboard */; };
 		7F4763C52BE7B691007BA9AC /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4763C42BE7B691007BA9AC /* LoginViewController.swift */; };
 		7F4763CB2BE7B6E5007BA9AC /* UserManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4763CA2BE7B6E5007BA9AC /* UserManager.swift */; };
@@ -42,6 +44,8 @@
 		7F3616C22BEFB0B2007C155B /* SearchTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTableViewController.swift; sourceTree = "<group>"; };
 		7F3616C42BF21D75007C155B /* Hobby.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hobby.swift; sourceTree = "<group>"; };
 		7F3616C62BF2388A007C155B /* UserList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserList.swift; sourceTree = "<group>"; };
+		7F3616C82BF4D5AC007C155B /* CalendarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarViewController.swift; sourceTree = "<group>"; };
+		7F3616CC2BF4E418007C155B /* EventCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventCollectionViewCell.swift; sourceTree = "<group>"; };
 		7F4763BF2BE7B62C007BA9AC /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
 		7F4763C42BE7B691007BA9AC /* LoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		7F4763CA2BE7B6E5007BA9AC /* UserManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserManager.swift; sourceTree = "<group>"; };
@@ -139,6 +143,8 @@
 				7F3616C22BEFB0B2007C155B /* SearchTableViewController.swift */,
 				7F3616C02BEFA702007C155B /* UserHobbiesTableViewController.swift */,
 				7F3616BE2BEFA35E007C155B /* AllHobbiesTableViewController.swift */,
+				7F3616C82BF4D5AC007C155B /* CalendarViewController.swift */,
+				7F3616CC2BF4E418007C155B /* EventCollectionViewCell.swift */,
 				7FD483D12BE730C900C46142 /* Products */,
 				7F4763DC2BE7B824007BA9AC /* Info.plist */,
 				7F4763E62BE7B90F007BA9AC /* GoogleService-Info-2.plist */,
@@ -275,6 +281,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7F3616C92BF4D5AC007C155B /* CalendarViewController.swift in Sources */,
+				7F3616CD2BF4E418007C155B /* EventCollectionViewCell.swift in Sources */,
 				7F4763D52BE7B795007BA9AC /* displayMessage.swift in Sources */,
 				7F3616C12BEFA702007C155B /* UserHobbiesTableViewController.swift in Sources */,
 				7F4763E32BE7B8D5007BA9AC /* ProfileViewController.swift in Sources */,

@@ -41,7 +41,7 @@ protocol DatabaseProtocol: AnyObject {
     func addUserList(listName: String) -> UserList
     func deleteUserList(list: UserList)
     func addHobbyToUserList(hobby: Hobby, userList: UserList) -> Bool
-    func removeHobbyToUserList(hobby: Hobby, userList: UserList)
+    func removeHobbyFromUserList(hobby: Hobby, userList: UserList)
     
 
     func signInWithEmail(email: String, password: String, completion: @escaping (Result<User, Error>) -> Void)

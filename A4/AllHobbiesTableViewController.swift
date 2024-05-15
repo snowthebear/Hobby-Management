@@ -131,16 +131,22 @@ class AllHobbiesTableViewController: UITableViewController, UISearchResultsUpdat
         
         let hobby = filteredHobbies[indexPath.row]
         
-        let hobbyAdded = databaseController?.addHobbyToUserList(hobby: hobby, userList: currentList) ?? false
+        // Check if the hobby is already in the user's list
+        if currentList.hobbies.contains(where: { $0.id == hobby.id }) {
+            displayMessage(title: "Oops!", message: "This hobby is already in your list.")
+            tableView.deselectRow(at: indexPath, animated: true)
+            return
+        }
         
-        print("hobby added \(hobbyAdded)")
+        let hobbyAdded = databaseController?.addHobbyToUserList(hobby: hobby, userList: currentList) ?? false
+ 
         if hobbyAdded{
             currentList.hobbies.append(hobby)
             tableView.reloadData()
             navigationController?.popViewController(animated: false)
             return
         }
-        displayMessage(title: "Party Full", message: "Unable to add more members to party")
+//        displayMessage(title: "Party Full", message: "Unable to add more members to party")
         tableView.deselectRow(at: indexPath, animated: true)
 
     }

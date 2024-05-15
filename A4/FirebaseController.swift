@@ -23,8 +23,8 @@ class FirebaseController: NSObject, DatabaseProtocol {
     var hobbyList: [Hobby]
     
     var hobbiesRef: CollectionReference?
-    var userListRef: DocumentReference? // userTeamRef
-    var listsRef: CollectionReference? // teamsRef
+//    var userListRef: DocumentReference? // userTeamRef
+    var userListRef: CollectionReference? // teamsRef
     
     override init() {
         if FirebaseApp.app() == nil {
@@ -37,7 +37,7 @@ class FirebaseController: NSObject, DatabaseProtocol {
         super.init()
         
         hobbiesRef = database.collection("hobbies")
-        listsRef = database.collection("userlists")
+        userListRef = database.collection("userlists")
         self.setupHobbyListener()
         self.setupUserListListener()
 
@@ -70,62 +70,88 @@ class FirebaseController: NSObject, DatabaseProtocol {
     }
     
     func addUserList(listName: String) -> UserList {
-        if let currentList = currentUserList {
-            // If there is already a team set for the current user, return it.
-            print ("aaaa")
-            return currentList
-        } else {
-            let userList = UserList()
-            userList.name = listName
-            userList.id = UUID().uuidString
-            userListRef?.setData(["name": listName], merge: true)
+        let userList = UserList()
+        userList.name = listName
+        userList.id = UUID().uuidString
+
+        do {
+            try userListRef?.document(userList.id!).setData(from: userList)
             currentUserList = userList
-            return userList
+        } catch {
+           print("Failed to serialize user list")
         }
+
+        return userList
+//        if let currentList = currentUserList {
+//            // If there is already a team set for the current user, return it.
+//            print ("aaaa")
+//            return currentList
+//        } else {
+//            let userList = UserList()
+//            userList.name = listName
+//            userList.id = UUID().uuidString
+//            userListRef?.setData(["name": listName], merge: true)
+//            currentUserList = userList
+//            return userList
+//        }
     }
     
     func deleteUserList(list: UserList) {
-        userListRef?.delete()
+//        userListRef?.delete()
+        
+        if let listId = list.id {
+            userListRef?.document(listId).delete()
+        }
     }
     
     func addHobbyToUserList(hobby: Hobby, userList: UserList) -> Bool {
-        guard let hobbyId = hobby.id, let hobbyID = hobby.id, let hobbiesRef = self.hobbiesRef else {
+        guard let hobbyId = hobby.id, let hobbiesRef = self.hobbiesRef else {
             print("Invalid hobby or hobby list ID.")
             return false
         }
         
+        guard let userListId = userList.id else {
+            print("No current user.")
+            return false
+        }
+        
+        let userHobbyRef = userListRef?.document(userListId)
+        
         // Reference to the specific team's document
-        let hobbyRef = hobbiesRef.document(hobbyID)
+        let hobbyRef = hobbiesRef.document(hobbyId)
         print ("hobbyRef \(hobbyRef)")
         // Add the hero to the team's "heroes" array
-        print("\(hobbyID)")
+        print("\(hobbyId)")
 
-        hobbyRef.updateData(["heroes": FieldValue.arrayUnion([database.collection("hobbies").document(hobbyID)])]) { error in
+        userHobbyRef?.updateData([
+            "hobbies": FieldValue.arrayUnion([hobbyId])
+        ]) { error in
             if let error = error {
-                print("Error adding hero to team: \(error)")
+                print("Error adding hobby to user list: \(error)")
                 return
             }
+            print("Hobby added successfully to user list.")
         }
         
         return true
     }
     
-    func removeHobbyToUserList(hobby: Hobby, userList: UserList) {
-        guard let hobbyId = hobby.id, let listId = userList.id else {
-            print("Invalid hero or team ID.")
+    func removeHobbyFromUserList(hobby: Hobby, userList: UserList) {
+        guard let hobbyId = hobby.id, let userListId = currentUser?.uid else {
+            print("Invalid hobby or user ID.")
             return
         }
-        
-        // Reference to the specific team's document
-        let listRef = listsRef?.document(hobbyId)
-    
-        
-        // Remove the hero from the team's "heroes" array
-        listRef?.updateData([
-            "heroes": FieldValue.arrayRemove([database.collection("hobbies").document(hobbyId)])
+
+        let userHobbyRef = database.collection("userlists").document(userListId)
+
+        // Using Firestore arrayRemove to remove the hobby
+        userHobbyRef.updateData([
+            "hobbies": FieldValue.arrayRemove([hobbyId])
         ]) { error in
             if let error = error {
-                print("Error removing hero from team: \(error)")
+                print("Error removing hobby from user list: \(error)")
+            } else {
+                print("Hobby removed successfully from user list.")
             }
         }
     }
@@ -146,30 +172,28 @@ class FirebaseController: NSObject, DatabaseProtocol {
     }
     
     func setupUserListListener(){
-            
-        listsRef = database.collection("userlists")
-        //        teamsRef?.whereField("name", isEqualTo: DEFAULT_TEAM_NAME).addSnapshotListener {
+ 
         guard let listId = currentUserList?.id else {
-                print("No current user list found")
+            print("No current user list found")
+            return
+        }
+        
+        let listRef = userListRef?.document(listId)
+        listRef?.addSnapshotListener { [weak self] (documentSnapshot, error) in
+            guard let self = self, let snapshot = documentSnapshot else {
+                print("Error listening for team updates: \(error?.localizedDescription ?? "No error")")
                 return
             }
-            
-            let listRef = listsRef?.document(listId)
-            listRef?.addSnapshotListener { [weak self] (documentSnapshot, error) in
-                guard let self = self, let snapshot = documentSnapshot else {
-                    print("Error listening for team updates: \(error?.localizedDescription ?? "No error")")
-                    return
-                }
-                self.parseUserListSnapshot(snapshot: snapshot)
-            }
+            self.parseUserListSnapshot(snapshot: snapshot)
+        }
     }
     
     func parseHobbiesSnapshot(snapshot: QuerySnapshot) {
         // parse the snapshot and make any changes as required to our local properties and call local listeners.
         
         snapshot.documentChanges.forEach { (change) in
-            
             var hobby: Hobby
+            
             do {
                 hobby = try change.document.data(as: Hobby.self) // decode the document's data as a Superhero object.
             }
@@ -201,24 +225,59 @@ class FirebaseController: NSObject, DatabaseProtocol {
     }
     
     func parseUserListSnapshot(snapshot: DocumentSnapshot) {
-        guard let teamData = snapshot.data(), snapshot.exists else {
+        guard let userListData = snapshot.data(), snapshot.exists else {
             print("Document does not exist or data could not be retrieved")
             return
         }
             
         let userList = UserList()
-        userList.name = teamData["name"] as? String
+        userList.name = userListData["name"] as? String
         userList.id = snapshot.documentID
         print ("\(userList.hobbies)")
         
-        if let hobbyReferences = teamData["hobbies"] as? [DocumentReference] {
-            print ("\(userList.hobbies)")
-            userList.hobbies = hobbyReferences.compactMap { reference in
-                // convert DocumentReference to Superhero
-                getHobbyByID(reference.documentID)
+        userList.hobbies = []
+
+        if let hobbyReferences = userListData["hobbies"] as? [String] {
+            for hobbyId in hobbyReferences {
+                if let hobby = getHobbyByID(hobbyId) {
+                    userList.hobbies.append(hobby)
+                } else {
+                    // Fetch hobby from Firestore if not found in local cache
+                    hobbiesRef?.document(hobbyId).getDocument { documentSnapshot, error in
+                        if let error = error {
+                            print("Error fetching hobby: \(error)")
+                        } else if let documentSnapshot = documentSnapshot, documentSnapshot.exists {
+                            do {
+                                let hobby = try documentSnapshot.data(as: Hobby.self)
+                                userList.hobbies.append(hobby)
+                                // Update the local cache
+                                self.hobbyList.append(hobby)
+                            } catch {
+                                print("Error decoding hobby: \(error)")
+                            }
+                        }
+                        // Notify listeners after fetching all hobbies
+                        self.listeners.invoke { listener in
+                            if listener.listenerType == .list || listener.listenerType == .all {
+                                listener.onUserListChange(change: .update, userHobbies: userList.hobbies)
+                            }
+                        }
+                    }
+                }
             }
-//                print ("\(team.heroes)")
         }
+
+        
+//        if let hobbyReferences = userListData["hobbies"] as? [DocumentReference] {
+//            print ("\(userList.hobbies)")
+//            userList.hobbies = hobbyReferences.compactMap { reference in
+//                // convert DocumentReference to Superhero
+//                getHobbyByID(reference.documentID)
+//            }
+//        }
+//        
+        currentUserList = userList
+        UserManager.shared.currentUserList = userList
         
         listeners.invoke { (listener) in
             if listener.listenerType == ListenerType.list || listener.listenerType == ListenerType.all {
@@ -231,7 +290,6 @@ class FirebaseController: NSObject, DatabaseProtocol {
     
     
     func cleanup() {
-        userListRef = nil
         currentUser = nil
         currentUserList = nil
         
@@ -246,18 +304,7 @@ class FirebaseController: NSObject, DatabaseProtocol {
         
         // This ensures the listeners get a team of heroes when added to the Multicast Delegate.
         if listener.listenerType == .list || listener.listenerType == .all {
-            userListRef?.getDocument { (documentSnapshot, error) in
-                if let documentSnapshot = documentSnapshot, documentSnapshot.exists {
-                    do {
-                        let list = try documentSnapshot.data(as: UserList.self)
-                        listener.onUserListChange(change: .update, userHobbies: list.hobbies)
-                    } catch {
-                        print("Error decoding list: \(error)")
-                    }
-                } else {
-                    print("Document does not exist")
-                }
-            }
+            setupUserListListener()
         }
 
     }
@@ -268,27 +315,86 @@ class FirebaseController: NSObject, DatabaseProtocol {
     }
     
     func signInWithEmail(email: String, password: String, completion: @escaping (Result<User, Error>) -> Void) {
+        
         Auth.auth().signIn(withEmail: email, password: password) { [weak self] authResult, error in
-            guard self != nil else {
+            guard let self = self else {
                 completion(.failure(AuthError.userNotFound))
                 return
             }
-            
-            if let user = authResult?.user {
-                self?.currentUser = user
-                completion(.success(user))
-//                return
-            }
 
-
-            else if let error = error {
+            if let error = error {
                 completion(.failure(error))
-//                return
+                return
             }
 
+            guard let user = authResult?.user else {
+                completion(.failure(AuthError.userNotFound))
+                return
+            }
 
+            self.currentUser = user
+            UserManager.shared.currentUser = user
+            
+            let userRef = self.database.collection("users").document(user.uid)
+            
+            userRef.getDocument { document, error in
+                if let document = document, document.exists {
+                    // User document exists, check if user list exists
+                    if let userData = document.data(), let userListId = userData["userListId"] as? String {
+                        self.userListRef?.document(userListId).getDocument { doc, err in
+                            if let doc = doc, doc.exists {
+                                // User list exists
+                                self.parseUserListSnapshot(snapshot: doc)
+                                UserManager.shared.currentUserList = self.currentUserList
+                                completion(.success(user))
+                            } else {
+                                // User list does not exist, create it
+                                let userList = self.addUserList(listName: "\(user.displayName ?? "User")'s List")
+                                userRef.updateData(["userListId": userList.id!]) { error in
+                                    if let error = error {
+                                        completion(.failure(error))
+                                    } else {
+                                        UserManager.shared.currentUserList = userList
+                                        completion(.success(user))
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // User document does not contain userListId, create user list
+                        let userList = self.addUserList(listName: "\(user.displayName ?? "User")'s List")
+                        userRef.updateData(["userListId": userList.id!]) { error in
+                            if let error = error {
+                                completion(.failure(error))
+                            } else {
+                                UserManager.shared.currentUserList = userList
+                                completion(.success(user))
+                            }
+                        }
+                    }
+                }
+            }
         }
+//        Auth.auth().signIn(withEmail: email, password: password) { [weak self] authResult, error in
+//            guard self != nil else {
+//                completion(.failure(AuthError.userNotFound))
+//                return
+//            }
+//            
+//            if let user = authResult?.user {
+//                self?.currentUser = user
+//                completion(.success(user))
+////                return
+//            }
+//
+//
+//            else if let error = error {
+//                completion(.failure(error))
+////                return
+//            }
+//        }
     }
+    
     
     
 //    func signUpWithEmail(email: String, password: String, completion: @escaping (Result<User, Error>) -> Void) {
@@ -339,10 +445,11 @@ class FirebaseController: NSObject, DatabaseProtocol {
             }
 
             // Create user data in Firestore
+            let userList = self.addUserList(listName: "My List")
             let userData: [String: Any] = [
                 "email": email,
                 "displayName": displayName,
-                "Hobby(s)": [],
+                "userListId": userList.id!,
                 "following": 0,
                 "followers": 0,
                 "total posts": 0,
@@ -353,6 +460,11 @@ class FirebaseController: NSObject, DatabaseProtocol {
                     completion(.failure(error))
                 } else {
                     self.currentUser = user
+                    self.currentUserList = userList
+                    UserManager.shared.currentUser = user
+                    UserManager.shared.currentUserList = userList
+                    
+                    self.setupUserListListener()
                     completion(.success(user))
                 }
             }
@@ -384,31 +496,134 @@ class FirebaseController: NSObject, DatabaseProtocol {
             
             userRef.getDocument { document, error in
                 if let document = document, document.exists {
-                    // User document exists, no need to create
-                    completion(.success(user))
-                } else {
-                    // User document does not exist, create it
-                    let userData: [String: Any] = [
-                        "email": user.email ?? "",
-                        "displayName": user.displayName ?? "",
-                        "Hobby(s)": [],
-                        "following": 0,
-                        "followers": 0,
-                        "total posts": 0,
-//                        "profilePictureURL": ""
-                    ]
-                    
-                    userRef.setData(userData) { error in
-                        if let error = error {
-                            completion(.failure(error))
-                        } else {
-                            completion(.success(user))
+                    // User document exists, check if user list exists
+                    if let userData = document.data(), let userListId = userData["userListId"] as? String {
+                        self.userListRef?.document(userListId).getDocument { doc, err in
+                            if let doc = doc, doc.exists {
+                                // User list exists
+                                self.parseUserListSnapshot(snapshot: doc)
+                                UserManager.shared.currentUserList = self.currentUserList
+                                completion(.success(user))
+                            } else {
+                                // User list does not exist, create it
+                                let userList = self.addUserList(listName: "My List")
+                                userRef.updateData(["userListId": userList.id!]) { error in
+                                    if let error = error {
+                                        completion(.failure(error))
+                                    } else {
+                                        UserManager.shared.currentUserList = userList
+                                        completion(.success(user))
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // User document does not contain userListId, create user list
+                        let userList = self.addUserList(listName: "My List")
+                        userRef.updateData(["userListId": userList.id!]) { error in
+                            if let error = error {
+                                completion(.failure(error))
+                            } else {
+                                UserManager.shared.currentUserList = userList
+                                completion(.success(user))
+                            }
                         }
                     }
                 }
+//                    else {
+//                    // User document does not exist, create it and the user list
+////                    let userList = self.addUserList(listName: "\(user.displayName ?? "User")'s List")
+//                    let userData: [String: Any] = [
+//                        "email": user.email ?? "",
+//                        "displayName": user.displayName ?? "",
+//                        "userListId": userList.id!,
+//                        "following": 0,
+//                        "followers": 0,
+//                        "total posts": 0,
+//                    ]
+//                    
+//                    userRef.setData(userData) { error in
+//                        if let error = error {
+//                            completion(.failure(error))
+//                        } else {
+//                            UserManager.shared.currentUserList = userList
+//                            completion(.success(user))
+//                        }
+//                    }
+//                }
+            }
+                
+            
+//            userRef.getDocument { document, error in
+//                if let document = document, document.exists {
+//                    // User document exists, no need to create
+//                    self.checkAndCreateUserList(for: user) { result in
+//                        switch result {
+//                        case .success:
+//                            self.setupUserListListener()
+//                            completion(.success(user))
+//                        case .failure(let error):
+//                            completion(.failure(error))
+//                        }
+//                    }
+//                } else {
+//                    // User document does not exist, create it
+//                    let userData: [String: Any] = [
+//                        "email": user.email ?? "",
+//                        "displayName": user.displayName ?? "",
+//                        "Hobby(s)": [],
+//                        "following": 0,
+//                        "followers": 0,
+//                        "total posts": 0,
+//                    ]
+//                    
+//                    userRef.setData(userData) { error in
+//                        if let error = error {
+//                            completion(.failure(error))
+//                        } else {
+//                            self.addUserList(listName: "\(user.displayName ?? "User")'s List")
+//                            self.setupUserListListener()
+//                            completion(.success(user))
+//                        }
+//                    }
+//                }
+//            }
+        }
+    }
+    
+    
+    func checkAndCreateUserList(for user: User, completion: @escaping (Result<Void, Error>) -> Void) {
+        userListRef?.whereField("userId", isEqualTo: user.uid).getDocuments { (querySnapshot, error) in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            
+            if let querySnapshot = querySnapshot, querySnapshot.isEmpty {
+                // No user list found, create a new one
+                let userList = self.addUserList(listName: "\(user.displayName ?? "User")'s List")
+//                self.userListRef?.document(userList.id!).setData(["userId": user.uid, "name": userList.name!])
+                self.database.collection("users").document(user.uid).updateData(["userListId": userList.id!]) { error in
+                    if let error = error {
+                        completion(.failure(error))
+                    } else {
+                        self.currentUserList = userList
+                        UserManager.shared.currentUserList = userList
+                        completion(.success(()))
+                    }
+                }
+            } else {
+                // User list exists
+                if let document = querySnapshot?.documents.first {
+                    self.parseUserListSnapshot(snapshot: document)
+                    UserManager.shared.currentUserList = self.currentUserList
+                    completion(.success(()))
+                }
+                
             }
         }
     }
+    
     
     // MARK: - Firebase Controller Specific m=Methods
     func getHobbyByID(_ id: String) -> Hobby? {

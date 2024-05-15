@@ -22,6 +22,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         databaseController = FirebaseController()
         
+        
 //        let storyboard = UIStoryboard(name: "Main", bundle: nil)
 //        if let currentUser = Auth.auth().currentUser {
 //            // User is signed in
