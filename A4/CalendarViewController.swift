@@ -7,52 +7,222 @@
 
 import Foundation
 import UIKit
+import GoogleAPIClientForREST
+import GoogleSignIn
 
 
 class CalendarViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     
-    var events: [Event] = [] // t holds data relevant to the calendar events
-    var accessToken: String? // This needs to be set from the login flow
-    
     @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet weak var monthLabel: UILabel!
+    
+    @IBAction func leftButton(_ sender: Any) {
+        guard let newDate = Calendar.current.date(byAdding: .month, value: -1, to: selectedDate) else { return }
+        selectedDate = newDate
+        updateMonthLabel(for: selectedDate)
+        fetchCalendarEvents(accessToken: UserManager.shared.accessToken!)
+    }
+    
+    @IBAction func rightButton(_ sender: Any) {
+        guard let newDate = Calendar.current.date(byAdding: .month, value: 1, to: selectedDate) else { return }
+        selectedDate = newDate
+        updateMonthLabel(for: selectedDate)
+        fetchCalendarEvents(accessToken: UserManager.shared.accessToken!)
+    }
+    
+    var selectedDate = Date()
+    var totalSquares = [String]()
+    
+    
+    var events: [CalendarListEntry] = [] // it holds data relevant to the calendar events
+    
+    private let scopes =  [kGTLRAuthScopeCalendar]
+    private let service = GTLRCalendarService()
+    var calendarEvents: [GTLRCalendar_Event] = []
+    
+    
+//    @IBOutlet weak var collectionView: UICollectionView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionView.delegate = self
         collectionView.dataSource = self
-        // Register cell class if not using a storyboard or if the cells are created programmatically
+ 
+        setupCalendar()
+        self.setCellsView()
+        self.fetchCalendarEvents(accessToken: UserManager.shared.accessToken!)
+    }
+    
+    func setCellsView(){
+        let width = (collectionView.frame.size.width - 2) / 8
+        let height = (collectionView.frame.size.height - 2) / 8
         
-        collectionView.isScrollEnabled = true
-        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "CalendarCell")
-        
-        if let token = accessToken {
-            fetchCalendarEvents(token: token)
+        let flowLayout = collectionView.collectionViewLayout as! UICollectionViewFlowLayout
+        flowLayout.itemSize = CGSize(width: width, height: height)
+    }
+    
+    func setupCalendar() {
+        let currentDate = Date()
+        selectedDate = currentDate
+        updateMonthLabel(for: currentDate)
+//        populateTotalSquares()
+    }
+
+    func updateMonthLabel(for date: Date) {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        monthLabel.text = formatter.string(from: date)
+    }
+    
+    func populateTotalSquares() {
+        totalSquares.removeAll()
+        let range = Calendar.current.range(of: .day, in: .month, for: selectedDate)!
+        totalSquares = range.map { String($0) }
+        collectionView.reloadData()
+    }
+    
+    func fetchCalendarEvents(accessToken: String) {
+        guard let url = URL(string: "https://www.googleapis.com/calendar/v3/users/me/calendarList") else {
+            print("Invalid URL")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            guard let self = self, let data = data, error == nil else {
+                print("Error fetching calendar events: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+
+//            self.events = self.parseEventsFromData(data)
+            DispatchQueue.main.async {
+                self.collectionView.reloadData()
+            }
+        }
+        task.resume()
+    }
+    
+//    func fetchCalendarEvents(accessToken: String) {
+//        let query = GTLRCalendarQuery_EventsList.query(withCalendarId: "primary")
+//        query.timeMin = GTLRDateTime(date: selectedDate.startOfMonth())
+//        query.timeMax = GTLRDateTime(date: selectedDate.endOfMonth())
+//
+//        service.executeQuery(query) { [weak self] (ticket, result, error) in
+//            guard let self = self, let events = (result as? GTLRCalendar_Events)?.items, error == nil else {
+//                print("View controller has been deinitialized.")
+//                return
+//            }
+//            if let error = error {
+//                print("Error fetching events: \(error.localizedDescription)")
+//                return
+//            }
+//            guard let events = (result as? GTLRCalendar_Events)?.items else {
+//                print("No events found.")
+//                return
+//            }
+//
+//            // Map GTLRCalendar_Event directly to CalendarListEntry using the correct initializer
+////            self.events = events.map { CalendarListEntry(from: $0 as! Decoder) }
+//            
+//            // Reload the collection view on the main thread
+//            DispatchQueue.main.async {
+//                self.collectionView.reloadData()
+//            }
+//        }
+//    }
+    
+//    func fetchCalendarEvents(accessToken: String) {
+//            let query = GTLRCalendarQuery_EventsList.query(withCalendarId: "primary")
+//            query.timeMin = GTLRDateTime(date: selectedDate.startOfMonth())
+//            query.timeMax = GTLRDateTime(date: selectedDate.endOfMonth())
+//
+//            service.executeQuery(query) { [weak self] (_, result, error) in
+//                guard let self = self else { return }
+//                if let error = error {
+//                    print("Error fetching events: \(error.localizedDescription)")
+//                    return
+//                }
+//                guard let events = (result as? GTLRCalendar_Events)?.items else {
+//                    print("No events found.")
+//                    return
+//                }
+//                self.events = events.map(CalendarListEntry.init)
+//                DispatchQueue.main.async {
+//                    self.populateTotalSquares() // ensure totalSquares and collectionView are updated
+//                }
+//            }
+//        }
+
+
+
+
+    
+    func loadGoogleCalendarAPIKey() -> String? {
+      if let path = Bundle.main.path(forResource: "client_162068403502-6rjsnhf3bhm3hoht02qb834mchnjqtpg.apps.googleusercontent.com", ofType: "plist"),
+         let configDict = NSDictionary(contentsOfFile: path) {
+        return configDict["api_key"] as? String
+      }
+      return nil
+    }
+
+    func handleAPIError(message: String) {
+        // Show an alert or update the UI to reflect the error
+        print(message) // Replace this with UI update code
+    }
+
+    func checkForAPIError(data: Data) -> String? {
+        do {
+            let errorResponse = try JSONDecoder().decode(APIErrorResponse.self, from: data)
+            return errorResponse.error.message
+        } catch {
+            return "Failed to decode error message."
         }
     }
+
+    
+    func printRawJSON(data: Data) {
+        if let jsonString = String(data: data, encoding: .utf8) {
+            print("Raw JSON response: \(jsonString)")
+        } else {
+            print("Failed to convert data to JSON string")
+        }
+    }
+    
+    
+    func parseEventsFromData(_ data: Data) -> [CalendarListEntry] {
+        do {
+            let decoder = JSONDecoder()
+            let eventData = try decoder.decode(CalendarListResponse.self, from: data)
+            return eventData.items
+        } catch {
+            print("Error parsing data: \(error)")
+            return []
+        }
+    }
+    
+    
     
     // MARK: UICollectionViewDataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         // Return the number of days in the month
-//        return 30 // Example: September would have 30 days
+        print("Number of events: \(events.count)")
         return events.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CalendarCell", for: indexPath)
-        
         // Configure the cell
-        if let eventCell = cell as? EventCollectionViewCell {  // Change this line if you're using a standard cell
-            eventCell.titleLabel.text = events[indexPath.row].title
-            
-            let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            formatter.timeStyle = .short
-            eventCell.startTimeLabel.text = formatter.string(from: events[indexPath.row].startTime)
-        } else {
-            // Fallback for standard cell (if you're not using a custom cell)
-            cell.textLabel?.text = "\(events[indexPath.row].title) at \(events[indexPath.row].startTime)"
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "calendarCell", for: indexPath) as? EventCollectionViewCell else {
+            fatalError("Cannot dequeue CalendarCell")
         }
-
+        
+        cell.dayOfMoth.text = totalSquares[indexPath.item]
+//        cell.dayOfMoth.text = totalSquares[indexPath.row]
+//        let event = events[indexPath.row]
+//        cell.configure(with: event)
         return cell
     }
 
@@ -63,69 +233,41 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
         print("You selected cell #\(indexPath.item)!")
     }
     
-        
-    func fetchCalendarEvents(token: String) {
-        let url = URL(string: "https://www.googleapis.com/calendar/v3/calendars/primary/events")!
-        var request = URLRequest(url: url)
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+    
+    
+    
+    
+    
+    struct APIErrorResponse: Codable {
+        let error: APIError
+    }
 
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data = data, error == nil else {
-                print("Error: \(error?.localizedDescription ?? "No data")")
-                return
-            }
+    struct APIError: Codable {
+        let code: Int
+        let message: String
+        let errors: [APIErrorDetail]
+        let status: String
+    }
 
-            // Parse JSON and update the events array
-            DispatchQueue.main.async {
-                self.events = self.parseEventsFromData(data)
-                self.collectionView.reloadData()
-            }
-        }
-
-        task.resume()
+    struct APIErrorDetail: Codable {
+        let message: String
+        let domain: String
+        let reason: String
     }
     
     
-    func parseEventsFromData(_ data: Data) -> [Event] {
-            do {
-                // Assuming you decode a JSON response into an array of Event objects
-                let decoder = JSONDecoder()
-                let eventData = try decoder.decode([Event].self, from: data)
-                return eventData
-            } catch {
-                print("Error parsing data: \(error)")
-                return []
-            }
-        }
+    
 
 }
-
-
-struct Event: Codable {
-    var title: String
-    var startTime: Date
-    
-    enum CodingKeys: String, CodingKey {
-        case title = "summary"
-        case startTime = "start"
+extension Date {
+    func startOfMonth() -> Date {
+        let components = Calendar.current.dateComponents([.year, .month], from: self)
+        return Calendar.current.date(from: components)!
     }
-    
-    enum DateCodingKeys: String, CodingKey {
-        case dateTime = "dateTime"
-    }
-    
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.title = try container.decode(String.self, forKey: .summary)
-        
-        let dateContainer = try container.nestedContainer(keyedBy: DateCodingKeys.self, forKey: .start)
-        let dateString = try dateContainer.decode(String.self, forKey: .dateTime)
-        
-        let formatter = ISO8601DateFormatter()
-        if let date = formatter.date(from: dateString) {
-            self.startTime = date
-        } else {
-            throw DecodingError.dataCorruptedError(forKey: .dateTime, in: dateContainer, debugDescription: "Date string does not conform to ISO 8601 format.")
-        }
+
+    func endOfMonth() -> Date {
+        let start = self.startOfMonth()
+        return Calendar.current.date(byAdding: DateComponents(month: 1, day: -1), to: start)!
     }
 }
+

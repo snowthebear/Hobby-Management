@@ -13,6 +13,7 @@ class UserManager {
     var currentUser: FirebaseAuth.User?
     var userData: [String: Any]?
     var currentUserList: UserList?
+    var accessToken: String?
 
     private init() {}
 }

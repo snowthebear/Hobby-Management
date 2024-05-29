@@ -11,6 +11,8 @@ import FirebaseAuth
 import Firebase
 import GoogleSignIn
 import FirebaseFirestore
+import GoogleAPIClientForREST
+import GTMSessionFetcher
 
 
 
@@ -20,10 +22,13 @@ class LoginViewController: UIViewController {
     var currentUser: FirebaseAuth.User?
     var currentUserList: UserList?
     
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationItem.hidesBackButton = true
         passwordTextField.isSecureTextEntry = true
+        
     }
     
     @IBOutlet weak var emailTextField: UITextField!
@@ -65,15 +70,14 @@ class LoginViewController: UIViewController {
     
     
     @IBAction func googleSignInButton(_ sender: Any) {
-
+        
+        
         guard let clientID = FirebaseApp.app()?.options.clientID else {
             return
         }
-
+        
+        
         let config = GIDConfiguration(clientID: clientID)
-        let scopes = ["https://www.googleapis.com/auth/calendar"]
-
-
         GIDSignIn.sharedInstance.configuration = config
         
         _ = !getKeepMeSignedInPreference()
@@ -104,7 +108,10 @@ class LoginViewController: UIViewController {
                     self.currentUser = user
                     UserManager.shared.currentUser = user
                     self.fetchUserDataAndProceed(user: user)
-                    self.fetchCalendarEvents(accessToken: accessToken)
+                    UserManager.shared.accessToken = accessToken
+//                    self.fetchCalendarEvents(accessToken: accessToken)
+                    
+                    
                     self.performSegue(withIdentifier: "showHomeLogin", sender: self)
                     
                 case .failure(let error):
@@ -112,6 +119,7 @@ class LoginViewController: UIViewController {
                     self.displayMessage(title: "Login Error", message: "Failed to sign in. Please try again.")
                 }
             }
+            
         }
     }
     
@@ -168,23 +176,25 @@ class LoginViewController: UIViewController {
     
     
     func fetchCalendarEvents(accessToken: String) {
-        let urlString = "https://www.googleapis.com/calendar/v3/calendars/primary/events"
-        guard let url = URL(string: urlString) else { return }
+        guard let url = URL(string: "https://www.googleapis.com/calendar/v3/calendarList") else {
+            print("Invalid URL")
+            return
+        }
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization") // Securely passing the access token
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data, error == nil else {
                 print("Error fetching calendar events: \(error?.localizedDescription ?? "Unknown error")")
                 return
             }
-            
-            // Parse JSON Data
+
             do {
                 let jsonResponse = try JSONSerialization.jsonObject(with: data, options: [])
-                print(jsonResponse) // Here, handle the parsed data as needed
+                print("Calendar events: \(jsonResponse)") // Here, handle the parsed data as needed
             } catch {
                 print("Error parsing calendar data: \(error.localizedDescription)")
             }
@@ -192,8 +202,9 @@ class LoginViewController: UIViewController {
         task.resume()
     }
 
-
-
+    
+  
+      
     func setKeepMeSignedInPreference(_ keepSignedIn: Bool) {
         UserDefaults.standard.set(keepSignedIn, forKey: "KeepMeSignedIn")
     }
@@ -287,4 +298,63 @@ class LoginViewController: UIViewController {
             }
         }
     }
+    
+//    func addEventoToGoogleCalendar(summary : String, description :String, startTime : String, endTime : String) {
+//        let calendarEvent = GTLRCalendar_Event()
+//        
+//        calendarEvent.summary = "\(summary)"
+//        calendarEvent.descriptionProperty = "\(description)"
+//        
+//        let dateFormatter = DateFormatter()
+//        dateFormatter.dateFormat = "dd/MM/yyyy HH:mm"
+//        let startDate = dateFormatter.date(from: startTime)
+//        let endDate = dateFormatter.date(from: endTime)
+//        
+//        guard let toBuildDateStart = startDate else {
+//            print("Error getting start date")
+//            return
+//        }
+//        guard let toBuildDateEnd = endDate else {
+//            print("Error getting end date")
+//            return
+//        }
+//        calendarEvent.start = buildDate(date: toBuildDateStart)
+//        calendarEvent.end = buildDate(date: toBuildDateEnd)
+//        
+//        let insertQuery = GTLRCalendarQuery_EventsInsert.query(withObject: calendarEvent, calendarId: "primary")
+//        
+//        service.executeQuery(insertQuery) { (ticket, object, error) in
+//            if error == nil {
+//                print("Event inserted")
+//            } else {
+//                print(error)
+//            }
+//        }
+//    }
+    
+    // Helper to build date
+    func buildDate(date: Date) -> GTLRCalendar_EventDateTime {
+        let datetime = GTLRDateTime(date: date)
+        let dateObject = GTLRCalendar_EventDateTime()
+        dateObject.dateTime = datetime
+        return dateObject
+    }
+    // Helper for showing an alert
+    func showAlert(title : String, message: String) {
+        let alert = UIAlertController(
+            title: title,
+            message: message,
+            preferredStyle: UIAlertController.Style.alert
+        )
+        let ok = UIAlertAction(
+            title: "OK",
+            style: UIAlertAction.Style.default,
+            handler: nil
+        )
+        alert.addAction(ok)
+        present(alert, animated: true, completion: nil)
+    }
+    
+    
+
 }

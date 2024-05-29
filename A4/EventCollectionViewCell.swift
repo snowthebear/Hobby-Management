@@ -9,5 +9,7 @@ import Foundation
 import UIKit
 
 class EventCollectionViewCell: UICollectionViewCell {
-
+    
+    @IBOutlet weak var dayOfMoth: UILabel!
+ 
 }

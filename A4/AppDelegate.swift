@@ -26,10 +26,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 //        let storyboard = UIStoryboard(name: "Main", bundle: nil)
 //        if let currentUser = Auth.auth().currentUser {
 //            // User is signed in
-//            
+//
 //            let tabBarController = storyboard.instantiateViewController(withIdentifier: "MainTabBarController") as! UITabBarController
 //                       window?.rootViewController = tabBarController
-//            
+//
 //        } else {
 //            // No user is signed in
 //            let loginViewController = storyboard.instantiateViewController(withIdentifier: "LoginViewController") as! LoginViewController

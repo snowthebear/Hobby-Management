@@ -25,9 +25,8 @@ target 'A4' do
   pod 'TOCropViewController'
   pod 'SDWebImage'
 
-  pod 'GoogleAPIClientForREST/Calendar', '~> 1.6.0'
+  pod 'GoogleAPIClientForREST/Calendar'
   pod 'GTMSessionFetcher/Core', '~> 3.4'
-
 
   
 end

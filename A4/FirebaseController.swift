@@ -625,6 +625,30 @@ class FirebaseController: NSObject, DatabaseProtocol {
     }
     
     
+    func fetchCalendarEvents(accessToken: String, completion: @escaping (Result<[Event], Error>) -> Void) {
+        let url = URL(string: "https://www.googleapis.com/calendar/v3/calendars/primary/events")!
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                completion(.failure(error ?? NSError(domain: "CalendarError", code: -1, userInfo: nil)))
+                return
+            }
+            
+            do {
+                let decoder = JSONDecoder()
+                // Assuming you have a struct that conforms to Codable to parse events
+                let eventsResponse = try decoder.decode(EventsResponse.self, from: data)
+                completion(.success(eventsResponse.items))
+            } catch {
+                completion(.failure(error))
+            }
+        }
+        task.resume()
+    }
+    
+    
     // MARK: - Firebase Controller Specific m=Methods
     func getHobbyByID(_ id: String) -> Hobby? {
         for hobby in hobbyList {
@@ -639,4 +663,23 @@ class FirebaseController: NSObject, DatabaseProtocol {
         case userNotFound
         case userCreationFailed
     }
+    
+//    struct EventsResponse: Codable {
+//        let items: [Event]
+//    }
+//
+//    struct Event: Codable {
+//        let id: String
+//        let summary: String
+//        let description: String?
+//        let start: EventDateTime
+//        let end: EventDateTime
+//    }
+//
+//    struct EventDateTime: Codable {
+//        let dateTime: String
+//        let timeZone: String?
+//    }
 }
+
+

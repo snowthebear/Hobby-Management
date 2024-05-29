@@ -6,3 +6,18 @@
 //
 
 import Foundation
+
+struct EventsResponse: Codable {
+    let items: [Event]
+}
+
+struct Event: Codable {
+    let summary: String?
+    let start: EventDateTime?
+    let end: EventDateTime?
+}
+
+struct EventDateTime: Codable {
+    let dateTime: String?
+    let date: String?
+}
