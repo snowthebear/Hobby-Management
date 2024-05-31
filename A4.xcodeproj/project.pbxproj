@@ -39,6 +39,19 @@
 		7F4E74922BF5DAF900F8E9FB /* CalendarListResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4E74912BF5DAF900F8E9FB /* CalendarListResponse.swift */; };
 		7F4E74942BF5E1E600F8E9FB /* CalendarCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4E74932BF5E1E600F8E9FB /* CalendarCell.swift */; };
 		7F7081832BEBA33D00E8F590 /* EditProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F7081822BEBA33D00E8F590 /* EditProfileViewController.swift */; };
+		7F739F1B2C07803D00FD2188 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F1A2C07803D00FD2188 /* HomeViewController.swift */; };
+		7F739F1F2C0787C200FD2188 /* PhotoCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F1E2C0787C200FD2188 /* PhotoCollectionViewCell.swift */; };
+		7F739F212C083AD200FD2188 /* PhotoCollectionReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F202C083AD200FD2188 /* PhotoCollectionReusableView.swift */; };
+		7F739F232C083CA900FD2188 /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F222C083CA900FD2188 /* Extension.swift */; };
+		7F739F252C08411500FD2188 /* FeedPostTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F242C08411500FD2188 /* FeedPostTableViewCell.swift */; };
+		7F739F282C08485500FD2188 /* FeedHeaderTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F272C08485500FD2188 /* FeedHeaderTableViewCell.swift */; };
+		7F739F2A2C08488600FD2188 /* FeedActionTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F292C08488600FD2188 /* FeedActionTableViewCell.swift */; };
+		7F739F2C2C08489F00FD2188 /* FeedCommentLikeTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F2B2C08489F00FD2188 /* FeedCommentLikeTableViewCell.swift */; };
+		7F739F2F2C08495F00FD2188 /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F2E2C08495F00FD2188 /* StorageManager.swift */; };
+		7F739F322C085AF700FD2188 /* ProfileHeaderCollectionReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F312C085AF700FD2188 /* ProfileHeaderCollectionReusableView.swift */; };
+		7F739F342C0873E900FD2188 /* UploadProgressViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F332C0873E900FD2188 /* UploadProgressViewController.swift */; };
+		7F739F3A2C08B38500FD2188 /* GoalsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F392C08B38500FD2188 /* GoalsTableViewController.swift */; };
+		7F739F3C2C08B89100FD2188 /* CreateGoalsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F3B2C08B89100FD2188 /* CreateGoalsViewController.swift */; };
 		7FD484062BE73E1000C46142 /* MulticastDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FD484022BE73E1000C46142 /* MulticastDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -76,6 +89,19 @@
 		7F4E74912BF5DAF900F8E9FB /* CalendarListResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarListResponse.swift; sourceTree = "<group>"; };
 		7F4E74932BF5E1E600F8E9FB /* CalendarCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarCell.swift; sourceTree = "<group>"; };
 		7F7081822BEBA33D00E8F590 /* EditProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfileViewController.swift; sourceTree = "<group>"; };
+		7F739F1A2C07803D00FD2188 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
+		7F739F1E2C0787C200FD2188 /* PhotoCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCollectionViewCell.swift; sourceTree = "<group>"; };
+		7F739F202C083AD200FD2188 /* PhotoCollectionReusableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCollectionReusableView.swift; sourceTree = "<group>"; };
+		7F739F222C083CA900FD2188 /* Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
+		7F739F242C08411500FD2188 /* FeedPostTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedPostTableViewCell.swift; sourceTree = "<group>"; };
+		7F739F272C08485500FD2188 /* FeedHeaderTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedHeaderTableViewCell.swift; sourceTree = "<group>"; };
+		7F739F292C08488600FD2188 /* FeedActionTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedActionTableViewCell.swift; sourceTree = "<group>"; };
+		7F739F2B2C08489F00FD2188 /* FeedCommentLikeTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCommentLikeTableViewCell.swift; sourceTree = "<group>"; };
+		7F739F2E2C08495F00FD2188 /* StorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageManager.swift; sourceTree = "<group>"; };
+		7F739F312C085AF700FD2188 /* ProfileHeaderCollectionReusableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileHeaderCollectionReusableView.swift; sourceTree = "<group>"; };
+		7F739F332C0873E900FD2188 /* UploadProgressViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadProgressViewController.swift; sourceTree = "<group>"; };
+		7F739F392C08B38500FD2188 /* GoalsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalsTableViewController.swift; sourceTree = "<group>"; };
+		7F739F3B2C08B89100FD2188 /* CreateGoalsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateGoalsViewController.swift; sourceTree = "<group>"; };
 		7FD483D02BE730C900C46142 /* A4.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = A4.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FD484022BE73E1000C46142 /* MulticastDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MulticastDelegate.swift; sourceTree = "<group>"; };
 		9A137F085A9FDC909FD7BA3E /* Pods-A4.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-A4.debug.xcconfig"; path = "Target Support Files/Pods-A4/Pods-A4.debug.xcconfig"; sourceTree = "<group>"; };
@@ -111,6 +137,56 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
+		7F739F1C2C07876C00FD2188 /* Cell */ = {
+			isa = PBXGroup;
+			children = (
+				7F739F262C08480000FD2188 /* Home Feed & Post */,
+				7F739F1E2C0787C200FD2188 /* PhotoCollectionViewCell.swift */,
+			);
+			path = Cell;
+			sourceTree = "<group>";
+		};
+		7F739F1D2C07877900FD2188 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				7F739F302C085AB700FD2188 /* CollectionView */,
+				7F739F1C2C07876C00FD2188 /* Cell */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		7F739F262C08480000FD2188 /* Home Feed & Post */ = {
+			isa = PBXGroup;
+			children = (
+				7F739F242C08411500FD2188 /* FeedPostTableViewCell.swift */,
+				7F739F272C08485500FD2188 /* FeedHeaderTableViewCell.swift */,
+				7F739F292C08488600FD2188 /* FeedActionTableViewCell.swift */,
+				7F739F2B2C08489F00FD2188 /* FeedCommentLikeTableViewCell.swift */,
+			);
+			path = "Home Feed & Post";
+			sourceTree = "<group>";
+		};
+		7F739F2D2C08491500FD2188 /* Resource */ = {
+			isa = PBXGroup;
+			children = (
+				7F3616CE2BF4F26C007C155B /* Event.swift */,
+				7F4763CA2BE7B6E5007BA9AC /* UserManager.swift */,
+				7F3616C62BF2388A007C155B /* UserList.swift */,
+				7F3616C42BF21D75007C155B /* Hobby.swift */,
+				7F739F2E2C08495F00FD2188 /* StorageManager.swift */,
+			);
+			path = Resource;
+			sourceTree = "<group>";
+		};
+		7F739F302C085AB700FD2188 /* CollectionView */ = {
+			isa = PBXGroup;
+			children = (
+				7F739F202C083AD200FD2188 /* PhotoCollectionReusableView.swift */,
+				7F739F312C085AF700FD2188 /* ProfileHeaderCollectionReusableView.swift */,
+			);
+			path = CollectionView;
+			sourceTree = "<group>";
+		};
 		7FD483C72BE730C900C46142 = {
 			isa = PBXGroup;
 			children = (
@@ -133,28 +209,29 @@
 			isa = PBXGroup;
 			children = (
 				7FD484032BE73E1000C46142 /* Database */,
+				7F739F2D2C08491500FD2188 /* Resource */,
+				7F739F1D2C07877900FD2188 /* Views */,
 				7F4763DE2BE7B860007BA9AC /* AppDelegate.swift */,
 				7F4763CE2BE7B735007BA9AC /* SceneDelegate.swift */,
 				7F4763E02BE7B87B007BA9AC /* Assets.xcassets */,
 				7F4763BF2BE7B62C007BA9AC /* Main.storyboard */,
 				7F4763E82BE7BBE0007BA9AC /* LaunchScreen.storyboard */,
-				7F4763CA2BE7B6E5007BA9AC /* UserManager.swift */,
-				7F3616C42BF21D75007C155B /* Hobby.swift */,
-				7F3616C62BF2388A007C155B /* UserList.swift */,
-				7F3616CE2BF4F26C007C155B /* Event.swift */,
+				7F739F392C08B38500FD2188 /* GoalsTableViewController.swift */,
+				7F3616BE2BEFA35E007C155B /* AllHobbiesTableViewController.swift */,
+				7F3616C02BEFA702007C155B /* UserHobbiesTableViewController.swift */,
 				7F4E74912BF5DAF900F8E9FB /* CalendarListResponse.swift */,
 				7F4763D42BE7B795007BA9AC /* displayMessage.swift */,
 				7F4763D22BE7B77A007BA9AC /* FirebaseController.swift */,
 				7F4763CC2BE7B704007BA9AC /* RegisterViewController.swift */,
 				7F4763D02BE7B75C007BA9AC /* HomeTableViewController.swift */,
+				7F739F1A2C07803D00FD2188 /* HomeViewController.swift */,
 				7F4763E22BE7B8D5007BA9AC /* ProfileViewController.swift */,
 				7F4763C42BE7B691007BA9AC /* LoginViewController.swift */,
+				7F739F332C0873E900FD2188 /* UploadProgressViewController.swift */,
 				7F4763E42BE7B8ED007BA9AC /* BarChartView.swift */,
 				7F7081822BEBA33D00E8F590 /* EditProfileViewController.swift */,
 				7F4763EA2BE914C4007BA9AC /* HamburgerViewController.swift */,
 				7F3616C22BEFB0B2007C155B /* SearchTableViewController.swift */,
-				7F3616BE2BEFA35E007C155B /* AllHobbiesTableViewController.swift */,
-				7F3616C02BEFA702007C155B /* UserHobbiesTableViewController.swift */,
 				7F3616C82BF4D5AC007C155B /* CalendarViewController.swift */,
 				7F3616CC2BF4E418007C155B /* EventCollectionViewCell.swift */,
 				7FD483D12BE730C900C46142 /* Products */,
@@ -165,6 +242,8 @@
 				7F4763D62BE7B7B3007BA9AC /* Google-Calendar.plist */,
 				7F4E748D2BF5C86F00F8E9FB /* GoogleServiceManager.swift */,
 				7F4E74932BF5E1E600F8E9FB /* CalendarCell.swift */,
+				7F739F222C083CA900FD2188 /* Extension.swift */,
+				7F739F3B2C08B89100FD2188 /* CreateGoalsViewController.swift */,
 			);
 			path = A4;
 			sourceTree = "<group>";
@@ -306,21 +385,34 @@
 				7F4763E32BE7B8D5007BA9AC /* ProfileViewController.swift in Sources */,
 				7F4763EB2BE914C4007BA9AC /* HamburgerViewController.swift in Sources */,
 				7F4763DB2BE7B7EB007BA9AC /* DatabaseProtocol.swift in Sources */,
+				7F739F252C08411500FD2188 /* FeedPostTableViewCell.swift in Sources */,
 				7F4E748E2BF5C86F00F8E9FB /* GoogleServiceManager.swift in Sources */,
 				7F4763C52BE7B691007BA9AC /* LoginViewController.swift in Sources */,
+				7F739F1B2C07803D00FD2188 /* HomeViewController.swift in Sources */,
+				7F739F342C0873E900FD2188 /* UploadProgressViewController.swift in Sources */,
+				7F739F2A2C08488600FD2188 /* FeedActionTableViewCell.swift in Sources */,
 				7F4763CF2BE7B735007BA9AC /* SceneDelegate.swift in Sources */,
 				7F7081832BEBA33D00E8F590 /* EditProfileViewController.swift in Sources */,
+				7F739F1F2C0787C200FD2188 /* PhotoCollectionViewCell.swift in Sources */,
+				7F739F322C085AF700FD2188 /* ProfileHeaderCollectionReusableView.swift in Sources */,
+				7F739F2F2C08495F00FD2188 /* StorageManager.swift in Sources */,
 				7F4763CB2BE7B6E5007BA9AC /* UserManager.swift in Sources */,
 				7FD484062BE73E1000C46142 /* MulticastDelegate.swift in Sources */,
 				7F3616CF2BF4F26C007C155B /* Event.swift in Sources */,
 				7F4763D32BE7B77A007BA9AC /* FirebaseController.swift in Sources */,
 				7F3616BF2BEFA35E007C155B /* AllHobbiesTableViewController.swift in Sources */,
+				7F739F282C08485500FD2188 /* FeedHeaderTableViewCell.swift in Sources */,
 				7F3616C52BF21D75007C155B /* Hobby.swift in Sources */,
+				7F739F3A2C08B38500FD2188 /* GoalsTableViewController.swift in Sources */,
+				7F739F2C2C08489F00FD2188 /* FeedCommentLikeTableViewCell.swift in Sources */,
+				7F739F3C2C08B89100FD2188 /* CreateGoalsViewController.swift in Sources */,
 				7F4763CD2BE7B704007BA9AC /* RegisterViewController.swift in Sources */,
 				7F4763D12BE7B75C007BA9AC /* HomeTableViewController.swift in Sources */,
 				7F3616C32BEFB0B2007C155B /* SearchTableViewController.swift in Sources */,
+				7F739F212C083AD200FD2188 /* PhotoCollectionReusableView.swift in Sources */,
 				7F4763DF2BE7B860007BA9AC /* AppDelegate.swift in Sources */,
 				7F3616C72BF2388A007C155B /* UserList.swift in Sources */,
+				7F739F232C083CA900FD2188 /* Extension.swift in Sources */,
 				7F4763E52BE7B8ED007BA9AC /* BarChartView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -8,6 +8,10 @@
 import UIKit
 
 class AllHobbiesTableViewController: UITableViewController, UISearchResultsUpdating, DatabaseListener {
+    func onGoalsChange(change: DatabaseChange, goals: [String]) {
+        
+    }
+    
 
     let SECTION_HOBBY = 0
     
@@ -20,7 +24,6 @@ class AllHobbiesTableViewController: UITableViewController, UISearchResultsUpdat
     weak var databaseController: DatabaseProtocol?
     
     var currentUserList: UserList?
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()

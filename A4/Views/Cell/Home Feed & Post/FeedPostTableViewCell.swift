@@ -23,4 +23,7 @@ class FeedPostTableViewCell: UITableViewCell {
         // configure the cell
         
     }
+    override func layoutSubviews() {
+        super.layoutSubviews()
+    }
 }

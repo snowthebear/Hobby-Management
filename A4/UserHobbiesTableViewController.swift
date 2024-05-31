@@ -9,6 +9,10 @@ import UIKit
 import FirebaseAuth
 
 class UserHobbiesTableViewController: UITableViewController, DatabaseListener {
+    func onGoalsChange(change: DatabaseChange, goals: [String]) {
+        
+    }
+    
     func onUserListChange(change: DatabaseChange, userHobbies: [Hobby]) {
         DispatchQueue.main.async { [weak self] in
             self?.currentUserList?.hobbies = userHobbies

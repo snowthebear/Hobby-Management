@@ -16,6 +16,10 @@ import SDWebImage
 
 class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, HamburgerViewControllerDelegate, UIGestureRecognizerDelegate, TOCropViewControllerDelegate {
     
+    @IBOutlet weak var postCollectionView: UICollectionView!
+    
+//    private var collectionView: UICollectionView?
+    
     var hamburgerViewController: HamburgerViewController? //initialize the delegate
     var usersReference = Firestore.firestore().collection("users")
     var storageReference = Storage.storage().reference()
@@ -37,6 +41,8 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     @IBOutlet weak var followersLabel: UILabel!
     @IBOutlet weak var followingLabel: UILabel!
     @IBOutlet weak var totalPostsLabel: UILabel!
+    
+    @IBOutlet weak var allPostsLabel: UILabel!
     
     @IBOutlet weak var profilePictureView: UIImageView!
     
@@ -69,16 +75,38 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         self.currentUser = UserManager.shared.currentUser
         self.currentUserLisr = UserManager.shared.currentUserList
         
-        print("list = \(self.currentUserLisr)")
-//        self.displayNameLabel.text = self.currentUser?.displayName
-        
-        print("viewDidLoad")
-//        loadUserData()
         
         Task {
             await loadUserData()
         }
         
+        setupCollectionView()
+        
+        
+        
+//        // for feed:
+//        let layout = UICollectionViewFlowLayout()
+//        layout.scrollDirection = .vertical
+//        layout.minimumLineSpacing = 1
+//        layout.minimumInteritemSpacing = 1
+//        layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+//        let size = (360 - 4) / 3
+//        layout.itemSize = CGSize(width: size, height: size)
+//        postCollectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+//        collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+//                
+//        // for cell
+//        postCollectionView?.register(PhotoCollectionViewCell.self, forCellWithReuseIdentifier: PhotoCollectionViewCell.identifier )
+//        
+//        postCollectionView?.backgroundColor = .blue
+//        
+//        postCollectionView?.delegate = self
+//        postCollectionView?.dataSource = self
+//        
+//        guard let collectionView = postCollectionView else {
+//            return
+//        }
+//        view.addSubview(postCollectionView)
 
     }
     
@@ -94,6 +122,37 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.backViewForHamburger.isHidden = true
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+//        postCollectionView.frame = view.bounds
+        let allPostsLabelHeight = allPostsLabel.frame.size.height + 5
+        let yOffset = allPostsLabel.frame.origin.y + allPostsLabelHeight
+        
+        let tabBarHeight = (tabBarController?.tabBar.frame.size.height)! + 5
+        
+        // Adjust the height of the collection view to take up the remaining space
+        let collectionViewHeight = view.bounds.height - yOffset - tabBarHeight
+        
+        postCollectionView.frame = CGRect(x: 0, y: yOffset, width: view.bounds.width, height: collectionViewHeight)
+    }
+    
+    private func setupCollectionView() {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .vertical
+        layout.minimumLineSpacing = 1
+        layout.minimumInteritemSpacing = 1
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        let size = (view.frame.width - 4) / 3
+        layout.itemSize = CGSize(width: size, height: size)
+        
+        postCollectionView.setCollectionViewLayout(layout, animated: true)
+        postCollectionView.backgroundColor = .blue
+        
+        postCollectionView.delegate = self
+        postCollectionView.dataSource = self
+        postCollectionView.register(PhotoCollectionViewCell.self, forCellWithReuseIdentifier: PhotoCollectionViewCell.identifier)
     }
     
     func setProfilePicture() -> UIImage {
@@ -309,26 +368,24 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     func cropViewController(_ cropViewController: TOCropViewController, didCropToCircularImage image: UIImage, with cropRect: CGRect, angle: Int) {
         
         profilePictureView.image = image
-        
-        let timestamp = UInt(Date().timeIntervalSince1970)
-        let filename = "\(timestamp).jpg"
-        
+        let filename = "profile/\(UUID().uuidString).jpg"  // Ensure unique file names within the profile folder
+
         guard let data = image.jpegData(compressionQuality: 0.8) else {
             displayMessage(title: "Error", message: "Image data could not be compressed")
             return
         }
-        
+
         guard let userID = self.currentUser?.uid else {
             displayMessage(title: "Error", message: "No user logged in!")
             return
         }
-        
-        let imageRef = storageReference.child("\(userID)/\(timestamp)")
+
+        let imageRef = storageReference.child("\(userID)/\(filename)")
         let metadata = StorageMetadata()
-        metadata.contentType = "image/jpg"
-        
+        metadata.contentType = "image/jpeg"
+
         let uploadTask = imageRef.putData(data, metadata: metadata)
-        
+
         uploadTask.observe(.success) { [weak self] snapshot in
             imageRef.downloadURL { (url, error) in
                 if let downloadURL = url {
@@ -336,14 +393,49 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                 }
             }
         }
-        
+
         uploadTask.observe(.failure) { snapshot in
-            self.displayMessage(title: "Error", message: "\(String(describing: snapshot.error))")
+            self.displayMessage(title: "Error", message: "Failed to upload image")
         }
 
-        _ = setProfilePicture()
         cropViewController.dismiss(animated: true, completion: nil)
         
+//        profilePictureView.image = image
+//        
+//        let timestamp = UInt(Date().timeIntervalSince1970)
+//        let filename = "\(timestamp).jpg"
+//        
+//        guard let data = image.jpegData(compressionQuality: 0.8) else {
+//            displayMessage(title: "Error", message: "Image data could not be compressed")
+//            return
+//        }
+//        
+//        guard let userID = self.currentUser?.uid else {
+//            displayMessage(title: "Error", message: "No user logged in!")
+//            return
+//        }
+//        
+//        let imageRef = storageReference.child("\(userID)/\(timestamp)")
+//        let metadata = StorageMetadata()
+//        metadata.contentType = "image/jpg"
+//        
+//        let uploadTask = imageRef.putData(data, metadata: metadata)
+//        
+//        uploadTask.observe(.success) { [weak self] snapshot in
+//            imageRef.downloadURL { (url, error) in
+//                if let downloadURL = url {
+//                    self?.usersReference.document(userID).setData(["profilePictureURL": downloadURL.absoluteString], merge: true)
+//                }
+//            }
+//        }
+//        
+//        uploadTask.observe(.failure) { snapshot in
+//            self.displayMessage(title: "Error", message: "\(String(describing: snapshot.error))")
+//        }
+//
+//        _ = setProfilePicture()
+//        cropViewController.dismiss(animated: true, completion: nil)
+//        
     }
     
     func setupProfilePicture() {
@@ -502,7 +594,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     func loadUserData() async{
         guard let user = currentUser else { return }
         
-        
         let userDocRef = usersReference.document(user.uid)
             do {
                 let document = try await userDocRef.getDocument()
@@ -544,4 +635,77 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         profilePictureView.sd_setImage(with: url, placeholderImage: UIImage(named: "default_picture"), options: .continueInBackground, completed: nil)
     }
     
+    func fetchImagesURL(userID: String, completion: @escaping ([String]) -> Void) {
+        let postsRef = usersReference.document(userID).collection("posts")
+        postsRef.getDocuments { (snapshot, error) in
+            var imageUrls: [String] = []
+            if let error = error {
+                print("Error fetching posts: \(error)")
+                completion([])
+            } else {
+                for document in snapshot!.documents {
+                    if let imageUrl = document.data()["url"] as? String {
+                        imageUrls.append(imageUrl)
+                    }
+                }
+                completion(imageUrls)
+            }
+        }
+    }
+    
 }
+
+
+extension ProfileViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return 30
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+//        return UICollectionViewCell()
+//        let cell = postCollectionView.dequeueReusableCell(withReuseIdentifier: PhotoCollectionViewCell.identifier, for: indexPath) as! PhotoCollectionViewCell
+//        
+//        cell.backgroundColor = .systemCyan
+//        return cell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PhotoCollectionViewCell.identifier, for: indexPath) as! PhotoCollectionViewCell
+
+            fetchImagesURL(userID: currentUser?.uid ?? "") { imageUrls in
+                if indexPath.row < imageUrls.count {
+                    let imageUrl = imageUrls[indexPath.row]
+                    DispatchQueue.main.async {
+                        self.profilePictureView.sd_setImage(with: URL(string: imageUrl), placeholderImage: UIImage(named: "placeholder"))
+                    }
+                }
+            }
+
+            return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        // when the user tap on one of the collection
+        collectionView.deselectItem(at: indexPath, animated: true)
+    }
+    
+//    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+//        
+//        guard kind == UICollectionView.elementKindSectionHeader else {
+//            // return footer
+//            return UICollectionReusableView()
+//        }
+//        
+//        let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: ProfileHeaderCollectionReusableView.identifier, for: indexPath) as! ProfileHeaderCollectionReusableView
+//        
+//        return header
+//    }
+//    
+//    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+//        if section == 0 {
+//            return CGSize(width: collectionView.width, height: collectionView.height/3)
+//        }
+//        
+//        return .zero
+//    }
+//    
+}
+

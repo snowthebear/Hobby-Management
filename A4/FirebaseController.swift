@@ -14,6 +14,8 @@ import FirebaseAuth
 
 class FirebaseController: NSObject, DatabaseProtocol {
     
+    
+    
     var listeners = MulticastDelegate<DatabaseListener>()
     var authController: Auth
     var database: Firestore
@@ -25,6 +27,7 @@ class FirebaseController: NSObject, DatabaseProtocol {
     var hobbiesRef: CollectionReference?
 //    var userListRef: DocumentReference? // userTeamRef
     var userListRef: CollectionReference? // teamsRef
+//    var goalsRef: CollectionReference?
     
     override init() {
         if FirebaseApp.app() == nil {
@@ -41,6 +44,56 @@ class FirebaseController: NSObject, DatabaseProtocol {
         self.setupHobbyListener()
         self.setupUserListListener()
 
+    }
+    
+    func addGoals(goal: String) {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("No user logged in")
+            return
+        }
+
+        // Create a new goal dictionary
+        let newGoal: [String: Any] = [
+            "title": goal,
+            "completed": false
+        ]
+
+        // Update the user's document by appending the new goal to the goals array
+        let userRef = database.collection("users").document(userID)
+        userRef.updateData([
+            "goals": FieldValue.arrayUnion([newGoal])
+        ]) { error in
+            if let error = error {
+                print("Error adding goal to user document: \(error)")
+            } else {
+                print("Goal successfully added to user document")
+            }
+        }
+    }
+    
+    func deleteGoals(goalId: String) {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("No user logged in")
+            return
+        }
+        
+        let userDocRef = database.collection("users").document(userID)
+        
+        userDocRef.getDocument { (document, error) in
+            if let document = document, let data = document.data(), let goals = data["goals"] as? [[String: Any]] {
+                if let goalToDelete = goals.first(where: { $0["title"] as? String == goalId }) {
+                    userDocRef.updateData([
+                        "goals": FieldValue.arrayRemove([goalToDelete])
+                    ]) { error in
+                        if let error = error {
+                            print("Error removing goal: \(error)")
+                        } else {
+                            print("Goal successfully removed")
+                        }
+                    }
+                }
+            }
+        }
     }
     
     func addHobby(name: String, interest: Interest) -> Hobby {
@@ -649,6 +702,26 @@ class FirebaseController: NSObject, DatabaseProtocol {
     }
     
     
+    func fetchGoals(completion: @escaping ([String]) -> Void) {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("No user logged in")
+            completion([])
+            return
+        }
+        let userDocRef = database.collection("users").document(userID)
+        userDocRef.getDocument { documentSnapshot, error in
+            if let document = documentSnapshot, document.exists {
+                let goalsData = document.data()?["goals"] as? [[String: Any]] ?? []
+                let goals = goalsData.compactMap { $0["title"] as? String }
+                completion(goals)
+            } else {
+                print("Document does not exist or error fetching document: \(error?.localizedDescription ?? "Unknown error")")
+                completion([])
+            }
+        }
+    }
+    
+    
     // MARK: - Firebase Controller Specific m=Methods
     func getHobbyByID(_ id: String) -> Hobby? {
         for hobby in hobbyList {
@@ -681,5 +754,8 @@ class FirebaseController: NSObject, DatabaseProtocol {
 //        let timeZone: String?
 //    }
 }
+
+
+
 
 
