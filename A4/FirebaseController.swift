@@ -546,7 +546,6 @@ class FirebaseController: NSObject, DatabaseProtocol {
             
             self.currentUser = user
             let userRef = self.database.collection("users").document(user.uid)
-            
             userRef.getDocument { document, error in
                 if let document = document, document.exists {
                     // User document exists, check if user list exists
@@ -583,27 +582,27 @@ class FirebaseController: NSObject, DatabaseProtocol {
                         }
                     }
                 }
-//                    else {
-//                    // User document does not exist, create it and the user list
-////                    let userList = self.addUserList(listName: "\(user.displayName ?? "User")'s List")
-//                    let userData: [String: Any] = [
-//                        "email": user.email ?? "",
-//                        "displayName": user.displayName ?? "",
-//                        "userListId": userList.id!,
-//                        "following": 0,
-//                        "followers": 0,
-//                        "total posts": 0,
-//                    ]
-//                    
-//                    userRef.setData(userData) { error in
-//                        if let error = error {
-//                            completion(.failure(error))
-//                        } else {
-//                            UserManager.shared.currentUserList = userList
-//                            completion(.success(user))
-//                        }
-//                    }
-//                }
+                    else {
+                    // User document does not exist, create it and the user list
+                    let userList = self.addUserList(listName: "\(user.displayName ?? "User")'s List")
+                    let userData: [String: Any] = [
+                        "email": user.email ?? "",
+                        "displayName": user.displayName ?? "",
+                        "userListId": userList.id!,
+                        "following": 0,
+                        "followers": 0,
+                        "total posts": 0,
+                    ]
+                    
+                    userRef.setData(userData) { error in
+                        if let error = error {
+                            completion(.failure(error))
+                        } else {
+                            UserManager.shared.currentUserList = userList
+                            completion(.success(user))
+                        }
+                    }
+                }
             }
                 
             

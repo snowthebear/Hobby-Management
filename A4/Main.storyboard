@@ -311,7 +311,12 @@
                             <constraint firstItem="QG2-W7-iuK" firstAttribute="trailing" secondItem="ABa-bK-hNj" secondAttribute="trailing" constant="89" id="wNC-oU-30B"/>
                         </constraints>
                     </view>
-                    <navigationItem key="navigationItem" title="Upload" leftItemsSupplementBackButton="YES" id="z1N-kX-4vG">
+                    <navigationItem key="navigationItem" title="Upload" id="z1N-kX-4vG">
+                        <barButtonItem key="leftBarButtonItem" title="Set Goals" id="KsX-8q-1DE">
+                            <connections>
+                                <segue destination="118-tP-0MA" kind="show" id="AMB-DN-ChV"/>
+                            </connections>
+                        </barButtonItem>
                         <barButtonItem key="rightBarButtonItem" title="Post" id="wRm-Le-cBE">
                             <connections>
                                 <action selector="postButton:" destination="Px9-pi-qx5" id="jwC-MP-8ym"/>
@@ -1215,9 +1220,7 @@
                             <outlet property="delegate" destination="xmD-PC-i9n" id="gRW-ZX-ouR"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="All Hobbies" id="Waq-Ib-UX2">
-                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="lpY-tl-fJo"/>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" title="All Hobbies" id="Waq-Ib-UX2"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Zxf-cj-M1p" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -1226,7 +1229,7 @@
         <!--Navigation Controller-->
         <scene sceneID="Rbp-u5-bgB">
             <objects>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="bqc-Dy-uj9" sceneMemberID="viewController">
+                <navigationController id="bqc-Dy-uj9" sceneMemberID="viewController">
                     <tabBarItem key="tabBarItem" title="" image="plus" catalog="system" id="6Nz-7A-zWB"/>
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="XmA-09-ZiA">
@@ -1259,6 +1262,23 @@
                                     <autoresizingMask key="autoresizingMask"/>
                                     <subviews>
                                         <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="FFj-IL-2Vr">
+                                            <rect key="frame" x="20" y="0.0" width="353" height="43.666667938232422"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="0.0"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                </tableViewCellContentView>
+                            </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="totalCell" textLabel="qAw-qP-5bv" style="IBUITableViewCellStyleDefault" id="a6z-yC-Ati" customClass="HeroCountTableViewCell" customModule="A4" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="93.666667938232422" width="393" height="43.666667938232422"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="a6z-yC-Ati" id="2US-NP-d22">
+                                    <rect key="frame" x="0.0" y="0.0" width="393" height="43.666667938232422"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="qAw-qP-5bv">
                                             <rect key="frame" x="20" y="0.0" width="353" height="43.666667938232422"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <fontDescription key="fontDescription" type="system" pointSize="0.0"/>
@@ -1341,6 +1361,7 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
+        <segue reference="AMB-DN-ChV"/>
         <segue reference="SrC-ZJ-3Vr"/>
     </inferredMetricsTieBreakers>
     <resources>

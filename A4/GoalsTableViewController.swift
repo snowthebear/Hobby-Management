@@ -10,39 +10,25 @@ import FirebaseAuth
 import FirebaseFirestore
 
 class GoalsTableViewController: UITableViewController, DatabaseListener, UISearchResultsUpdating {
-    func onUserListChange(change: DatabaseChange, userHobbies: [Hobby]) {
-        
-    }
     
-    func onAllHobbyChange(change: DatabaseChange, hobbies: [Hobby]) {
-        
-    }
-    
-    func onGoalsChange(change: DatabaseChange, goals: [String]) {
-        
-    }
-    
-    func updateSearchResults(for searchController: UISearchController) {
-        
-    }
     
     
     let SECTION_GOAL = 0
+    let SECTION_INFO = 1
     
     let CELL_GOAL = "goalCell"
+    let CELL_INFO = "totalCell"
+    
     
     var allGoals: [String] = []
     var filteredGoals: [String] = []
     
-    var listenerType = ListenerType.goals
-    weak var databaseController: DatabaseProtocol?
-    
     var currentUserList: UserList?
-    
     var currentUser: FirebaseAuth.User?
     
     var firebaseController: FirebaseController?
-    
+    var listenerType = ListenerType.goals
+    weak var databaseController: DatabaseProtocol?
 
     
     override func viewDidLoad() {
@@ -77,6 +63,25 @@ class GoalsTableViewController: UITableViewController, DatabaseListener, UISearc
         super.viewWillDisappear(animated)
         databaseController?.removeListener(listener: self)
 
+    }
+    
+    func onUserListChange(change: DatabaseChange, userHobbies: [Hobby]) {
+        
+    }
+    
+    func onAllHobbyChange(change: DatabaseChange, hobbies: [Hobby]) {
+        
+    }
+    
+    func onGoalsChange(change: DatabaseChange, goals: [String]) {
+        DispatchQueue.main.async { [weak self] in
+            self?.allGoals = goals
+            self?.tableView.reloadData()
+        }
+    }
+    
+    func updateSearchResults(for searchController: UISearchController) {
+        
     }
     
     func fetchGoals() {

@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0744CE617F87E29F56C84779 /* Pods_A4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3213F5E2AFAB0BC088B86E08 /* Pods_A4.framework */; };
-		7F1176B52BF5EE2400F88814 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7F1176B42BF5EE2400F88814 /* GoogleService-Info.plist */; };
+		7F1176B52BF5EE2400F88814 /* GoogleService-Info-3.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7F1176B42BF5EE2400F88814 /* GoogleService-Info-3.plist */; };
 		7F3616BF2BEFA35E007C155B /* AllHobbiesTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F3616BE2BEFA35E007C155B /* AllHobbiesTableViewController.swift */; };
 		7F3616C12BEFA702007C155B /* UserHobbiesTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F3616C02BEFA702007C155B /* UserHobbiesTableViewController.swift */; };
 		7F3616C32BEFB0B2007C155B /* SearchTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F3616C22BEFB0B2007C155B /* SearchTableViewController.swift */; };
@@ -26,7 +26,7 @@
 		7F4763D32BE7B77A007BA9AC /* FirebaseController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4763D22BE7B77A007BA9AC /* FirebaseController.swift */; };
 		7F4763D52BE7B795007BA9AC /* displayMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4763D42BE7B795007BA9AC /* displayMessage.swift */; };
 		7F4763D72BE7B7B3007BA9AC /* Google-Calendar.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7F4763D62BE7B7B3007BA9AC /* Google-Calendar.plist */; };
-		7F4763D92BE7B7CD007BA9AC /* GoogleService-Info-1.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7F4763D82BE7B7CD007BA9AC /* GoogleService-Info-1.plist */; };
+		7F4763D92BE7B7CD007BA9AC /* GoogleService-Info-4.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7F4763D82BE7B7CD007BA9AC /* GoogleService-Info-4.plist */; };
 		7F4763DB2BE7B7EB007BA9AC /* DatabaseProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4763DA2BE7B7EB007BA9AC /* DatabaseProtocol.swift */; };
 		7F4763DF2BE7B860007BA9AC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4763DE2BE7B860007BA9AC /* AppDelegate.swift */; };
 		7F4763E12BE7B87B007BA9AC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7F4763E02BE7B87B007BA9AC /* Assets.xcassets */; };
@@ -52,12 +52,13 @@
 		7F739F342C0873E900FD2188 /* UploadProgressViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F332C0873E900FD2188 /* UploadProgressViewController.swift */; };
 		7F739F3A2C08B38500FD2188 /* GoalsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F392C08B38500FD2188 /* GoalsTableViewController.swift */; };
 		7F739F3C2C08B89100FD2188 /* CreateGoalsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F3B2C08B89100FD2188 /* CreateGoalsViewController.swift */; };
+		7F739F3E2C0988DF00FD2188 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7F739F3D2C0988DE00FD2188 /* GoogleService-Info.plist */; };
 		7FD484062BE73E1000C46142 /* MulticastDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FD484022BE73E1000C46142 /* MulticastDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		3213F5E2AFAB0BC088B86E08 /* Pods_A4.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_A4.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		7F1176B42BF5EE2400F88814 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		7F1176B42BF5EE2400F88814 /* GoogleService-Info-3.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-3.plist"; sourceTree = "<group>"; };
 		7F3616BE2BEFA35E007C155B /* AllHobbiesTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllHobbiesTableViewController.swift; sourceTree = "<group>"; };
 		7F3616C02BEFA702007C155B /* UserHobbiesTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserHobbiesTableViewController.swift; sourceTree = "<group>"; };
 		7F3616C22BEFB0B2007C155B /* SearchTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchTableViewController.swift; sourceTree = "<group>"; };
@@ -75,7 +76,7 @@
 		7F4763D22BE7B77A007BA9AC /* FirebaseController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FirebaseController.swift; sourceTree = "<group>"; };
 		7F4763D42BE7B795007BA9AC /* displayMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = displayMessage.swift; sourceTree = "<group>"; };
 		7F4763D62BE7B7B3007BA9AC /* Google-Calendar.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Google-Calendar.plist"; sourceTree = "<group>"; };
-		7F4763D82BE7B7CD007BA9AC /* GoogleService-Info-1.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-1.plist"; sourceTree = "<group>"; };
+		7F4763D82BE7B7CD007BA9AC /* GoogleService-Info-4.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info-4.plist"; sourceTree = "<group>"; };
 		7F4763DA2BE7B7EB007BA9AC /* DatabaseProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatabaseProtocol.swift; sourceTree = "<group>"; };
 		7F4763DC2BE7B824007BA9AC /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7F4763DE2BE7B860007BA9AC /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -102,6 +103,7 @@
 		7F739F332C0873E900FD2188 /* UploadProgressViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadProgressViewController.swift; sourceTree = "<group>"; };
 		7F739F392C08B38500FD2188 /* GoalsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalsTableViewController.swift; sourceTree = "<group>"; };
 		7F739F3B2C08B89100FD2188 /* CreateGoalsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateGoalsViewController.swift; sourceTree = "<group>"; };
+		7F739F3D2C0988DE00FD2188 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		7FD483D02BE730C900C46142 /* A4.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = A4.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FD484022BE73E1000C46142 /* MulticastDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MulticastDelegate.swift; sourceTree = "<group>"; };
 		9A137F085A9FDC909FD7BA3E /* Pods-A4.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-A4.debug.xcconfig"; path = "Target Support Files/Pods-A4/Pods-A4.debug.xcconfig"; sourceTree = "<group>"; };
@@ -237,8 +239,9 @@
 				7FD483D12BE730C900C46142 /* Products */,
 				7F4763DC2BE7B824007BA9AC /* Info.plist */,
 				7F4763E62BE7B90F007BA9AC /* GoogleService-Info-2.plist */,
-				7F4763D82BE7B7CD007BA9AC /* GoogleService-Info-1.plist */,
-				7F1176B42BF5EE2400F88814 /* GoogleService-Info.plist */,
+				7F4763D82BE7B7CD007BA9AC /* GoogleService-Info-4.plist */,
+				7F1176B42BF5EE2400F88814 /* GoogleService-Info-3.plist */,
+				7F739F3D2C0988DE00FD2188 /* GoogleService-Info.plist */,
 				7F4763D62BE7B7B3007BA9AC /* Google-Calendar.plist */,
 				7F4E748D2BF5C86F00F8E9FB /* GoogleServiceManager.swift */,
 				7F4E74932BF5E1E600F8E9FB /* CalendarCell.swift */,
@@ -317,13 +320,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7F4763D92BE7B7CD007BA9AC /* GoogleService-Info-1.plist in Resources */,
+				7F4763D92BE7B7CD007BA9AC /* GoogleService-Info-4.plist in Resources */,
 				7F4763D72BE7B7B3007BA9AC /* Google-Calendar.plist in Resources */,
+				7F739F3E2C0988DF00FD2188 /* GoogleService-Info.plist in Resources */,
 				7F4763E72BE7B90F007BA9AC /* GoogleService-Info-2.plist in Resources */,
 				7F4763E92BE7BBE0007BA9AC /* LaunchScreen.storyboard in Resources */,
 				7F4763C02BE7B62C007BA9AC /* Main.storyboard in Resources */,
 				7F4763E12BE7B87B007BA9AC /* Assets.xcassets in Resources */,
-				7F1176B52BF5EE2400F88814 /* GoogleService-Info.plist in Resources */,
+				7F1176B52BF5EE2400F88814 /* GoogleService-Info-3.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

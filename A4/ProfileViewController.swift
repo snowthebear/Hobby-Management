@@ -74,13 +74,11 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         
         self.currentUser = UserManager.shared.currentUser
         self.currentUserLisr = UserManager.shared.currentUserList
-        
-        
+
+        setupCollectionView()
         Task {
             await loadUserData()
         }
-        
-        setupCollectionView()
         
         
         
@@ -107,21 +105,24 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
 //            return
 //        }
 //        view.addSubview(postCollectionView)
-
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        Task {
-            await loadUserData()
-        }
         super.viewWillAppear(animated)
         self.tabBarController?.navigationController?.isNavigationBarHidden = true
         
     }
     
     override func viewWillDisappear(_ animated: Bool) {
+        print("c")
+        
         super.viewWillAppear(animated)
         self.backViewForHamburger.isHidden = true
+//        self.tabBarController?.navigationController?.isNavigationBarHidden = true
+        if self.isHamburgerMenuShown {
+            self.hideHamburgerMenu()
+        }
+        
     }
     
     override func viewDidLayoutSubviews() {
@@ -368,7 +369,8 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     func cropViewController(_ cropViewController: TOCropViewController, didCropToCircularImage image: UIImage, with cropRect: CGRect, angle: Int) {
         
         profilePictureView.image = image
-        let filename = "profile/\(UUID().uuidString).jpg"  // Ensure unique file names within the profile folder
+//        let filename = "profile/\(UUID().uuidString).jpg"  // Ensure unique file names within the profile folder
+        let filename = "profile/profile_picture.jpg"
 
         guard let data = image.jpegData(compressionQuality: 0.8) else {
             displayMessage(title: "Error", message: "Image data could not be compressed")
@@ -385,20 +387,41 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         metadata.contentType = "image/jpeg"
 
         let uploadTask = imageRef.putData(data, metadata: metadata)
+        
+        imageRef.putData(data, metadata: metadata) { metadata, error in
+            if let error = error {
+                self.displayMessage(title: "Error", message: "Failed to upload image: \(error.localizedDescription)")
+                return
+            }
 
-        uploadTask.observe(.success) { [weak self] snapshot in
-            imageRef.downloadURL { (url, error) in
+            imageRef.downloadURL { url, error in
                 if let downloadURL = url {
-                    self?.usersReference.document(userID).setData(["profilePictureURL": downloadURL.absoluteString], merge: true)
+                    // Update Firestore with the new image URL
+                    self.usersReference.document(userID).setData([
+                        "profilePictureURL": downloadURL.absoluteString,
+                    ], merge: true)
                 }
             }
         }
 
-        uploadTask.observe(.failure) { snapshot in
-            self.displayMessage(title: "Error", message: "Failed to upload image")
-        }
-
         cropViewController.dismiss(animated: true, completion: nil)
+        
+        
+
+//        uploadTask.observe(.success) { [weak self] snapshot in
+//            imageRef.downloadURL { (url, error) in
+//                if let downloadURL = url {
+//                    self?.usersReference.document(userID).setData(["profilePictureURL": downloadURL.absoluteString], merge: true)
+//                }
+//            }
+//        }
+//
+//        uploadTask.observe(.failure) { snapshot in
+//            self.displayMessage(title: "Error", message: "Failed to upload image")
+//        }
+//
+//        cropViewController.dismiss(animated: true, completion: nil)
+        //--------------------------
         
 //        profilePictureView.image = image
 //        
@@ -439,6 +462,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     func setupProfilePicture() {
+        print("setupprofile")
         guard let userID = Auth.auth().currentUser?.uid else { return }
         
         usersReference.document(userID).getDocument { [weak self] (document, error) in
@@ -592,6 +616,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     func loadUserData() async{
+        print("haga")
         guard let user = currentUser else { return }
         
         let userDocRef = usersReference.document(user.uid)
@@ -630,7 +655,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     func loadProfileImage(urlString: String) {
-        print("masuk sini")
         guard let url = URL(string: urlString) else { return }
         profilePictureView.sd_setImage(with: url, placeholderImage: UIImage(named: "default_picture"), options: .continueInBackground, completed: nil)
     }

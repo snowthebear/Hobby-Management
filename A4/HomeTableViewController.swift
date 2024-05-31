@@ -22,6 +22,7 @@ class HomeTableViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.tabBarController?.navigationItem.hidesBackButton = true
      
         print ("home user = \(currentUser)")
         if let user = UserManager.shared.currentUser {

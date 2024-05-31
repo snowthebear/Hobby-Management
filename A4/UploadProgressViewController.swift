@@ -32,7 +32,7 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        self.tabBarController?.navigationItem.hidesBackButton = true
         goalsPicker.dataSource = self
         goalsPicker.delegate = self
         
@@ -50,6 +50,13 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
 //        tableView.reloadData()
         
     }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+//        resetHolder()
+    }
+    
+    
 
     
     func pickImageFrom(_ sourceType: UIImagePickerController.SourceType) {
@@ -103,11 +110,27 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
     }
     
     
-    @IBAction func postButton(_ sender: Any) {
-        uploadPost()
+    @IBAction func postButton(_ sender: UIButton) {
+        sender.isEnabled = false
+//        uploadPost()
+        uploadPost { [weak self] success in
+            DispatchQueue.main.async {
+                sender.isEnabled = !success  // Re-enable the button only if posting failed
+                if success {
+                    self?.switchToHomePage()
+                    
+                }
+            }
+        }
+    
     }
     
-    
+    func resetHolder() {
+        print("kk")
+        imageView = nil
+        captionTextField = nil
+        
+    }
     
     func fetchGoals() {
         guard let userID = self.currentUser?.uid else {
@@ -133,7 +156,7 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
 }
     
 
-    func uploadPost() {
+    func uploadPost(completion: @escaping (Bool) -> Void) {
         // Extract data from the UI elements
         guard let image = imageView.image else {
             displayMessage(title: "Error", message: "Please select an image.")
@@ -145,42 +168,63 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
             return
         }
         
-        let selectedGoal = goals[goalsPicker.selectedRow(inComponent: 0)]
+        
+        let selectedRow = goalsPicker.selectedRow(inComponent: 0)
+        let selectedGoal = (goals.indices.contains(selectedRow)) ? goals[selectedRow] : ""
         let caption = captionTextField.text ?? ""
-        let postDate = scheduleDatePicker.date
+//        let postDate = scheduleDatePicker.date
+        let postDate = Timestamp(date: scheduleDatePicker.date)
         let metadata = StorageMetadata()
         metadata.contentType = "image/jpeg"
-        
-        let storageRef = Storage.storage().reference().child("posts/\(userID)/\(UUID().uuidString).jpg")
+//        
+        let postID = UUID().uuidString
+//        let storagePath = "posts/\(userID)/\(postID).jpg"
+        let storagePath = "\(userID)/posts/\(postID).jpg"
+        let storageRef = Storage.storage().reference().child(storagePath)
+    
+//        let storageRef = Storage.storage().reference().child("posts/\(userID)/\(UUID().uuidString).jpg")
         if let imageData = image.jpegData(compressionQuality: 0.8) {
             storageRef.putData(imageData, metadata: metadata) { metadata, error in
                 guard let metadata = metadata else {
                     self.displayMessage(title: "Error", message: "Failed to upload image: \(error?.localizedDescription ?? "Unknown error")")
                     return
                 }
-                
+    
                 storageRef.downloadURL { url, error in
-                    guard let downloadURL = url else {
-                        self.displayMessage(title: "Error", message: "Failed to get download URL: \(error?.localizedDescription ?? "Unknown error")")
-                        return
-                    }
-                    
-                    let postData: [String: Any] = [
-                        "imageUrl": downloadURL.absoluteString,
-                        "goal": selectedGoal,
-                        "caption": caption,
-                        "postDate": postDate,
-                        "userID": userID
-                    ]
-                    
-                    Firestore.firestore().collection("posts").addDocument(data: postData) { error in
-                        if let error = error {
-                            self.displayMessage(title: "Error", message: "Failed to save post data: \(error.localizedDescription)")
-                        } else {
-                            self.displayMessage(title: "Success", message: "Post uploaded successfully!")
+                    if let downloadURL = url {
+                        let postData: [String: Any] = [
+                            "imageUrl": downloadURL.absoluteString,
+                            "goal": selectedGoal,
+                            "caption": caption,
+                            "postDate": postDate,
+                            "userID": userID
+                        ]
+                        
+                        Firestore.firestore().collection("posts").document(postID).setData(postData) { error in
+                            if let error = error {
+                                self.displayMessage(title: "Error", message: "Failed to save post data: \(error.localizedDescription)")
+                            } else {
+                                self.displayMessage(title: "Success", message: "Post uploaded successfully!")
+                                self.switchToHomePage()
+                            }
                         }
+                    } else {
+                        self.displayMessage(title: "Error", message: "Failed to get download URL: \(error?.localizedDescription ?? "Unknown error")")
                     }
                 }
+            }
+        }
+        
+        else {
+            displayMessage(title: "Error", message: "Could not compress image.")
+        }
+    }
+    
+    private func switchToHomePage() {
+        DispatchQueue.main.async {
+            if let tabBarController = self.tabBarController {
+                tabBarController.selectedIndex = 0 // homepage index
+                self.resetHolder()
             }
         }
     }
@@ -193,7 +237,6 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
     }
     
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        print("Current number of goals in picker: \(goals.count)")
         return goals.count
     }
     

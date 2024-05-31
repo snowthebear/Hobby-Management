@@ -44,7 +44,6 @@ class UserHobbiesTableViewController: UITableViewController, DatabaseListener {
     override func viewDidLoad() {
         super.viewDidLoad()
             
-        
         let appDelegate = UIApplication.shared.delegate as? AppDelegate
         databaseController = appDelegate?.databaseController
         

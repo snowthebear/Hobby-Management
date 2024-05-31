@@ -47,6 +47,7 @@ class HomeViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.tabBarController?.navigationItem.hidesBackButton = true
         
         view.addSubview(tableView)
         tableView.delegate = self
@@ -233,11 +234,8 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource {
         }
         
     }
-    
-    
-    
-    
 }
+
 
 enum RenderType {
     case header(provider: User)
