@@ -9,7 +9,7 @@ import UIKit
 import FirebaseAuth
 
 class UserHobbiesTableViewController: UITableViewController, DatabaseListener {
-    func onGoalsChange(change: DatabaseChange, goals: [String]) {
+    func onGoalsChange(change: DatabaseChange, goals: [Goal]) {
         
     }
     

@@ -60,8 +60,6 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
     }
     
     
-
-    
     func pickImageFrom(_ sourceType: UIImagePickerController.SourceType) {
         let imagePicker = UIImagePickerController()
         imagePicker.sourceType = sourceType
@@ -133,7 +131,6 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
     }
     
     func resetHolder() {
-        print("kk")
         imageView = nil
         captionTextField = nil
         
@@ -150,8 +147,12 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
         userDocRef.getDocument { (document, error) in
             if let document = document, document.exists {
                 if let goalsData = document.data()?["goals"] as? [[String: Any]] {
-                    self.goals = goalsData.compactMap { $0["title"] as? String }
-                    print("Fetched goals: \(self.goals)")
+                    self.goals = goalsData.compactMap { dict -> String? in
+                        guard let title = dict["title"] as? String, let completed = dict["completed"] as? Bool, !completed else {
+                            return nil
+                        }
+                        return title
+                    }
                     DispatchQueue.main.async {
                         self.goalsPicker.reloadAllComponents()
                     }
@@ -211,7 +212,7 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
                             if let error = error {
                                 self.displayMessage(title: "Error", message: "Failed to save post data: \(error.localizedDescription)")
                             } else {
-                                self.displayMessage(title: "Success", message: "Post uploaded successfully!")
+                                self.displayAskToCompleteGoal(goal: selectedGoal)
                                 self.switchToHomePage()
                             }
                         }
@@ -227,11 +228,39 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
         }
     }
     
+    
     private func switchToHomePage() {
         DispatchQueue.main.async {
             if let tabBarController = self.tabBarController {
                 tabBarController.selectedIndex = 0 // homepage index
                 self.resetHolder()
+            }
+        }
+    }
+    
+    
+    private func displayAskToCompleteGoal(goal: String) {
+        let alert = UIAlertController(title: "Success!", message: "Do you want to mark the goal '\(goal)' as completed?", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { _ in
+            self.markGoalAsCompleted(goal: goal)
+        }))
+        alert.addAction(UIAlertAction(title: "No", style: .cancel))
+        present(alert, animated: true)
+    }
+    
+    
+    
+    private func markGoalAsCompleted(goal: String) {
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        let userDocRef = Firestore.firestore().collection("users").document(userID)
+        userDocRef.updateData([
+            "goals": FieldValue.arrayUnion([["title": goal, "completed": true]])
+        ]) { error in
+            if let error = error {
+                print("Error updating goal completion: \(error)")
+            } else {
+                print("Goal marked as completed.")
+                // Optionally notify the user of success
             }
         }
     }

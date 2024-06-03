@@ -27,7 +27,7 @@ protocol DatabaseListener: AnyObject {
     var listenerType: ListenerType {get set}
     func onUserListChange(change: DatabaseChange, userHobbies: [Hobby])
     func onAllHobbyChange(change: DatabaseChange, hobbies: [Hobby])
-    func onGoalsChange(change: DatabaseChange, goals: [String])
+    func onGoalsChange(change: DatabaseChange, goals: [Goal])
 }
  
 protocol DatabaseProtocol: AnyObject {
@@ -52,6 +52,6 @@ protocol DatabaseProtocol: AnyObject {
     func signInWithEmail(email: String, password: String, completion: @escaping (Result<User, Error>) -> Void)
     func signUpWithEmail(email: String, password: String, displayName: String, completion: @escaping (Result<User, Error>) -> Void)
     
-    func fetchGoals(completion: @escaping ([String]) -> Void)
+    func fetchGoals(completion: @escaping ([Goal]) -> Void)
 }
 

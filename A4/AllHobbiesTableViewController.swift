@@ -8,10 +8,10 @@
 import UIKit
 
 class AllHobbiesTableViewController: UITableViewController, UISearchResultsUpdating, DatabaseListener {
-    func onGoalsChange(change: DatabaseChange, goals: [String]) {
+    func onGoalsChange(change: DatabaseChange, goals: [Goal]) {
         
     }
-    
+
 
     let SECTION_HOBBY = 0
     

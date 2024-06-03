@@ -12,8 +12,8 @@ class FeedGoalsTableViewCell: UITableViewCell {
     
     @IBOutlet weak var goalLabel: UILabel!
     
-    func configure(with goals: [String]) {
-        goalLabel.text = goals.joined(separator: ", ")
+    func configure(with goals: String) {
+        goalLabel.text = goals
     }
 
     required init?(coder: NSCoder) {

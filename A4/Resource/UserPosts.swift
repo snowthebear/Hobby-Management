@@ -27,23 +27,19 @@ struct UserPost {
     var photoURL: URL
     var date: Date
     var caption: String
-    var goals: [String]
+    var goals: String
 
     init?(dictionary: [String: Any]) {
         guard let userID = dictionary["userID"] as? String else {
-            print("Error: userId is missing.")
             return nil
         }
         guard let userName = UserManager.shared.currentUser?.displayName else {
-            print("Error: userName is missing.")
             return nil
         }
         guard let photoURLString = dictionary["imageUrl"] as? String, let photoURL = URL(string: photoURLString) else {
-            print("Error: imageUrl is missing or invalid.")
             return nil
         }
         guard let date = dictionary["postDate"] as? Timestamp else {
-            print("Error: postDate is missing.")
             return nil
         }
 
@@ -51,8 +47,8 @@ struct UserPost {
         self.userName = userName
         self.photoURL = photoURL
         self.date = date.dateValue()
-        self.caption = dictionary["caption"] as? String ?? ""
-        self.goals = dictionary["goal"] as? [String] ?? []
+        self.caption = dictionary["caption"] as? String ?? " - "
+        self.goals = dictionary["goal"] as? String ?? ""
     }
 }
 

@@ -44,11 +44,6 @@ class HomeTableViewController: UITableViewController {
         }
         fetchPosts()
         
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem
     }
     
     func fetchPosts() {
@@ -70,7 +65,7 @@ class HomeTableViewController: UITableViewController {
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return posts.count * 4
+        return posts.count * 5
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -80,8 +75,8 @@ class HomeTableViewController: UITableViewController {
 
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let postIndex = indexPath.section / 4
-        let sectionType = indexPath.section % 4
+        let postIndex = indexPath.section / 5
+        let sectionType = indexPath.section % 5
         let post = posts[postIndex]
 
         switch sectionType {
@@ -100,7 +95,11 @@ class HomeTableViewController: UITableViewController {
             return cell
         case 3: // Goals cell
             let cell = tableView.dequeueReusableCell(withIdentifier: "goalCell", for: indexPath) as! FeedGoalsTableViewCell
+            print("post.goals = \(post.goals)")
             cell.configure(with: post.goals)
+            return cell
+        case 4:
+            let cell = tableView.dequeueReusableCell(withIdentifier: "breakCell", for: indexPath)
             return cell
         default:
             fatalError("Unexpected IndexPath which is out of section bounds")

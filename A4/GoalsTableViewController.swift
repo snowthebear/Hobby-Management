@@ -9,9 +9,12 @@ import UIKit
 import FirebaseAuth
 import FirebaseFirestore
 
+struct Goal {
+    var title: String
+    var isCompleted: Bool
+}
+
 class GoalsTableViewController: UITableViewController, DatabaseListener, UISearchResultsUpdating {
-    
-    
     
     let SECTION_GOAL = 0
     let SECTION_INFO = 1
@@ -20,7 +23,7 @@ class GoalsTableViewController: UITableViewController, DatabaseListener, UISearc
     let CELL_INFO = "totalCell"
     
     
-    var allGoals: [String] = []
+    var allGoals: [Goal] = []
     var filteredGoals: [String] = []
     
     var currentUserList: UserList?
@@ -40,7 +43,9 @@ class GoalsTableViewController: UITableViewController, DatabaseListener, UISearc
         if firebaseController == nil {
             firebaseController = FirebaseController()
         }
-//        fetchGoals()
+        
+        tableView.allowsMultipleSelectionDuringEditing = true
+        fetchGoals()
         tableView.reloadData()
 
         // Uncomment the following line to preserve selection between presentations
@@ -73,11 +78,15 @@ class GoalsTableViewController: UITableViewController, DatabaseListener, UISearc
         
     }
     
-    func onGoalsChange(change: DatabaseChange, goals: [String]) {
+    func onGoalsChange(change: DatabaseChange, goals: [Goal]) {
         DispatchQueue.main.async { [weak self] in
             self?.allGoals = goals
             self?.tableView.reloadData()
         }
+    }
+    
+    func saveGoalChanges() {
+        let updatedGoals = allGoals.filter { $0.isCompleted }
     }
     
     func updateSearchResults(for searchController: UISearchController) {
@@ -86,6 +95,7 @@ class GoalsTableViewController: UITableViewController, DatabaseListener, UISearc
     
     func fetchGoals() {
         databaseController?.fetchGoals { [weak self] goals in
+            print("Fetched goals:", goals)
             DispatchQueue.main.async {
                 self?.allGoals = goals
                 self?.tableView.reloadData()
@@ -109,15 +119,53 @@ class GoalsTableViewController: UITableViewController, DatabaseListener, UISearc
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: CELL_GOAL, for: indexPath)
-        cell.textLabel?.text = allGoals[indexPath.row]
-
-        // Configure the cell...
-
+        let goal = allGoals[indexPath.row]
+        cell.textLabel?.text = goal.title
+        cell.accessoryType = goal.isCompleted ? .checkmark : .none
         return cell
     }
     
-
     
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        allGoals[indexPath.row].isCompleted.toggle()
+        updateGoalCompletion(goalTitle: allGoals[indexPath.row].title, isCompleted: allGoals[indexPath.row].isCompleted)
+        
+        tableView.reloadRows(at: [indexPath], with: .none)
+    }
+    
+    func updateGoalCompletion(goalTitle: String, isCompleted: Bool) {
+        guard let userID = Auth.auth().currentUser?.uid else {
+            print("No user logged in")
+            return
+        }
+
+        let userDocRef = Firestore.firestore().collection("users").document(userID)
+
+        // Fetch the current goals
+        userDocRef.getDocument { (document, error) in
+            if let document = document, document.exists {
+                var goals = document.data()?["goals"] as? [[String: Any]] ?? []
+                
+                // Find the goal and update the completion status
+                if let index = goals.firstIndex(where: { $0["title"] as? String == goalTitle }) {
+                    goals[index]["completed"] = isCompleted
+                }
+                
+                // Update the entire array back to Firestore
+                userDocRef.updateData(["goals": goals]) { error in
+                    if let error = error {
+                        print("Error updating goal: \(error.localizedDescription)")
+                    } else {
+                        print("Goal updated successfully.")
+                    }
+                }
+            } else {
+                print("Document does not exist or error fetching document: \(error?.localizedDescription ?? "Unknown error")")
+            }
+        }
+    }
+
+
     // Override to support conditional editing of the table view.
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         // Return false if you do not want the specified item to be editable.
@@ -133,8 +181,8 @@ class GoalsTableViewController: UITableViewController, DatabaseListener, UISearc
     // Override to support editing the table view.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete && indexPath.section == SECTION_GOAL {
-            self.databaseController?.deleteGoals(goalId: allGoals[indexPath.row])
-            self.allGoals.remove(at: indexPath.row)
+            self.databaseController?.deleteGoals(goalId: allGoals[indexPath.row].title) // Ensure your database method can handle this identifier
+            allGoals.remove(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .fade)
         }
     }

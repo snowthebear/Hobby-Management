@@ -596,24 +596,42 @@ class FirebaseController: NSObject, DatabaseProtocol {
     }
     
     
-    func fetchGoals(completion: @escaping ([String]) -> Void) {
+    func fetchGoals(completion: @escaping ([Goal]) -> Void) {
         guard let userID = Auth.auth().currentUser?.uid else {
-            print("No user logged in")
             completion([])
             return
         }
+        
         let userDocRef = database.collection("users").document(userID)
         userDocRef.getDocument { documentSnapshot, error in
-            if let document = documentSnapshot, document.exists {
-                let goalsData = document.data()?["goals"] as? [[String: Any]] ?? []
-                let goals = goalsData.compactMap { $0["title"] as? String }
-                completion(goals)
-            } else {
-                print("Document does not exist or error fetching document: \(error?.localizedDescription ?? "Unknown error")")
+            if let error = error {
                 completion([])
+                return
             }
+            
+            guard let document = documentSnapshot, document.exists else {
+                completion([])
+                return
+            }
+            
+            guard let goalsData = document.data()?["goals"] as? [[String: Any]] else {
+                completion([])
+                return
+            }
+            
+            let goals = goalsData.compactMap { dict -> Goal? in
+                guard let title = dict["title"] as? String,
+                      let completedValue = dict["completed"] as? Int else {
+                    return nil
+                }
+                return Goal(title: title, isCompleted: completedValue != 0)
+            }
+            print("Fetched goals successfully:", goals)
+            completion(goals)
         }
     }
+    
+    
     
     
 //    func fetchPosts(completion: @escaping ([HomeFeedRenderViewModel]?) -> Void) {
