@@ -6,25 +6,45 @@
 //
 
 import UIKit
+import FirebaseAuth
+import Firebase
+
 
 class FeedHeaderTableViewCell: UITableViewCell {
 
-    static let identifier = "FeedHeaderTableViewCell"
 
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-    }
+    @IBOutlet weak var profileImageView: UIImageView!
+    @IBOutlet weak var nameLabel: UILabel!
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    public func configure() {
-        // configure the cell
-        
-    }
-    override func layoutSubviews() {
-        super.layoutSubviews()
-    }
+    func configure(with userId: String, userName: String) {
+            nameLabel.text = userName
+            loadProfileImage(for: userId)
+        }
+
+        private func loadProfileImage(for userId: String) {
+            let storageRef = Storage.storage().reference().child("\(userId)/profile/profile_picture.jpg")
+            storageRef.downloadURL { [weak self] url, error in
+                if let url = url {
+                    self?.loadImage(from: url)
+                } else {
+                    print("Error loading profile image: \(error?.localizedDescription ?? "No error info")")
+                    DispatchQueue.main.async {
+                        self?.profileImageView.image = UIImage(named: "defaultProfile")
+                    }
+                }
+            }
+        }
+
+        private func loadImage(from url: URL) {
+            URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+                guard let data = data, error == nil else {
+                    print("Error downloading image: \(error?.localizedDescription ?? "No error info")")
+                    return
+                }
+                DispatchQueue.main.async {
+                    self?.profileImageView.image = UIImage(data: data)
+                }
+            }.resume()
+        }
 
 }

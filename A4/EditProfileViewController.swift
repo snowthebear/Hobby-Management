@@ -112,7 +112,7 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
                 uploadTask.observe(.success) { snapshot in
                     imageRef.downloadURL { (url, error) in
                         if let downloadURL = url {
-                            userDocRef.updateData(["profilePictureURL": downloadURL.absoluteString])
+                            userDocRef.updateData(["storageURL": downloadURL.absoluteString])
                         }
                     }
                 }
@@ -152,7 +152,7 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
                 let data = document.data()
                 self.nameTextField.text = data?["displayName"] as? String
                 
-                if let profileImageUrl = data?["profilePictureURL"] as? String {
+                if let profileImageUrl = data?["storageURL"] as? String {
                     self.loadProfileImage(urlString: profileImageUrl)
                 }
             } else {

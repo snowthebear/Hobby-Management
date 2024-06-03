@@ -39,20 +39,21 @@
 		7F4E74922BF5DAF900F8E9FB /* CalendarListResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4E74912BF5DAF900F8E9FB /* CalendarListResponse.swift */; };
 		7F4E74942BF5E1E600F8E9FB /* CalendarCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4E74932BF5E1E600F8E9FB /* CalendarCell.swift */; };
 		7F7081832BEBA33D00E8F590 /* EditProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F7081822BEBA33D00E8F590 /* EditProfileViewController.swift */; };
-		7F739F1B2C07803D00FD2188 /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F1A2C07803D00FD2188 /* HomeViewController.swift */; };
 		7F739F1F2C0787C200FD2188 /* PhotoCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F1E2C0787C200FD2188 /* PhotoCollectionViewCell.swift */; };
 		7F739F212C083AD200FD2188 /* PhotoCollectionReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F202C083AD200FD2188 /* PhotoCollectionReusableView.swift */; };
 		7F739F232C083CA900FD2188 /* Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F222C083CA900FD2188 /* Extension.swift */; };
 		7F739F252C08411500FD2188 /* FeedPostTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F242C08411500FD2188 /* FeedPostTableViewCell.swift */; };
 		7F739F282C08485500FD2188 /* FeedHeaderTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F272C08485500FD2188 /* FeedHeaderTableViewCell.swift */; };
-		7F739F2A2C08488600FD2188 /* FeedActionTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F292C08488600FD2188 /* FeedActionTableViewCell.swift */; };
-		7F739F2C2C08489F00FD2188 /* FeedCommentLikeTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F2B2C08489F00FD2188 /* FeedCommentLikeTableViewCell.swift */; };
+		7F739F2A2C08488600FD2188 /* FeedCaptionTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F292C08488600FD2188 /* FeedCaptionTableViewCell.swift */; };
+		7F739F2C2C08489F00FD2188 /* FeedGoalsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F2B2C08489F00FD2188 /* FeedGoalsTableViewCell.swift */; };
 		7F739F2F2C08495F00FD2188 /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F2E2C08495F00FD2188 /* StorageManager.swift */; };
 		7F739F322C085AF700FD2188 /* ProfileHeaderCollectionReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F312C085AF700FD2188 /* ProfileHeaderCollectionReusableView.swift */; };
 		7F739F342C0873E900FD2188 /* UploadProgressViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F332C0873E900FD2188 /* UploadProgressViewController.swift */; };
 		7F739F3A2C08B38500FD2188 /* GoalsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F392C08B38500FD2188 /* GoalsTableViewController.swift */; };
 		7F739F3C2C08B89100FD2188 /* CreateGoalsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F3B2C08B89100FD2188 /* CreateGoalsViewController.swift */; };
 		7F739F3E2C0988DF00FD2188 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7F739F3D2C0988DE00FD2188 /* GoogleService-Info.plist */; };
+		7F739F402C09E84D00FD2188 /* UserPosts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F3F2C09E84D00FD2188 /* UserPosts.swift */; };
+		7F739F422C0DC1F700FD2188 /* Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F412C0DC1F700FD2188 /* Post.swift */; };
 		7FD484062BE73E1000C46142 /* MulticastDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FD484022BE73E1000C46142 /* MulticastDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -90,20 +91,21 @@
 		7F4E74912BF5DAF900F8E9FB /* CalendarListResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarListResponse.swift; sourceTree = "<group>"; };
 		7F4E74932BF5E1E600F8E9FB /* CalendarCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarCell.swift; sourceTree = "<group>"; };
 		7F7081822BEBA33D00E8F590 /* EditProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfileViewController.swift; sourceTree = "<group>"; };
-		7F739F1A2C07803D00FD2188 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		7F739F1E2C0787C200FD2188 /* PhotoCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCollectionViewCell.swift; sourceTree = "<group>"; };
 		7F739F202C083AD200FD2188 /* PhotoCollectionReusableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCollectionReusableView.swift; sourceTree = "<group>"; };
 		7F739F222C083CA900FD2188 /* Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extension.swift; sourceTree = "<group>"; };
 		7F739F242C08411500FD2188 /* FeedPostTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedPostTableViewCell.swift; sourceTree = "<group>"; };
 		7F739F272C08485500FD2188 /* FeedHeaderTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedHeaderTableViewCell.swift; sourceTree = "<group>"; };
-		7F739F292C08488600FD2188 /* FeedActionTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedActionTableViewCell.swift; sourceTree = "<group>"; };
-		7F739F2B2C08489F00FD2188 /* FeedCommentLikeTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCommentLikeTableViewCell.swift; sourceTree = "<group>"; };
+		7F739F292C08488600FD2188 /* FeedCaptionTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedCaptionTableViewCell.swift; sourceTree = "<group>"; };
+		7F739F2B2C08489F00FD2188 /* FeedGoalsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedGoalsTableViewCell.swift; sourceTree = "<group>"; };
 		7F739F2E2C08495F00FD2188 /* StorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageManager.swift; sourceTree = "<group>"; };
 		7F739F312C085AF700FD2188 /* ProfileHeaderCollectionReusableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileHeaderCollectionReusableView.swift; sourceTree = "<group>"; };
 		7F739F332C0873E900FD2188 /* UploadProgressViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadProgressViewController.swift; sourceTree = "<group>"; };
 		7F739F392C08B38500FD2188 /* GoalsTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalsTableViewController.swift; sourceTree = "<group>"; };
 		7F739F3B2C08B89100FD2188 /* CreateGoalsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateGoalsViewController.swift; sourceTree = "<group>"; };
 		7F739F3D2C0988DE00FD2188 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		7F739F3F2C09E84D00FD2188 /* UserPosts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPosts.swift; sourceTree = "<group>"; };
+		7F739F412C0DC1F700FD2188 /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
 		7FD483D02BE730C900C46142 /* A4.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = A4.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FD484022BE73E1000C46142 /* MulticastDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MulticastDelegate.swift; sourceTree = "<group>"; };
 		9A137F085A9FDC909FD7BA3E /* Pods-A4.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-A4.debug.xcconfig"; path = "Target Support Files/Pods-A4/Pods-A4.debug.xcconfig"; sourceTree = "<group>"; };
@@ -160,10 +162,10 @@
 		7F739F262C08480000FD2188 /* Home Feed & Post */ = {
 			isa = PBXGroup;
 			children = (
-				7F739F242C08411500FD2188 /* FeedPostTableViewCell.swift */,
 				7F739F272C08485500FD2188 /* FeedHeaderTableViewCell.swift */,
-				7F739F292C08488600FD2188 /* FeedActionTableViewCell.swift */,
-				7F739F2B2C08489F00FD2188 /* FeedCommentLikeTableViewCell.swift */,
+				7F739F242C08411500FD2188 /* FeedPostTableViewCell.swift */,
+				7F739F292C08488600FD2188 /* FeedCaptionTableViewCell.swift */,
+				7F739F2B2C08489F00FD2188 /* FeedGoalsTableViewCell.swift */,
 			);
 			path = "Home Feed & Post";
 			sourceTree = "<group>";
@@ -176,6 +178,8 @@
 				7F3616C62BF2388A007C155B /* UserList.swift */,
 				7F3616C42BF21D75007C155B /* Hobby.swift */,
 				7F739F2E2C08495F00FD2188 /* StorageManager.swift */,
+				7F739F3F2C09E84D00FD2188 /* UserPosts.swift */,
+				7F739F412C0DC1F700FD2188 /* Post.swift */,
 			);
 			path = Resource;
 			sourceTree = "<group>";
@@ -226,7 +230,6 @@
 				7F4763D22BE7B77A007BA9AC /* FirebaseController.swift */,
 				7F4763CC2BE7B704007BA9AC /* RegisterViewController.swift */,
 				7F4763D02BE7B75C007BA9AC /* HomeTableViewController.swift */,
-				7F739F1A2C07803D00FD2188 /* HomeViewController.swift */,
 				7F4763E22BE7B8D5007BA9AC /* ProfileViewController.swift */,
 				7F4763C42BE7B691007BA9AC /* LoginViewController.swift */,
 				7F739F332C0873E900FD2188 /* UploadProgressViewController.swift */,
@@ -392,15 +395,16 @@
 				7F739F252C08411500FD2188 /* FeedPostTableViewCell.swift in Sources */,
 				7F4E748E2BF5C86F00F8E9FB /* GoogleServiceManager.swift in Sources */,
 				7F4763C52BE7B691007BA9AC /* LoginViewController.swift in Sources */,
-				7F739F1B2C07803D00FD2188 /* HomeViewController.swift in Sources */,
 				7F739F342C0873E900FD2188 /* UploadProgressViewController.swift in Sources */,
-				7F739F2A2C08488600FD2188 /* FeedActionTableViewCell.swift in Sources */,
+				7F739F2A2C08488600FD2188 /* FeedCaptionTableViewCell.swift in Sources */,
 				7F4763CF2BE7B735007BA9AC /* SceneDelegate.swift in Sources */,
 				7F7081832BEBA33D00E8F590 /* EditProfileViewController.swift in Sources */,
 				7F739F1F2C0787C200FD2188 /* PhotoCollectionViewCell.swift in Sources */,
 				7F739F322C085AF700FD2188 /* ProfileHeaderCollectionReusableView.swift in Sources */,
+				7F739F422C0DC1F700FD2188 /* Post.swift in Sources */,
 				7F739F2F2C08495F00FD2188 /* StorageManager.swift in Sources */,
 				7F4763CB2BE7B6E5007BA9AC /* UserManager.swift in Sources */,
+				7F739F402C09E84D00FD2188 /* UserPosts.swift in Sources */,
 				7FD484062BE73E1000C46142 /* MulticastDelegate.swift in Sources */,
 				7F3616CF2BF4F26C007C155B /* Event.swift in Sources */,
 				7F4763D32BE7B77A007BA9AC /* FirebaseController.swift in Sources */,
@@ -408,7 +412,7 @@
 				7F739F282C08485500FD2188 /* FeedHeaderTableViewCell.swift in Sources */,
 				7F3616C52BF21D75007C155B /* Hobby.swift in Sources */,
 				7F739F3A2C08B38500FD2188 /* GoalsTableViewController.swift in Sources */,
-				7F739F2C2C08489F00FD2188 /* FeedCommentLikeTableViewCell.swift in Sources */,
+				7F739F2C2C08489F00FD2188 /* FeedGoalsTableViewCell.swift in Sources */,
 				7F739F3C2C08B89100FD2188 /* CreateGoalsViewController.swift in Sources */,
 				7F4763CD2BE7B704007BA9AC /* RegisterViewController.swift in Sources */,
 				7F4763D12BE7B75C007BA9AC /* HomeTableViewController.swift in Sources */,

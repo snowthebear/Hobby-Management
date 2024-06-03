@@ -135,19 +135,8 @@ class FirebaseController: NSObject, DatabaseProtocol {
         }
 
         return userList
-//        if let currentList = currentUserList {
-//            // If there is already a team set for the current user, return it.
-//            print ("aaaa")
-//            return currentList
-//        } else {
-//            let userList = UserList()
-//            userList.name = listName
-//            userList.id = UUID().uuidString
-//            userListRef?.setData(["name": listName], merge: true)
-//            currentUserList = userList
-//            return userList
-//        }
     }
+    
     
     func deleteUserList(list: UserList) {
 //        userListRef?.delete()
@@ -319,16 +308,7 @@ class FirebaseController: NSObject, DatabaseProtocol {
                 }
             }
         }
-
-        
-//        if let hobbyReferences = userListData["hobbies"] as? [DocumentReference] {
-//            print ("\(userList.hobbies)")
-//            userList.hobbies = hobbyReferences.compactMap { reference in
-//                // convert DocumentReference to Superhero
-//                getHobbyByID(reference.documentID)
-//            }
-//        }
-//        
+     
         currentUserList = userList
         UserManager.shared.currentUserList = userList
         
@@ -428,57 +408,8 @@ class FirebaseController: NSObject, DatabaseProtocol {
                 }
             }
         }
-//        Auth.auth().signIn(withEmail: email, password: password) { [weak self] authResult, error in
-//            guard self != nil else {
-//                completion(.failure(AuthError.userNotFound))
-//                return
-//            }
-//            
-//            if let user = authResult?.user {
-//                self?.currentUser = user
-//                completion(.success(user))
-////                return
-//            }
-//
-//
-//            else if let error = error {
-//                completion(.failure(error))
-////                return
-//            }
-//        }
     }
-    
-    
-    
-//    func signUpWithEmail(email: String, password: String, completion: @escaping (Result<User, Error>) -> Void) {
-//        Auth.auth().createUser(withEmail: email, password: password) { [weak self] authResult, error in
-//               guard let self = self else {
-//                   completion(.failure(AuthError.userNotFound))
-//                   return
-//               }
-//
-//               if let error = error {
-//                   completion(.failure(error))
-//                   return
-//               }
-//
-//               guard let user = authResult?.user else {
-//                   completion(.failure(AuthError.userCreationFailed))
-//                   return
-//               }
-//            
-//               // Store user data in Firestore. Note: Do not store the password.
-//            let userData: [String: Any] = ["email": email, "password": password]
-////            self.currentUser = user
-//            self.database.collection("users").document(user.uid).setData(userData) { error in
-//                if let error = error {
-//                    completion(.failure(error))
-//                    return
-//                }
-//                
-//            }
-//        }
-//    }
+
     
     func signUpWithEmail(email: String, password: String, displayName:String, completion: @escaping (Result<User, Error>) -> Void) {
         authController.createUser(withEmail: email, password: password) { [weak self] authResult, error in
@@ -604,42 +535,6 @@ class FirebaseController: NSObject, DatabaseProtocol {
                     }
                 }
             }
-                
-            
-//            userRef.getDocument { document, error in
-//                if let document = document, document.exists {
-//                    // User document exists, no need to create
-//                    self.checkAndCreateUserList(for: user) { result in
-//                        switch result {
-//                        case .success:
-//                            self.setupUserListListener()
-//                            completion(.success(user))
-//                        case .failure(let error):
-//                            completion(.failure(error))
-//                        }
-//                    }
-//                } else {
-//                    // User document does not exist, create it
-//                    let userData: [String: Any] = [
-//                        "email": user.email ?? "",
-//                        "displayName": user.displayName ?? "",
-//                        "Hobby(s)": [],
-//                        "following": 0,
-//                        "followers": 0,
-//                        "total posts": 0,
-//                    ]
-//                    
-//                    userRef.setData(userData) { error in
-//                        if let error = error {
-//                            completion(.failure(error))
-//                        } else {
-//                            self.addUserList(listName: "\(user.displayName ?? "User")'s List")
-//                            self.setupUserListListener()
-//                            completion(.success(user))
-//                        }
-//                    }
-//                }
-//            }
         }
     }
     
@@ -719,6 +614,43 @@ class FirebaseController: NSObject, DatabaseProtocol {
             }
         }
     }
+    
+    
+//    func fetchPosts(completion: @escaping ([HomeFeedRenderViewModel]?) -> Void) {
+//        guard let userID = Auth.auth().currentUser?.uid else {
+//            print("Error: User not logged in")
+//            completion(nil)
+//            return
+//        }
+//        
+//        let postsRef = Firestore.firestore().collection("posts").whereField("userID", isEqualTo: userID)
+//        postsRef.getDocuments { (snapshot, error) in
+//            if let error = error {
+//                print("Error getting documents: \(error)")
+//                completion(nil)
+//                return
+//            }
+//
+//            guard let documents = snapshot?.documents, !documents.isEmpty else {
+//                print("No documents found")
+//                completion(nil)
+//                return
+//            }
+//
+//            let models = documents.compactMap { docSnapshot -> HomeFeedRenderViewModel? in
+//                guard let post = UserPost(dictionary: docSnapshot.data()) else { return nil }
+//                // Create your view models here
+//                return HomeFeedRenderViewModel(
+//                    header: RenderViewModel(renderType: .header(provider: self.currentUser!)),
+//                    post: RenderViewModel(renderType: .postContent(provider: post)),
+//                    actions: RenderViewModel(renderType: .actions(provider: "Actions for this post")),
+//                    comments: RenderViewModel(renderType: .comments(provider: post.comments ?? []))
+//                )
+//            }
+//            completion(models)
+//        }
+//    }
+
     
     
     // MARK: - Firebase Controller Specific m=Methods

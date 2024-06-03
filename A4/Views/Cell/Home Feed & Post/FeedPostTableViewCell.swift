@@ -6,24 +6,43 @@
 //
 
 import UIKit
+import SDWebImage
+
 
 class FeedPostTableViewCell: UITableViewCell {
     
-    static let identifier = "FeedPostTableViewCell"
 
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
+    @IBOutlet weak var postImageView: UIImageView!
+    
+    @IBOutlet weak var dateLabel: UILabel!
+    
+    
+    func configure(with photoURL: URL, date: Date) {
+        postImageView.image = nil
+        dateLabel.text = DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .short)
+        postImageView.sd_setImage(with: photoURL, placeholderImage: UIImage(named: "placeholder"))
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        postImageView.sd_cancelCurrentImageLoad()
+        postImageView.image = nil  // Optionally set a placeholder image
+    }
+
+//    private func loadImage(from url: URL) {
+//        
+//        URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+//            guard let data = data, error == nil else {
+//                print("Error downloading image: \(error?.localizedDescription ?? "No error info")")
+//                return
+//            }
+//            DispatchQueue.main.async {
+//                self?.postImageView.image = UIImage(data: data)
+//            }
+//        }.resume()
+//    }
+
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    public func configure() {
-        // configure the cell
-        
-    }
-    override func layoutSubviews() {
-        super.layoutSubviews()
+        super.init(coder: coder)
     }
 }

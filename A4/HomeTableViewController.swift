@@ -7,6 +7,7 @@
 
 import UIKit
 import FirebaseAuth
+import FirebaseFirestore
 
 
 
@@ -15,31 +16,36 @@ class HomeTableViewController: UITableViewController {
     var currentUserList: UserList?
     var userEmail: String?
     
+    var posts: [UserPost] = []
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.tabBarController?.navigationItem.hidesBackButton = true
+//        self.navigationItem.setHidesBackButton(true, animated: true)
+//        self.tabBarController?.navigationItem.hidesBackButton = true
+//        self.tabBarController?.navigationItem.title = "HOBSNAP"
+        print("aaaa")
+        fetchPosts()
+//        tableView.reloadData()
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         self.tabBarController?.navigationItem.hidesBackButton = true
      
-        print ("home user = \(currentUser)")
+     
         if let user = UserManager.shared.currentUser {
             if currentUser == nil{
                 currentUser = user
             }
-        }
-        
-        if let list = UserManager.shared.currentUserList {
-            if currentUserList == nil {
-                currentUserList = list
+            
+            if let list = UserManager.shared.currentUserList {
+                if currentUserList == nil {
+                    currentUserList = list
+                }
             }
         }
-        
-        print ("home list = \(currentUserList)")
-        print("user manager list = \(UserManager.shared.currentUserList)")
-        
+        print("vvv")
+        fetchPosts()
         
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
@@ -47,29 +53,63 @@ class HomeTableViewController: UITableViewController {
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem
     }
+    
+    func fetchPosts() {
+        let db = Firestore.firestore()
+        db.collection("posts").order(by: "postDate", descending: true).getDocuments { (querySnapshot, error) in
+            if let error = error {
+                print("Error getting documents: \(error)")
+            } else {
+                self.posts = querySnapshot?.documents.compactMap { UserPost(dictionary: $0.data()) } ?? []
+                DispatchQueue.main.async {
+                    self.tableView.reloadData()
+                }
+            }
+        }
+    }
+    
+    
 
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
-        return 0
+        return posts.count * 4
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
-        return 0
+        return 1
     }
     
 
-    /*
+    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "reuseIdentifier", for: indexPath)
+        let postIndex = indexPath.section / 4
+        let sectionType = indexPath.section % 4
+        let post = posts[postIndex]
 
-        // Configure the cell...
-
-        return cell
+        switch sectionType {
+        case 0: // Header cell
+            let cell = tableView.dequeueReusableCell(withIdentifier: "headerCell", for: indexPath) as! FeedHeaderTableViewCell
+            cell.configure(with: post.userID, userName: post.userName)
+            return cell
+        case 1: // Post content cell
+            let cell = tableView.dequeueReusableCell(withIdentifier: "postCell", for: indexPath) as! FeedPostTableViewCell
+            print("Setting image for section \(indexPath.section): \(post.photoURL)")
+            cell.configure(with: post.photoURL, date: post.date)
+            return cell
+        case 2: // Caption cell
+            let cell = tableView.dequeueReusableCell(withIdentifier: "captionCell", for: indexPath) as! FeedCaptionTableViewCell
+            cell.configure(with: post.caption)
+            return cell
+        case 3: // Goals cell
+            let cell = tableView.dequeueReusableCell(withIdentifier: "goalCell", for: indexPath) as! FeedGoalsTableViewCell
+            cell.configure(with: post.goals)
+            return cell
+        default:
+            fatalError("Unexpected IndexPath which is out of section bounds")
+        }
     }
-    */
+    
 
     /*
     // Override to support conditional editing of the table view.

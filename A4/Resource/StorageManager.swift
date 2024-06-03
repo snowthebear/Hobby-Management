@@ -21,7 +21,7 @@ public class StorageManager {
     
     // MARK: - Public
     
-    public func uploadUserPost(model: UserPost, completion: @escaping (Result<URL, Error>) -> Void) {
+    func uploadUserPost(model: UserPost, completion: @escaping (Result<URL, Error>) -> Void) {
         
     }
     
@@ -39,39 +39,3 @@ public class StorageManager {
     
 }
 
-public enum UserPostType {
-    case photo
-    case video
-}
-
-// Represent user posts
-public struct UserPost{
-    let identifier: String
-    let postType: UserPostType
-    let photoThumbnail: URL
-    let postURL: URL // either photo full resolution or video url
-    let caption: String?
-    let likeCount: [PostLikes]?
-    let comments: [PostComment]?
-    let createdDate: Date
-    
-}
-
-struct PostLikes {
-    let username: String
-    let postIdentifier: String
-}
-
-struct CommentLikes {
-    let username: String
-    let commentIdentifier: String
-}
-
-struct PostComment {
-    let identifier: String
-    let username: String
-    let text: String
-    let createdDate: Date
-    let commentLikes: CommentLikes
-    let likes: [CommentLikes]
-}

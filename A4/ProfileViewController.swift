@@ -114,8 +114,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        print("c")
-        
         super.viewWillAppear(animated)
         self.backViewForHamburger.isHidden = true
 //        self.tabBarController?.navigationController?.isNavigationBarHidden = true
@@ -205,8 +203,8 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         
         usersReference.document(userID).getDocument { [weak self] (document, error) in
             if let document = document, document.exists {
-                if let profilePictureURL = document.data()?["profilePictureURL"] as? String {
-                    self?.profilePictureView.sd_setImage(with: URL(string: profilePictureURL), completed: nil)
+                if let storageURL = document.data()?["storageURL"] as? String {
+                    self?.profilePictureView.sd_setImage(with: URL(string: storageURL), completed: nil)
                 }
                 if let userData = document.data() {
                     UserManager.shared.userData = userData
@@ -398,7 +396,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                 if let downloadURL = url {
                     // Update Firestore with the new image URL
                     self.usersReference.document(userID).setData([
-                        "profilePictureURL": downloadURL.absoluteString,
+                        "storageURL": downloadURL.absoluteString,
                     ], merge: true)
                 }
             }
@@ -411,7 +409,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
 //        uploadTask.observe(.success) { [weak self] snapshot in
 //            imageRef.downloadURL { (url, error) in
 //                if let downloadURL = url {
-//                    self?.usersReference.document(userID).setData(["profilePictureURL": downloadURL.absoluteString], merge: true)
+//                    self?.usersReference.document(userID).setData(["storageURL": downloadURL.absoluteString], merge: true)
 //                }
 //            }
 //        }
@@ -447,7 +445,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
 //        uploadTask.observe(.success) { [weak self] snapshot in
 //            imageRef.downloadURL { (url, error) in
 //                if let downloadURL = url {
-//                    self?.usersReference.document(userID).setData(["profilePictureURL": downloadURL.absoluteString], merge: true)
+//                    self?.usersReference.document(userID).setData(["storageURL": downloadURL.absoluteString], merge: true)
 //                }
 //            }
 //        }
@@ -467,8 +465,8 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         
         usersReference.document(userID).getDocument { [weak self] (document, error) in
             if let document = document, document.exists {
-                if let profilePictureURL = document.data()?["profilePictureURL"] as? String {
-                    self?.profilePictureView.sd_setImage(with: URL(string: profilePictureURL), completed: nil)
+                if let storageURL = document.data()?["storageURL"] as? String {
+                    self?.profilePictureView.sd_setImage(with: URL(string: storageURL), completed: nil)
                 }
                 if let userData = document.data() {
                     UserManager.shared.userData = userData
@@ -625,7 +623,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                 if let data = document.data() {
                     DispatchQueue.main.async { [weak self] in
                         self?.displayNameLabel.text = data["displayName"] as? String
-                        if let profileImageUrl = data["profilePictureURL"] as? String {
+                        if let profileImageUrl = data["storageURL"] as? String {
                             self?.loadProfileImage(urlString: profileImageUrl)
                         }
                     }
@@ -645,7 +643,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
 //                let data = document.data()
 //                self.displayNameLabel.text = data?["displayName"] as? String
 //                
-//                if let profileImageUrl = data?["profilePictureURL"] as? String {
+//                if let profileImageUrl = data?["storageURL"] as? String {
 //                    self.loadProfileImage(urlString: profileImageUrl)
 //                }
 //            } else {

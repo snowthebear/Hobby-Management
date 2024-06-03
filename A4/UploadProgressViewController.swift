@@ -32,6 +32,8 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.navigationItem.setHidesBackButton(true, animated: true)
+//        self.navigationController?.navigationBar.isHidden = true
         self.tabBarController?.navigationItem.hidesBackButton = true
         goalsPicker.dataSource = self
         goalsPicker.delegate = self
@@ -115,10 +117,14 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
 //        uploadPost()
         uploadPost { [weak self] success in
             DispatchQueue.main.async {
-                sender.isEnabled = !success  // Re-enable the button only if posting failed
+//                sender.isEnabled = !success  // Re-enable the button only if posting failed
                 if success {
                     self?.switchToHomePage()
+                    sender.isEnabled = true
                     
+                }
+                else{
+                    sender.isEnabled = true
                 }
             }
         }
