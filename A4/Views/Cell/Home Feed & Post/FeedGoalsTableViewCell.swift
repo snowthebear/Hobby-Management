@@ -9,7 +9,7 @@ import UIKit
 
 class FeedCommentLikeTableViewCell: UITableViewCell {
 
-    static let identifier = "FeedCommentLikeTableViewCell"
+    static let identifier = "commentCell"
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)

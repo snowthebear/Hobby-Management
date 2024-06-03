@@ -9,7 +9,7 @@ import UIKit
 
 class FeedActionTableViewCell: UITableViewCell {
 
-    static let identifier = "FeedActionTableViewCell"
+    static let identifier = "actionCell"
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
