@@ -20,10 +20,8 @@ class HomeTableViewController: UITableViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-//        self.navigationItem.setHidesBackButton(true, animated: true)
-//        self.tabBarController?.navigationItem.hidesBackButton = true
-//        self.tabBarController?.navigationItem.title = "HOBSNAP"
-        print("aaaa")
+        self.tabBarController?.navigationController?.isNavigationBarHidden = false
+        self.tabBarController?.navigationItem.title = "HOBSNAP"
         fetchPosts()
 //        tableView.reloadData()
     }
@@ -44,7 +42,6 @@ class HomeTableViewController: UITableViewController {
                 }
             }
         }
-        print("vvv")
         fetchPosts()
         
         // Uncomment the following line to preserve selection between presentations

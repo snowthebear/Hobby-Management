@@ -18,6 +18,20 @@ class SearchTableViewController: UITableViewController {
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem
     }
+    
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.tabBarController?.navigationController?.isNavigationBarHidden = true
+//        databaseController?.addListener(listener: self)
+//        self.currentUserList = UserManager.shared.currentUserList
+//        tableView.reloadData()
+        
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+    }
 
     // MARK: - Table view data source
 

@@ -46,6 +46,7 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        self.tabBarController?.navigationController?.isNavigationBarHidden = true
 //        databaseController?.addListener(listener: self)
 //        self.currentUserList = UserManager.shared.currentUserList
         fetchGoals()
