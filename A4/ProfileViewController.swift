@@ -25,7 +25,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     var storageReference = Storage.storage().reference()
     
     var currentUser: FirebaseAuth.User?
-    var currentUserLisr: UserList?
+    var currentUserList: UserList?
     var userEmail: String?
 //    var name: String?
     
@@ -73,7 +73,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         setProfilePicture()
         
         self.currentUser = UserManager.shared.currentUser
-        self.currentUserLisr = UserManager.shared.currentUserList
+        self.currentUserList = UserManager.shared.currentUserList
 
         setupCollectionView()
         Task {

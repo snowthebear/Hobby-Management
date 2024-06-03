@@ -18,8 +18,9 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
     weak var databaseController: DatabaseProtocol?
     var currentUser: FirebaseAuth.User?
     
-    @IBOutlet weak var imageView: UIImageView!
+    var currentUserList: UserList?
     
+    @IBOutlet weak var imageView: UIImageView!
     
     @IBOutlet weak var mediaDate: UIDatePicker!
     
@@ -29,6 +30,9 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
     
     @IBOutlet weak var scheduleDatePicker: UIDatePicker!
     
+    @IBOutlet weak var durationPicker: UIDatePicker!
+    
+    @IBOutlet weak var hobbyButton: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,10 +42,13 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
         goalsPicker.dataSource = self
         goalsPicker.delegate = self
         
+        
         self.currentUser = UserManager.shared.currentUser
-//        self.currentUserLisr = UserManager.shared.currentUserList
+        self.currentUserList = UserManager.shared.currentUserList
         
         fetchGoals()
+        configureDurationPicker()
+        setPopUpMenu()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -57,6 +64,49 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
 //        resetHolder()
+        fetchGoals()
+    }
+    
+    
+    @IBAction func hobbyButtonTapped(_ sender: UIButton) {
+        setPopUpMenu()
+    }
+    
+    func setPopUpMenu() {
+        guard let hobbies = currentUserList?.hobbies, !hobbies.isEmpty else {
+            print("No hobbies available or currentUserList is nil")
+            return
+        }
+        
+        let optionClosure = {(action: UIAction) in
+                    print(action.title)
+                }
+        
+        var optionsArray = [UIAction]()
+        let defaultAction = UIAction(title: "Select", state: .off, handler: optionClosure)
+        optionsArray.append(defaultAction)
+
+        for hobby in hobbies{
+            let action = UIAction(title: hobby.name!, state: .off, handler: optionClosure)
+            optionsArray.append(action)
+        }
+                
+        optionsArray[0].state = .on
+
+        // create an options menu
+        let optionsMenu = UIMenu(title: "", options: .displayInline, children: optionsArray)
+                
+        // add everything
+        hobbyButton.menu = optionsMenu
+
+        hobbyButton.changesSelectionAsPrimaryAction = true
+        hobbyButton.showsMenuAsPrimaryAction = true
+    }
+
+    
+    func configureDurationPicker() {
+        durationPicker.datePickerMode = .countDownTimer
+        durationPicker.minuteInterval = 1
     }
     
     
@@ -176,21 +226,28 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
             return
         }
         
+        guard let hobby = hobbyButton.titleLabel?.text else {
+            displayMessage(title: "Error", message: "Select a hobby!")
+            return
+        }
+        
         
         let selectedRow = goalsPicker.selectedRow(inComponent: 0)
         let selectedGoal = (goals.indices.contains(selectedRow)) ? goals[selectedRow] : ""
         let caption = captionTextField.text ?? ""
-//        let postDate = scheduleDatePicker.date
-        let postDate = Timestamp(date: scheduleDatePicker.date)
+        let postDate = Timestamp(date: mediaDate.date)
+        let scheduleDate = Timestamp(date: scheduleDatePicker.date)
         let metadata = StorageMetadata()
         metadata.contentType = "image/jpeg"
-//        
+     
         let postID = UUID().uuidString
-//        let storagePath = "posts/\(userID)/\(postID).jpg"
         let storagePath = "\(userID)/posts/\(postID).jpg"
         let storageRef = Storage.storage().reference().child(storagePath)
+        
+        let durationInSeconds = Int(durationPicker.countDownDuration)
+        let minutes = durationInSeconds / 60
     
-//        let storageRef = Storage.storage().reference().child("posts/\(userID)/\(UUID().uuidString).jpg")
+
         if let imageData = image.jpegData(compressionQuality: 0.8) {
             storageRef.putData(imageData, metadata: metadata) { metadata, error in
                 guard let metadata = metadata else {
@@ -201,11 +258,14 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
                 storageRef.downloadURL { url, error in
                     if let downloadURL = url {
                         let postData: [String: Any] = [
+                            "userID": userID,
+                            "hobby": hobby,
                             "imageUrl": downloadURL.absoluteString,
                             "goal": selectedGoal,
                             "caption": caption,
                             "postDate": postDate,
-                            "userID": userID
+                            "duration": minutes,
+                            "schedule": scheduleDate
                         ]
                         
                         Firestore.firestore().collection("posts").document(postID).setData(postData) { error in
@@ -253,14 +313,25 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
     private func markGoalAsCompleted(goal: String) {
         guard let userID = Auth.auth().currentUser?.uid else { return }
         let userDocRef = Firestore.firestore().collection("users").document(userID)
-        userDocRef.updateData([
-            "goals": FieldValue.arrayUnion([["title": goal, "completed": true]])
-        ]) { error in
-            if let error = error {
-                print("Error updating goal completion: \(error)")
+        userDocRef.getDocument { documentSnapshot, error in
+            if let document = documentSnapshot, document.exists, var goals = document.data()?["goals"] as? [[String: Any]] {
+                // Find the index of the goal that needs to be updated
+                if let index = goals.firstIndex(where: { ($0["title"] as? String) == goal }) {
+                    // Update the 'completed' status of the goal
+                    goals[index]["completed"] = true
+                }
+
+                // Update the goals array in Firestore
+                userDocRef.updateData(["goals": goals]) { error in
+                    if let error = error {
+                        print("Error updating goal completion: \(error)")
+                    } else {
+                        print("Goal marked as completed.")
+                        // Optionally notify the user of success
+                    }
+                }
             } else {
-                print("Goal marked as completed.")
-                // Optionally notify the user of success
+                print("Document does not exist or error fetching document: \(error?.localizedDescription ?? "Unknown error")")
             }
         }
     }

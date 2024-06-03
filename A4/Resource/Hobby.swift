@@ -18,6 +18,7 @@ class Hobby: NSObject, Codable {
     @DocumentID var id: String?
     var name: String?
     var interest: Int?
+    var duration: Int?
 }
 
 extension Hobby {

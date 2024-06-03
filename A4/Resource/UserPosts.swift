@@ -28,6 +28,7 @@ struct UserPost {
     var date: Date
     var caption: String
     var goals: String
+    var duration: Int
 
     init?(dictionary: [String: Any]) {
         guard let userID = dictionary["userID"] as? String else {
@@ -49,6 +50,7 @@ struct UserPost {
         self.date = date.dateValue()
         self.caption = dictionary["caption"] as? String ?? " - "
         self.goals = dictionary["goal"] as? String ?? ""
+        self.duration = dictionary["duration"] as? Int ?? 0
     }
 }
 

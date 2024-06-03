@@ -87,7 +87,7 @@ class HomeTableViewController: UITableViewController {
         case 1: // Post content cell
             let cell = tableView.dequeueReusableCell(withIdentifier: "postCell", for: indexPath) as! FeedPostTableViewCell
             print("Setting image for section \(indexPath.section): \(post.photoURL)")
-            cell.configure(with: post.photoURL, date: post.date)
+            cell.configure(with: post.photoURL, date: post.date, duration: post.duration)
             return cell
         case 2: // Caption cell
             let cell = tableView.dequeueReusableCell(withIdentifier: "captionCell", for: indexPath) as! FeedCaptionTableViewCell

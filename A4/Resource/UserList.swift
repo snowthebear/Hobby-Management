@@ -13,6 +13,7 @@ class UserList: NSObject, Codable {
     var name: String?
     var hobbies: [Hobby]
     
+    
     override init() {
         self.hobbies = []
         super.init()

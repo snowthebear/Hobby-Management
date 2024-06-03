@@ -16,10 +16,15 @@ class FeedPostTableViewCell: UITableViewCell {
     
     @IBOutlet weak var dateLabel: UILabel!
     
+    @IBOutlet weak var durationLabel: UILabel!
     
-    func configure(with photoURL: URL, date: Date) {
+    func configure(with photoURL: URL, date: Date, duration: Int) {
         postImageView.image = nil
         dateLabel.text = DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .short)
+        
+        let hours = String(duration / 60)
+        let minutes = String(duration % 60)
+        durationLabel.text = "\(hours) hour \(minutes) minute"
         postImageView.sd_setImage(with: photoURL, placeholderImage: UIImage(named: "placeholder"))
     }
     
