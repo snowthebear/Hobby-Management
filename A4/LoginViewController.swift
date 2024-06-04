@@ -94,16 +94,13 @@ class LoginViewController: UIViewController {
                 print("Google Sign-In error: Missing tokens")
                 return
             }
-            print("c")
-            
+      
             
             // Create the credential with unwrapped tokens
             let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: accessToken)
-            print("sini")
-            
+      
             self.firebaseController.signInWithGoogle(idToken: idToken, accessToken: accessToken) { [weak self] result in
-                guard let self = self else { 
-                    print("hnm")
+                guard let self = self else {
                     return }
 
                 switch result {
@@ -112,11 +109,10 @@ class LoginViewController: UIViewController {
                     UserManager.shared.currentUser = user
                     self.fetchUserDataAndProceed(user: user)
                     UserManager.shared.accessToken = accessToken
-//                    self.fetchCalendarEvents(accessToken: accessToken)
+                    self.fetchCalendarEvents(accessToken: accessToken)
                     
                     
                     self.performSegue(withIdentifier: "showHomeLogin", sender: self)
-                    print("ddd")
                     
                 case .failure(let error):
                     print("Error signing in with Google: \(error.localizedDescription)")

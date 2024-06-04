@@ -9,12 +9,16 @@ import Foundation
 import UIKit
 import GoogleAPIClientForREST
 import GoogleSignIn
+import FirebaseAuth
 
 
 class CalendarViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var monthLabel: UILabel!
+    
+    var currentUser: User?
+    var currentUserList: UserList?
     
     @IBAction func leftButton(_ sender: Any) {
         selectedDate = CalendarHelp().decreaseMonth(date: selectedDate)
@@ -28,10 +32,7 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     @IBAction func rightButton(_ sender: Any) {
         selectedDate = CalendarHelp().increaseMonth(date: selectedDate)
         setMonth()
-//        guard let newDate = Calendar.current.date(byAdding: .month, value: 1, to: selectedDate) else { return }
-//        selectedDate = newDate
-//        updateMonthLabel(for: selectedDate)
-//        fetchCalendarEvents(accessToken: UserManager.shared.accessToken!)
+
     }
     
     var selectedDate = Date()
@@ -44,8 +45,7 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     private let service = GTLRCalendarService()
     var calendarEvents: [GTLRCalendar_Event] = []
     
-    
-//    @IBOutlet weak var collectionView: UICollectionView!
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -56,20 +56,38 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
         self.setCellsView()
         self.fetchCalendarEvents(accessToken: UserManager.shared.accessToken!)
         
+        if let user = UserManager.shared.currentUser {
+            if currentUser == nil{
+                currentUser = user
+            }
+            
+            if let list = UserManager.shared.currentUserList {
+                if currentUserList == nil {
+                    currentUserList = list
+                }
+            }
+        }
         
     }
     
-    func setCellsView(){
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        setCellsView()  // Adjust collection view cell layout
+    }
+    
+    
+    func setCellsView() {
+        guard let collectionViewWidth = collectionView?.superview?.bounds.width else { return }
+
+        let width = collectionViewWidth / 7
+        let height = width
+
         let flowLayout = collectionView.collectionViewLayout as! UICollectionViewFlowLayout
-            flowLayout.itemSize = CGSize(width: (collectionView.frame.size.width - 2) / 8, height: (collectionView.frame.size.height - 2) / 8)
-            flowLayout.minimumInteritemSpacing = 0
-            flowLayout.minimumLineSpacing = 0
-            flowLayout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-//        let width = (collectionView.frame.size.width - 2) / 7
-//        let height = (collectionView.frame.size.height - 2) / 8
-//        
-//        let flowLayout = collectionView.collectionViewLayout as! UICollectionViewFlowLayout
-//        flowLayout.itemSize = CGSize(width: width, height: height)
+        flowLayout.itemSize = CGSize(width: width, height: height)
+        flowLayout.minimumInteritemSpacing = 0
+        flowLayout.minimumLineSpacing = 10
+        flowLayout.sectionInset = UIEdgeInsets.zero
+        collectionView.setCollectionViewLayout(flowLayout, animated: true)
     }
     
     
@@ -145,57 +163,7 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
         task.resume()
     }
     
-//    func fetchCalendarEvents(accessToken: String) {
-//        let query = GTLRCalendarQuery_EventsList.query(withCalendarId: "primary")
-//        query.timeMin = GTLRDateTime(date: selectedDate.startOfMonth())
-//        query.timeMax = GTLRDateTime(date: selectedDate.endOfMonth())
-//
-//        service.executeQuery(query) { [weak self] (ticket, result, error) in
-//            guard let self = self, let events = (result as? GTLRCalendar_Events)?.items, error == nil else {
-//                print("View controller has been deinitialized.")
-//                return
-//            }
-//            if let error = error {
-//                print("Error fetching events: \(error.localizedDescription)")
-//                return
-//            }
-//            guard let events = (result as? GTLRCalendar_Events)?.items else {
-//                print("No events found.")
-//                return
-//            }
-//
-//            // Map GTLRCalendar_Event directly to CalendarListEntry using the correct initializer
-////            self.events = events.map { CalendarListEntry(from: $0 as! Decoder) }
-//            
-//            // Reload the collection view on the main thread
-//            DispatchQueue.main.async {
-//                self.collectionView.reloadData()
-//            }
-//        }
-//    }
     
-//    func fetchCalendarEvents(accessToken: String) {
-//            let query = GTLRCalendarQuery_EventsList.query(withCalendarId: "primary")
-//            query.timeMin = GTLRDateTime(date: selectedDate.startOfMonth())
-//            query.timeMax = GTLRDateTime(date: selectedDate.endOfMonth())
-//
-//            service.executeQuery(query) { [weak self] (_, result, error) in
-//                guard let self = self else { return }
-//                if let error = error {
-//                    print("Error fetching events: \(error.localizedDescription)")
-//                    return
-//                }
-//                guard let events = (result as? GTLRCalendar_Events)?.items else {
-//                    print("No events found.")
-//                    return
-//                }
-//                self.events = events.map(CalendarListEntry.init)
-//                DispatchQueue.main.async {
-//                    self.populateTotalSquares() // ensure totalSquares and collectionView are updated
-//                }
-//            }
-//        }
-
 
 
 
@@ -233,6 +201,7 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     
     
     func parseEventsFromData(_ data: Data) -> [CalendarListEntry] {
+        print ("data = ", data)
         do {
             let decoder = JSONDecoder()
             let eventData = try decoder.decode(CalendarListResponse.self, from: data)
