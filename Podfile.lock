@@ -1216,6 +1216,7 @@ PODS:
   - GTMSessionFetcher/Core (3.4.1)
   - GTMSessionFetcher/Full (3.4.1):
     - GTMSessionFetcher/Core
+  - JTAppleCalendar (8.0.5)
   - leveldb-library (1.22.5)
   - nanopb (2.30910.0):
     - nanopb/decode (= 2.30910.0)
@@ -1244,6 +1245,7 @@ DEPENDENCIES:
   - GoogleAPIClientForREST/Calendar
   - GoogleSignIn
   - GTMSessionFetcher/Core (~> 3.4)
+  - JTAppleCalendar
   - SDWebImage
   - TOCropViewController
 
@@ -1278,6 +1280,7 @@ SPEC REPOS:
     - gRPC-Core
     - GTMAppAuth
     - GTMSessionFetcher
+    - JTAppleCalendar
     - leveldb-library
     - nanopb
     - PromisesObjC
@@ -1316,6 +1319,7 @@ SPEC CHECKSUMS:
   gRPC-Core: eee4be35df218649fe66d721a05a7f27a28f069b
   GTMAppAuth: f69bd07d68cd3b766125f7e072c45d7340dea0de
   GTMSessionFetcher: 8000756fc1c19d2e5697b90311f7832d2e33f6cd
+  JTAppleCalendar: 16c6501b22cb27520372c28b0a2e0b12c8d0cd73
   leveldb-library: e8eadf9008a61f9e1dde3978c086d2b6d9b9dc28
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
@@ -1324,6 +1328,6 @@ SPEC CHECKSUMS:
   SwiftAlgorithms: 38dda4731d19027fdeee1125f973111bf3386b53
   TOCropViewController: 80b8985ad794298fb69d3341de183f33d1853654
 
-PODFILE CHECKSUM: 5875c18e4b796489cc2a1dc3154cdb0cace61dd8
+PODFILE CHECKSUM: ccae872c9595972646440759dc67956681e8cece
 
 COCOAPODS: 1.15.2

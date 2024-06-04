@@ -28,6 +28,8 @@ target 'A4' do
   pod 'GoogleAPIClientForREST/Calendar'
   pod 'GTMSessionFetcher/Core', '~> 3.4'
 
+  pod 'JTAppleCalendar'
+
   
 end
 

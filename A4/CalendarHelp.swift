@@ -1,5 +1,5 @@
 //
-//  Calendar.swift
+//  CalendarHelp.swift
 //  A4
 //
 //  Created by Yenny Fransisca Halim on 04/06/24.
@@ -8,15 +8,15 @@
 import Foundation
 import UIKit
 
-class Calendar {
+class CalendarHelp {
     let calendar = Calendar.current
     
-    func plusMonth(date: Date) -> Date
+    func increaseMonth(date: Date) -> Date
     {
         return calendar.date(byAdding: .month, value: 1, to: date)!
     }
     
-    func minusMonth(date: Date) -> Date
+    func decreaseMonth(date: Date) -> Date
     {
         return calendar.date(byAdding: .month, value: -1, to: date)!
     }

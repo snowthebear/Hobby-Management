@@ -54,6 +54,11 @@
 		7F739F3E2C0988DF00FD2188 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7F739F3D2C0988DE00FD2188 /* GoogleService-Info.plist */; };
 		7F739F402C09E84D00FD2188 /* UserPosts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F3F2C09E84D00FD2188 /* UserPosts.swift */; };
 		7F739F422C0DC1F700FD2188 /* Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F412C0DC1F700FD2188 /* Post.swift */; };
+		7F739F442C0EC57600FD2188 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F432C0EC57600FD2188 /* CalendarView.swift */; };
+		7F739F462C0EC83800FD2188 /* EventCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F452C0EC83800FD2188 /* EventCell.swift */; };
+		7F739F482C0ECB8100FD2188 /* EventCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7F739F472C0ECB8100FD2188 /* EventCell.xib */; };
+		7F739F4A2C0ED81100FD2188 /* CalendarViewController2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F492C0ED81100FD2188 /* CalendarViewController2.swift */; };
+		7F739F4C2C0EDD9400FD2188 /* CalendarHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F4B2C0EDD9400FD2188 /* CalendarHelp.swift */; };
 		7FD484062BE73E1000C46142 /* MulticastDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FD484022BE73E1000C46142 /* MulticastDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -106,6 +111,11 @@
 		7F739F3D2C0988DE00FD2188 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		7F739F3F2C09E84D00FD2188 /* UserPosts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPosts.swift; sourceTree = "<group>"; };
 		7F739F412C0DC1F700FD2188 /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
+		7F739F432C0EC57600FD2188 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
+		7F739F452C0EC83800FD2188 /* EventCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventCell.swift; sourceTree = "<group>"; };
+		7F739F472C0ECB8100FD2188 /* EventCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = EventCell.xib; sourceTree = "<group>"; };
+		7F739F492C0ED81100FD2188 /* CalendarViewController2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarViewController2.swift; sourceTree = "<group>"; };
+		7F739F4B2C0EDD9400FD2188 /* CalendarHelp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarHelp.swift; sourceTree = "<group>"; };
 		7FD483D02BE730C900C46142 /* A4.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = A4.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FD484022BE73E1000C46142 /* MulticastDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MulticastDelegate.swift; sourceTree = "<group>"; };
 		9A137F085A9FDC909FD7BA3E /* Pods-A4.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-A4.debug.xcconfig"; path = "Target Support Files/Pods-A4/Pods-A4.debug.xcconfig"; sourceTree = "<group>"; };
@@ -146,6 +156,7 @@
 			children = (
 				7F739F262C08480000FD2188 /* Home Feed & Post */,
 				7F739F1E2C0787C200FD2188 /* PhotoCollectionViewCell.swift */,
+				7F739F452C0EC83800FD2188 /* EventCell.swift */,
 			);
 			path = Cell;
 			sourceTree = "<group>";
@@ -238,6 +249,7 @@
 				7F4763EA2BE914C4007BA9AC /* HamburgerViewController.swift */,
 				7F3616C22BEFB0B2007C155B /* SearchTableViewController.swift */,
 				7F3616C82BF4D5AC007C155B /* CalendarViewController.swift */,
+				7F739F432C0EC57600FD2188 /* CalendarView.swift */,
 				7F3616CC2BF4E418007C155B /* EventCollectionViewCell.swift */,
 				7FD483D12BE730C900C46142 /* Products */,
 				7F4763DC2BE7B824007BA9AC /* Info.plist */,
@@ -250,6 +262,9 @@
 				7F4E74932BF5E1E600F8E9FB /* CalendarCell.swift */,
 				7F739F222C083CA900FD2188 /* Extension.swift */,
 				7F739F3B2C08B89100FD2188 /* CreateGoalsViewController.swift */,
+				7F739F472C0ECB8100FD2188 /* EventCell.xib */,
+				7F739F492C0ED81100FD2188 /* CalendarViewController2.swift */,
+				7F739F4B2C0EDD9400FD2188 /* CalendarHelp.swift */,
 			);
 			path = A4;
 			sourceTree = "<group>";
@@ -330,6 +345,7 @@
 				7F4763E92BE7BBE0007BA9AC /* LaunchScreen.storyboard in Resources */,
 				7F4763C02BE7B62C007BA9AC /* Main.storyboard in Resources */,
 				7F4763E12BE7B87B007BA9AC /* Assets.xcassets in Resources */,
+				7F739F482C0ECB8100FD2188 /* EventCell.xib in Resources */,
 				7F1176B52BF5EE2400F88814 /* GoogleService-Info-3.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -392,7 +408,9 @@
 				7F4763E32BE7B8D5007BA9AC /* ProfileViewController.swift in Sources */,
 				7F4763EB2BE914C4007BA9AC /* HamburgerViewController.swift in Sources */,
 				7F4763DB2BE7B7EB007BA9AC /* DatabaseProtocol.swift in Sources */,
+				7F739F4C2C0EDD9400FD2188 /* CalendarHelp.swift in Sources */,
 				7F739F252C08411500FD2188 /* FeedPostTableViewCell.swift in Sources */,
+				7F739F442C0EC57600FD2188 /* CalendarView.swift in Sources */,
 				7F4E748E2BF5C86F00F8E9FB /* GoogleServiceManager.swift in Sources */,
 				7F4763C52BE7B691007BA9AC /* LoginViewController.swift in Sources */,
 				7F739F342C0873E900FD2188 /* UploadProgressViewController.swift in Sources */,
@@ -406,6 +424,7 @@
 				7F4763CB2BE7B6E5007BA9AC /* UserManager.swift in Sources */,
 				7F739F402C09E84D00FD2188 /* UserPosts.swift in Sources */,
 				7FD484062BE73E1000C46142 /* MulticastDelegate.swift in Sources */,
+				7F739F462C0EC83800FD2188 /* EventCell.swift in Sources */,
 				7F3616CF2BF4F26C007C155B /* Event.swift in Sources */,
 				7F4763D32BE7B77A007BA9AC /* FirebaseController.swift in Sources */,
 				7F3616BF2BEFA35E007C155B /* AllHobbiesTableViewController.swift in Sources */,
@@ -414,6 +433,7 @@
 				7F739F3A2C08B38500FD2188 /* GoalsTableViewController.swift in Sources */,
 				7F739F2C2C08489F00FD2188 /* FeedGoalsTableViewCell.swift in Sources */,
 				7F739F3C2C08B89100FD2188 /* CreateGoalsViewController.swift in Sources */,
+				7F739F4A2C0ED81100FD2188 /* CalendarViewController2.swift in Sources */,
 				7F4763CD2BE7B704007BA9AC /* RegisterViewController.swift in Sources */,
 				7F4763D12BE7B75C007BA9AC /* HomeTableViewController.swift in Sources */,
 				7F3616C32BEFB0B2007C155B /* SearchTableViewController.swift in Sources */,

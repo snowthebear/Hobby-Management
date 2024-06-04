@@ -17,17 +17,21 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     @IBOutlet weak var monthLabel: UILabel!
     
     @IBAction func leftButton(_ sender: Any) {
-        guard let newDate = Calendar.current.date(byAdding: .month, value: -1, to: selectedDate) else { return }
-        selectedDate = newDate
-        updateMonthLabel(for: selectedDate)
-        fetchCalendarEvents(accessToken: UserManager.shared.accessToken!)
+        selectedDate = CalendarHelp().decreaseMonth(date: selectedDate)
+        setMonth()
+//        guard let newDate = Calendar.current.date(byAdding: .month, value: -1, to: selectedDate) else { return }
+//        selectedDate = newDate
+//        updateMonthLabel(for: selectedDate)
+//        fetchCalendarEvents(accessToken: UserManager.shared.accessToken!)
     }
     
     @IBAction func rightButton(_ sender: Any) {
-        guard let newDate = Calendar.current.date(byAdding: .month, value: 1, to: selectedDate) else { return }
-        selectedDate = newDate
-        updateMonthLabel(for: selectedDate)
-        fetchCalendarEvents(accessToken: UserManager.shared.accessToken!)
+        selectedDate = CalendarHelp().increaseMonth(date: selectedDate)
+        setMonth()
+//        guard let newDate = Calendar.current.date(byAdding: .month, value: 1, to: selectedDate) else { return }
+//        selectedDate = newDate
+//        updateMonthLabel(for: selectedDate)
+//        fetchCalendarEvents(accessToken: UserManager.shared.accessToken!)
     }
     
     var selectedDate = Date()
@@ -51,21 +55,56 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
         setupCalendar()
         self.setCellsView()
         self.fetchCalendarEvents(accessToken: UserManager.shared.accessToken!)
+        
+        
     }
     
     func setCellsView(){
-        let width = (collectionView.frame.size.width - 2) / 8
-        let height = (collectionView.frame.size.height - 2) / 8
-        
         let flowLayout = collectionView.collectionViewLayout as! UICollectionViewFlowLayout
-        flowLayout.itemSize = CGSize(width: width, height: height)
+            flowLayout.itemSize = CGSize(width: (collectionView.frame.size.width - 2) / 8, height: (collectionView.frame.size.height - 2) / 8)
+            flowLayout.minimumInteritemSpacing = 0
+            flowLayout.minimumLineSpacing = 0
+            flowLayout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+//        let width = (collectionView.frame.size.width - 2) / 7
+//        let height = (collectionView.frame.size.height - 2) / 8
+//        
+//        let flowLayout = collectionView.collectionViewLayout as! UICollectionViewFlowLayout
+//        flowLayout.itemSize = CGSize(width: width, height: height)
     }
+    
     
     func setupCalendar() {
         let currentDate = Date()
         selectedDate = currentDate
         updateMonthLabel(for: currentDate)
-//        populateTotalSquares()
+        populateTotalSquares()
+    }
+    
+    func setMonth() {
+        totalSquares.removeAll()
+        
+        let daysInMonth = CalendarHelp().daysInMonth(date: selectedDate)
+        let firstDayOfMonth = CalendarHelp().firstOfMonth(date: selectedDate)
+        let startingSpaces = CalendarHelp().weekDay(date: firstDayOfMonth)
+        
+        var count: Int = 1
+        
+        while(count <= 42)
+        {
+            if(count <= startingSpaces || count - startingSpaces > daysInMonth)
+            {
+                totalSquares.append("")
+            }
+            else
+            {
+                totalSquares.append(String(count - startingSpaces))
+            }
+            count += 1
+        }
+        
+        monthLabel.text = CalendarHelp().monthString(date: selectedDate)
+            + " " + CalendarHelp().yearString(date: selectedDate)
+        collectionView.reloadData()
     }
 
     func updateMonthLabel(for date: Date) {
@@ -208,9 +247,10 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     
     // MARK: UICollectionViewDataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        // Return the number of days in the month
-        print("Number of events: \(events.count)")
-        return events.count
+//        print("Number of events: \(events.count)")
+//        return events.count
+            
+        return totalSquares.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -233,6 +273,10 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
         print("You selected cell #\(indexPath.item)!")
     }
     
+    
+    override open var shouldAutorotate: Bool {
+        return false
+    }
     
     
     

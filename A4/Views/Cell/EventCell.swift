@@ -6,3 +6,8 @@
 //
 
 import Foundation
+import JTAppleCalendar
+
+class EventCell: JTACDayCell {
+    @IBOutlet var dateLabel: UILabel!
+}
