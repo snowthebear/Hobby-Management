@@ -41,7 +41,19 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     private let service = GTLRCalendarService()
     var calendarEvents: [GTLRCalendar_Event] = []
     
-
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.tabBarController?.navigationController?.isNavigationBarHidden = false
+        self.fetchCalendarEvents(accessToken: UserManager.shared.accessToken!)
+//        self.collectionView.reloadData()
+        
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+     
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -81,7 +93,7 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
         let flowLayout = collectionView.collectionViewLayout as! UICollectionViewFlowLayout
         flowLayout.itemSize = CGSize(width: width, height: height)
         flowLayout.minimumInteritemSpacing = 0
-        flowLayout.minimumLineSpacing = 10
+        flowLayout.minimumLineSpacing = 30
         flowLayout.sectionInset = UIEdgeInsets.zero
         collectionView.setCollectionViewLayout(flowLayout, animated: true)
     }
@@ -103,14 +115,11 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
         
         var count: Int = 1
         
-        while(count <= 42)
-        {
-            if(count <= startingSpaces || count - startingSpaces > daysInMonth)
-            {
+        while(count <= 42) {
+            if(count <= startingSpaces || count - startingSpaces > daysInMonth){
                 totalSquares.append("")
             }
-            else
-            {
+            else {
                 totalSquares.append(String(count - startingSpaces))
             }
             count += 1
@@ -163,7 +172,9 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
             if let events = self.parseEventsFromData(jsonData: data) {
                 print("masuk parse if")
                 DispatchQueue.main.async {
-                    // Handle the fetched events, e.g., save to a property or update UI
+                    self.events = events
+                    self.fetchEventsForCalendars(accessToken: accessToken, calendars: events)
+//                    self.collectionView.reloadData()
                     print("Fetched and parsed \(events.count) calendar events.")
                 }
             } else {
@@ -175,6 +186,56 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
         }
         task.resume()
     }
+    
+    
+    func fetchEventsForCalendars(accessToken: String, calendars: [CalendarListEntry]) {
+        let group = DispatchGroup()
+
+        for calendar in calendars {
+            group.enter()
+            fetchEvents(for: calendar.id, accessToken: accessToken) { [weak self] events in
+                guard let self = self else { return }
+                self.calendarEvents.append(contentsOf: events)
+                group.leave()
+            }
+        }
+
+        group.notify(queue: .main) {
+            self.collectionView.reloadData()
+        }
+    }
+    
+    
+    func fetchEvents(for calendarId: String, accessToken: String, completion: @escaping ([GTLRCalendar_Event]) -> Void) {
+        guard let url = URL(string: "https://www.googleapis.com/calendar/v3/calendars/\(calendarId)/events") else {
+            print("Invalid URL")
+            completion([])
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                print("Error fetching events: \(error?.localizedDescription ?? "Unknown error")")
+                completion([])
+                return
+            }
+
+            do {
+                let eventsResponse = try JSONDecoder().decode(EventsResponse.self, from: data)
+                completion(eventsResponse.items)
+            } catch {
+                print("Error parsing events data: \(error.localizedDescription)")
+                completion([])
+            }
+        }
+        task.resume()
+    }
+
 
     func parseEventsFromData(jsonData: Data) -> [CalendarListEntry]? {
         let decoder = JSONDecoder()
@@ -228,17 +289,7 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     }
     
 
-//    func parseEventsFromData(jsonData: Data) -> [CalendarListEntry]? {
-//        let decoder = JSONDecoder()
-//        do {
-//            let calendarList = try decoder.decode(CalendarListResponse.self, from: jsonData)
-//            return calendarList.items
-//        } catch {
-//            print("Error decoding JSON: \(error)")
-//            return nil
-//        }
-//    }
-    
+
     
     
     
@@ -258,6 +309,22 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
         let day = totalSquares[indexPath.item]
         cell.dayOfMoth.text = day
         cell.eventLabel.text = ""
+        
+    if let dayInt = Int(day) {
+            let currentMonth = Calendar.current.component(.month, from: selectedDate)
+            let currentYear = Calendar.current.component(.year, from: selectedDate)
+            let currentDateComponents = DateComponents(year: currentYear, month: currentMonth, day: dayInt)
+            let currentDate = Calendar.current.date(from: currentDateComponents)
+
+            for event in calendarEvents {
+                if let eventStart = event.start.dateTime ?? event.start.date,
+                   let eventDate = ISO8601DateFormatter().date(from: eventStart),
+                   Calendar.current.isDate(eventDate, inSameDayAs: currentDate!) {
+                    cell.eventLabel.text = event.summary
+                    break
+                }
+            }
+        }
         
         return cell
     }

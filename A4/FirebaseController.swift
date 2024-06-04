@@ -572,7 +572,7 @@ class FirebaseController: NSObject, DatabaseProtocol {
     }
     
     
-    func fetchCalendarEvents(accessToken: String, completion: @escaping (Result<[Event], Error>) -> Void) {
+    func fetchCalendarEvents(accessToken: String, completion: @escaping (Result<[GTLRCalendar_Event], Error>) -> Void) {
         let url = URL(string: "https://www.googleapis.com/calendar/v3/calendars/primary/events")!
         var request = URLRequest(url: url)
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")

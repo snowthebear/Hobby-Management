@@ -14,5 +14,7 @@ class EventCollectionViewCell: UICollectionViewCell {
     
     @IBOutlet weak var eventLabel: UILabel!
     
+    
+   
  
 }
