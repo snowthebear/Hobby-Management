@@ -11,5 +11,8 @@ import UIKit
 class EventCollectionViewCell: UICollectionViewCell {
     
     @IBOutlet weak var dayOfMoth: UILabel!
+    
+    @IBOutlet weak var eventLabel: UILabel!
+    
  
 }

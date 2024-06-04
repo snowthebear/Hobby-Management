@@ -12,7 +12,7 @@ import GoogleAPIClientForREST
 struct CalendarListResponse: Codable {
     let kind: String
     let etag: String
-    let nextSyncToken: String
+    let nextSyncToken: String?
     let items: [CalendarListEntry]
 }
 
@@ -21,6 +21,7 @@ struct CalendarListEntry: Codable {
     let etag: String
     let id: String
     let summary: String
+    let description: String?
     let timeZone: String
     let colorId: String
     let backgroundColor: String
@@ -28,12 +29,10 @@ struct CalendarListEntry: Codable {
     let selected: Bool
     let accessRole: String
     let defaultReminders: [Reminder]
-    let notificationSettings: NotificationSettings
-    let primary: Bool
+    let notificationSettings: NotificationSettings?
+    let primary: Bool?
     let conferenceProperties: ConferenceProperties
 }
-
-
 
 struct Reminder: Codable {
     let method: String

@@ -109,7 +109,7 @@ class LoginViewController: UIViewController {
                     UserManager.shared.currentUser = user
                     self.fetchUserDataAndProceed(user: user)
                     UserManager.shared.accessToken = accessToken
-                    self.fetchCalendarEvents(accessToken: accessToken)
+//                    self.fetchCalendarEvents(accessToken: accessToken)
                     
                     
                     self.performSegue(withIdentifier: "showHomeLogin", sender: self)
@@ -173,36 +173,57 @@ class LoginViewController: UIViewController {
 //        }
     }
     
-    
-    
-    func fetchCalendarEvents(accessToken: String) {
-        guard let url = URL(string: "https://www.googleapis.com/calendar/v3/calendarList") else {
-            print("Invalid URL")
-            return
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization") // Securely passing the access token
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data = data, error == nil else {
-                print("Error fetching calendar events: \(error?.localizedDescription ?? "Unknown error")")
-                return
-            }
-
-            do {
-                let jsonResponse = try JSONSerialization.jsonObject(with: data, options: [])
-                print("Calendar events: \(jsonResponse)") // Here, handle the parsed data as needed
-            } catch {
-                print("Error parsing calendar data: \(error.localizedDescription)")
-            }
-        }
-        task.resume()
-    }
-
-    
+//    
+//    
+//    func fetchCalendarEvents(accessToken: String) {
+//        guard let url = URL(string: "https://www.googleapis.com/calendar/v3/users/me/calendarList") else {
+//            print("Invalid URL")
+//            return
+//        }
+//
+//        var request = URLRequest(url: url)
+//        request.httpMethod = "GET"
+//        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+//        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+//
+//        let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+//            guard let self = self else { return }
+//
+//            if let error = error {
+//                print("Error fetching calendar events: \(error.localizedDescription)")
+//                return
+//            }
+//
+//            if let httpResponse = response as? HTTPURLResponse {
+//                print("HTTP Response Status Code: \(httpResponse.statusCode)")
+//                print("HTTP Response Headers: \(httpResponse.allHeaderFields)")
+//            }
+//
+//            guard let data = data else {
+//                print("Error: Did not receive data")
+//                return
+//            }
+//
+//            self.printRawJSON(data: data)
+//
+//            if let events = self.parseEventsFromData(jsonData: data) {
+//                DispatchQueue.main.async {
+//                    // Handle the fetched events, e.g., save to a property or update UI
+//                    UserManager.shared.calendarEvents = events
+//                    print("Fetched and parsed \(events.count) calendar events.")
+//                    // Perform any additional actions with the events if needed
+//                }
+//            } else {
+//                print("Failed to parse events from data.")
+//                if let errorMessage = self.checkForAPIError(data: data) {
+//                    self.handleAPIError(message: errorMessage)
+//                }
+//            }
+//        }
+//        task.resume()
+//    }
+//
+//    
   
       
     func setKeepMeSignedInPreference(_ keepSignedIn: Bool) {

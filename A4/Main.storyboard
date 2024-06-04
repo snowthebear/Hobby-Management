@@ -483,26 +483,40 @@
                                 </collectionViewFlowLayout>
                                 <cells>
                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="calendarCell" id="9WW-Ns-vrj" customClass="EventCollectionViewCell" customModule="A4" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="127.99999999999997" height="128"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="127.99999999999997" height="127.66666666666667"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="7bf-fH-dKd">
-                                            <rect key="frame" x="0.0" y="0.0" width="127.99999999999997" height="128"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="127.99999999999997" height="127.66666666666667"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="1" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uUD-y1-X86">
-                                                    <rect key="frame" x="60.333333333333336" y="22" width="7.6666666666666643" height="20.333333333333329"/>
+                                                    <rect key="frame" x="60.333333333333336" y="22" width="7.6666666666666643" height="20"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="event" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6am-DQ-kFr">
+                                                    <rect key="frame" x="43" y="55.666666666666657" width="38" height="18"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="18" id="2sV-wa-FUl"/>
+                                                    </constraints>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
                                             </subviews>
                                             <constraints>
+                                                <constraint firstItem="6am-DQ-kFr" firstAttribute="top" secondItem="uUD-y1-X86" secondAttribute="bottom" constant="13.666666666666671" id="8bz-FO-f4m"/>
                                                 <constraint firstItem="uUD-y1-X86" firstAttribute="centerY" secondItem="7bf-fH-dKd" secondAttribute="centerY" multiplier="0.5" id="Mn7-JJ-NZY"/>
+                                                <constraint firstItem="6am-DQ-kFr" firstAttribute="leading" secondItem="7bf-fH-dKd" secondAttribute="leading" constant="43" id="Oc9-Cu-5Ux"/>
+                                                <constraint firstAttribute="bottom" secondItem="6am-DQ-kFr" secondAttribute="bottom" constant="54" id="Uwi-CR-dsR"/>
+                                                <constraint firstAttribute="trailing" secondItem="6am-DQ-kFr" secondAttribute="trailing" constant="47" id="sOP-dw-XwZ"/>
                                                 <constraint firstItem="uUD-y1-X86" firstAttribute="centerX" secondItem="7bf-fH-dKd" secondAttribute="centerX" id="uhO-7J-wCE"/>
                                             </constraints>
                                         </collectionViewCellContentView>
                                         <connections>
                                             <outlet property="dayOfMoth" destination="uUD-y1-X86" id="sEw-jb-27e"/>
+                                            <outlet property="eventLabel" destination="6am-DQ-kFr" id="D6v-W1-mIJ"/>
                                         </connections>
                                     </collectionViewCell>
                                 </cells>

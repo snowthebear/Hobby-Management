@@ -37,7 +37,6 @@
 		7F4763EB2BE914C4007BA9AC /* HamburgerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4763EA2BE914C4007BA9AC /* HamburgerViewController.swift */; };
 		7F4E748E2BF5C86F00F8E9FB /* GoogleServiceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4E748D2BF5C86F00F8E9FB /* GoogleServiceManager.swift */; };
 		7F4E74922BF5DAF900F8E9FB /* CalendarListResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4E74912BF5DAF900F8E9FB /* CalendarListResponse.swift */; };
-		7F4E74942BF5E1E600F8E9FB /* CalendarCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4E74932BF5E1E600F8E9FB /* CalendarCell.swift */; };
 		7F7081832BEBA33D00E8F590 /* EditProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F7081822BEBA33D00E8F590 /* EditProfileViewController.swift */; };
 		7F739F1F2C0787C200FD2188 /* PhotoCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F1E2C0787C200FD2188 /* PhotoCollectionViewCell.swift */; };
 		7F739F212C083AD200FD2188 /* PhotoCollectionReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F202C083AD200FD2188 /* PhotoCollectionReusableView.swift */; };
@@ -53,8 +52,6 @@
 		7F739F3C2C08B89100FD2188 /* CreateGoalsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F3B2C08B89100FD2188 /* CreateGoalsViewController.swift */; };
 		7F739F3E2C0988DF00FD2188 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7F739F3D2C0988DE00FD2188 /* GoogleService-Info.plist */; };
 		7F739F402C09E84D00FD2188 /* UserPosts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F3F2C09E84D00FD2188 /* UserPosts.swift */; };
-		7F739F422C0DC1F700FD2188 /* Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F412C0DC1F700FD2188 /* Post.swift */; };
-		7F739F442C0EC57600FD2188 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F432C0EC57600FD2188 /* CalendarView.swift */; };
 		7F739F462C0EC83800FD2188 /* EventCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F452C0EC83800FD2188 /* EventCell.swift */; };
 		7F739F482C0ECB8100FD2188 /* EventCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7F739F472C0ECB8100FD2188 /* EventCell.xib */; };
 		7F739F4A2C0ED81100FD2188 /* CalendarViewController2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F492C0ED81100FD2188 /* CalendarViewController2.swift */; };
@@ -94,7 +91,6 @@
 		7F4763EA2BE914C4007BA9AC /* HamburgerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HamburgerViewController.swift; sourceTree = "<group>"; };
 		7F4E748D2BF5C86F00F8E9FB /* GoogleServiceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleServiceManager.swift; sourceTree = "<group>"; };
 		7F4E74912BF5DAF900F8E9FB /* CalendarListResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarListResponse.swift; sourceTree = "<group>"; };
-		7F4E74932BF5E1E600F8E9FB /* CalendarCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarCell.swift; sourceTree = "<group>"; };
 		7F7081822BEBA33D00E8F590 /* EditProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfileViewController.swift; sourceTree = "<group>"; };
 		7F739F1E2C0787C200FD2188 /* PhotoCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCollectionViewCell.swift; sourceTree = "<group>"; };
 		7F739F202C083AD200FD2188 /* PhotoCollectionReusableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCollectionReusableView.swift; sourceTree = "<group>"; };
@@ -110,8 +106,6 @@
 		7F739F3B2C08B89100FD2188 /* CreateGoalsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreateGoalsViewController.swift; sourceTree = "<group>"; };
 		7F739F3D2C0988DE00FD2188 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		7F739F3F2C09E84D00FD2188 /* UserPosts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPosts.swift; sourceTree = "<group>"; };
-		7F739F412C0DC1F700FD2188 /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
-		7F739F432C0EC57600FD2188 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		7F739F452C0EC83800FD2188 /* EventCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventCell.swift; sourceTree = "<group>"; };
 		7F739F472C0ECB8100FD2188 /* EventCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = EventCell.xib; sourceTree = "<group>"; };
 		7F739F492C0ED81100FD2188 /* CalendarViewController2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarViewController2.swift; sourceTree = "<group>"; };
@@ -190,7 +184,7 @@
 				7F3616C42BF21D75007C155B /* Hobby.swift */,
 				7F739F2E2C08495F00FD2188 /* StorageManager.swift */,
 				7F739F3F2C09E84D00FD2188 /* UserPosts.swift */,
-				7F739F412C0DC1F700FD2188 /* Post.swift */,
+				7F3616CC2BF4E418007C155B /* EventCollectionViewCell.swift */,
 			);
 			path = Resource;
 			sourceTree = "<group>";
@@ -249,8 +243,7 @@
 				7F4763EA2BE914C4007BA9AC /* HamburgerViewController.swift */,
 				7F3616C22BEFB0B2007C155B /* SearchTableViewController.swift */,
 				7F3616C82BF4D5AC007C155B /* CalendarViewController.swift */,
-				7F739F432C0EC57600FD2188 /* CalendarView.swift */,
-				7F3616CC2BF4E418007C155B /* EventCollectionViewCell.swift */,
+				7F739F4B2C0EDD9400FD2188 /* CalendarHelp.swift */,
 				7FD483D12BE730C900C46142 /* Products */,
 				7F4763DC2BE7B824007BA9AC /* Info.plist */,
 				7F4763E62BE7B90F007BA9AC /* GoogleService-Info-2.plist */,
@@ -259,12 +252,10 @@
 				7F739F3D2C0988DE00FD2188 /* GoogleService-Info.plist */,
 				7F4763D62BE7B7B3007BA9AC /* Google-Calendar.plist */,
 				7F4E748D2BF5C86F00F8E9FB /* GoogleServiceManager.swift */,
-				7F4E74932BF5E1E600F8E9FB /* CalendarCell.swift */,
 				7F739F222C083CA900FD2188 /* Extension.swift */,
 				7F739F3B2C08B89100FD2188 /* CreateGoalsViewController.swift */,
 				7F739F472C0ECB8100FD2188 /* EventCell.xib */,
 				7F739F492C0ED81100FD2188 /* CalendarViewController2.swift */,
-				7F739F4B2C0EDD9400FD2188 /* CalendarHelp.swift */,
 			);
 			path = A4;
 			sourceTree = "<group>";
@@ -403,14 +394,12 @@
 				7F3616CD2BF4E418007C155B /* EventCollectionViewCell.swift in Sources */,
 				7F4E74922BF5DAF900F8E9FB /* CalendarListResponse.swift in Sources */,
 				7F4763D52BE7B795007BA9AC /* displayMessage.swift in Sources */,
-				7F4E74942BF5E1E600F8E9FB /* CalendarCell.swift in Sources */,
 				7F3616C12BEFA702007C155B /* UserHobbiesTableViewController.swift in Sources */,
 				7F4763E32BE7B8D5007BA9AC /* ProfileViewController.swift in Sources */,
 				7F4763EB2BE914C4007BA9AC /* HamburgerViewController.swift in Sources */,
 				7F4763DB2BE7B7EB007BA9AC /* DatabaseProtocol.swift in Sources */,
 				7F739F4C2C0EDD9400FD2188 /* CalendarHelp.swift in Sources */,
 				7F739F252C08411500FD2188 /* FeedPostTableViewCell.swift in Sources */,
-				7F739F442C0EC57600FD2188 /* CalendarView.swift in Sources */,
 				7F4E748E2BF5C86F00F8E9FB /* GoogleServiceManager.swift in Sources */,
 				7F4763C52BE7B691007BA9AC /* LoginViewController.swift in Sources */,
 				7F739F342C0873E900FD2188 /* UploadProgressViewController.swift in Sources */,
@@ -419,7 +408,6 @@
 				7F7081832BEBA33D00E8F590 /* EditProfileViewController.swift in Sources */,
 				7F739F1F2C0787C200FD2188 /* PhotoCollectionViewCell.swift in Sources */,
 				7F739F322C085AF700FD2188 /* ProfileHeaderCollectionReusableView.swift in Sources */,
-				7F739F422C0DC1F700FD2188 /* Post.swift in Sources */,
 				7F739F2F2C08495F00FD2188 /* StorageManager.swift in Sources */,
 				7F4763CB2BE7B6E5007BA9AC /* UserManager.swift in Sources */,
 				7F739F402C09E84D00FD2188 /* UserPosts.swift in Sources */,

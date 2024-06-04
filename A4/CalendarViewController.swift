@@ -23,10 +23,6 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     @IBAction func leftButton(_ sender: Any) {
         selectedDate = CalendarHelp().decreaseMonth(date: selectedDate)
         setMonth()
-//        guard let newDate = Calendar.current.date(byAdding: .month, value: -1, to: selectedDate) else { return }
-//        selectedDate = newDate
-//        updateMonthLabel(for: selectedDate)
-//        fetchCalendarEvents(accessToken: UserManager.shared.accessToken!)
     }
     
     @IBAction func rightButton(_ sender: Any) {
@@ -39,7 +35,7 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     var totalSquares = [String]()
     
     
-    var events: [CalendarListEntry] = [] // it holds data relevant to the calendar events
+    var events: [CalendarListEntry]? = [] // it holds data relevant to the calendar events
     
     private let scopes =  [kGTLRAuthScopeCalendar]
     private let service = GTLRCalendarService()
@@ -138,7 +134,13 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
         collectionView.reloadData()
     }
     
+    
+    
+    
+    
+    
     func fetchCalendarEvents(accessToken: String) {
+        print("here")
         guard let url = URL(string: "https://www.googleapis.com/calendar/v3/users/me/calendarList") else {
             print("Invalid URL")
             return
@@ -148,37 +150,57 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
         request.httpMethod = "GET"
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
+        
+        print("before task")
         let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             guard let self = self, let data = data, error == nil else {
                 print("Error fetching calendar events: \(error?.localizedDescription ?? "Unknown error")")
                 return
             }
 
-//            self.events = self.parseEventsFromData(data)
-            DispatchQueue.main.async {
-                self.collectionView.reloadData()
+            self.printRawJSON(data: data)
+
+            if let events = self.parseEventsFromData(jsonData: data) {
+                print("masuk parse if")
+                DispatchQueue.main.async {
+                    // Handle the fetched events, e.g., save to a property or update UI
+                    print("Fetched and parsed \(events.count) calendar events.")
+                }
+            } else {
+                print("Failed to parse events from data.")
+                if let errorMessage = self.checkForAPIError(data: data) {
+                    self.handleAPIError(message: errorMessage)
+                }
             }
         }
         task.resume()
     }
-    
-    
 
-
-
-    
-    func loadGoogleCalendarAPIKey() -> String? {
-      if let path = Bundle.main.path(forResource: "client_162068403502-6rjsnhf3bhm3hoht02qb834mchnjqtpg.apps.googleusercontent.com", ofType: "plist"),
-         let configDict = NSDictionary(contentsOfFile: path) {
-        return configDict["api_key"] as? String
-      }
-      return nil
+    func parseEventsFromData(jsonData: Data) -> [CalendarListEntry]? {
+        let decoder = JSONDecoder()
+        do {
+            let calendarListResponse = try decoder.decode(CalendarListResponse.self, from: jsonData)
+            return calendarListResponse.items
+        } catch DecodingError.dataCorrupted(let context) {
+            print("Data corrupted: \(context.debugDescription)")
+        } catch DecodingError.keyNotFound(let key, let context) {
+            print("Key '\(key)' not found: \(context.debugDescription)")
+        } catch DecodingError.typeMismatch(let type, let context) {
+            print("Type mismatch for type '\(type)': \(context.debugDescription)")
+        } catch DecodingError.valueNotFound(let value, let context) {
+            print("Value '\(value)' not found: \(context.debugDescription)")
+        } catch {
+            print("Error decoding JSON: \(error.localizedDescription)")
+        }
+        return nil
     }
 
-    func handleAPIError(message: String) {
-        // Show an alert or update the UI to reflect the error
-        print(message) // Replace this with UI update code
+    func printRawJSON(data: Data) {
+        if let jsonString = String(data: data, encoding: .utf8) {
+            print("Raw JSON response: \(jsonString)")
+        } else {
+            print("Failed to convert data to JSON string")
+        }
     }
 
     func checkForAPIError(data: Data) -> String? {
@@ -190,27 +212,33 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
         }
     }
 
-    
-    func printRawJSON(data: Data) {
-        if let jsonString = String(data: data, encoding: .utf8) {
-            print("Raw JSON response: \(jsonString)")
-        } else {
-            print("Failed to convert data to JSON string")
-        }
+    func handleAPIError(message: String) {
+        // Show an alert or update the UI to reflect the error
+        print(message)
     }
     
     
-    func parseEventsFromData(_ data: Data) -> [CalendarListEntry] {
-        print ("data = ", data)
-        do {
-            let decoder = JSONDecoder()
-            let eventData = try decoder.decode(CalendarListResponse.self, from: data)
-            return eventData.items
-        } catch {
-            print("Error parsing data: \(error)")
-            return []
+    func loadGoogleCalendarConfig() -> [String: String]? {
+        guard let path = Bundle.main.path(forResource: "Google-Calendar", ofType: "plist"),
+              let dict = NSDictionary(contentsOfFile: path) as? [String: String] else {
+            print("Failed to load Google-Calendar.plist")
+            return nil
         }
+        return dict
     }
+    
+
+//    func parseEventsFromData(jsonData: Data) -> [CalendarListEntry]? {
+//        let decoder = JSONDecoder()
+//        do {
+//            let calendarList = try decoder.decode(CalendarListResponse.self, from: jsonData)
+//            return calendarList.items
+//        } catch {
+//            print("Error decoding JSON: \(error)")
+//            return nil
+//        }
+//    }
+    
     
     
     
@@ -227,11 +255,10 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "calendarCell", for: indexPath) as? EventCollectionViewCell else {
             fatalError("Cannot dequeue CalendarCell")
         }
+        let day = totalSquares[indexPath.item]
+        cell.dayOfMoth.text = day
+        cell.eventLabel.text = ""
         
-        cell.dayOfMoth.text = totalSquares[indexPath.item]
-//        cell.dayOfMoth.text = totalSquares[indexPath.row]
-//        let event = events[indexPath.row]
-//        cell.configure(with: event)
         return cell
     }
 
