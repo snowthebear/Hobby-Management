@@ -6,15 +6,16 @@
 //
 
 import Foundation
+import GoogleAPIClientForREST
 
 struct EventsResponse: Codable {
-    let items: [Event]
+    let items: [GTLRCalendar_Event]
 }
 
-struct Event: Codable {
+struct GTLRCalendar_Event: Codable {
     let summary: String?
-    let start: EventDateTime?
-    let end: EventDateTime?
+    let start: EventDateTime
+    let end: EventDateTime
 }
 
 struct EventDateTime: Codable {
