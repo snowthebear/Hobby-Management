@@ -14,7 +14,15 @@ import TOCropViewController
 import SDWebImage
 
 
+enum Period {
+    case day
+    case week
+    case month
+}
+
 class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, HamburgerViewControllerDelegate, UIGestureRecognizerDelegate, TOCropViewControllerDelegate {
+    
+    private var hobbyColors: [String: UIColor] = [:]
     
     @IBOutlet weak var postCollectionView: UICollectionView!
     
@@ -58,12 +66,13 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        self.currentUser = UserManager.shared.currentUser
+        self.currentUserList = UserManager.shared.currentUserList
 
         hamburgerViewController?.currentUser = self.currentUser
         setupUI()
-        customBarChartView.setupChart()
-        loadDailyData()
-        
+
         self.backViewForHamburger.isHidden = true
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleImageTap))
@@ -73,9 +82,9 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         addUploadHintImage()
         setupProfile()
         setProfilePicture()
-        
-        self.currentUser = UserManager.shared.currentUser
-        self.currentUserList = UserManager.shared.currentUserList
+
+        customBarChartView.setupChart()
+        loadDailyData()
 
         setupCollectionView()
         Task {
@@ -96,6 +105,9 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         } else {
             print("Current user ID is nil.")
         }
+        
+//        updateChartData()
+        
         
         
         
@@ -139,6 +151,9 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             print("Current user ID is nil.")
         }
         
+        loadDailyData()
+
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -148,6 +163,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         if self.isHamburgerMenuShown {
             self.hideHamburgerMenu()
         }
+        progressSegmentedControl.selectedSegmentIndex = 0
         
     }
     
@@ -507,6 +523,9 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     
+    // ---------------------------------------- Chart -----------------------------------------------------
+    
+    
     func updateChartData() {
         switch progressSegmentedControl.selectedSegmentIndex {
         case 0:
@@ -520,39 +539,134 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         }
     }
     
+//    func loadDailyData() {
+//        let dataEntries = [
+//            BarChartDataEntry(x: 0, yValues: [1, 2, 3]),
+//            // Add more daily data entries
+//        ]
+//        updateChart(with: dataEntries)
+//    }
+//    
+//    
+//    func loadWeeklyData() {
+//        let dataEntries = [
+//            BarChartDataEntry(x: 0, yValues: [5, 4, 3]),
+//            // Add more weekly data entries
+//        ]
+//        updateChart(with: dataEntries)
+//    }
+//    
+//    func loadMonthlyData() {
+//        let dataEntries = [
+//            BarChartDataEntry(x: 0, yValues: [9, 6, 7]),
+//            // Add more monthly data entries
+//        ]
+//        updateChart(with: dataEntries)
+//    }
+//    
+    
     func loadDailyData() {
-        let dataEntries = [
-            BarChartDataEntry(x: 0, yValues: [1, 2, 3]),
-            // Add more daily data entries
-        ]
-        updateChart(with: dataEntries)
+        fetchData(for: .day) { dataEntries, hobbies in
+            self.updateChart(with: dataEntries, hobbies: hobbies)
+        }
     }
-    
-    
+
     func loadWeeklyData() {
-        let dataEntries = [
-            BarChartDataEntry(x: 0, yValues: [5, 4, 3]),
-            // Add more weekly data entries
-        ]
-        updateChart(with: dataEntries)
+        fetchData(for: .weekOfYear) { dataEntries, hobbies in
+            self.updateChart(with: dataEntries, hobbies: hobbies)
+        }
     }
-    
+
     func loadMonthlyData() {
-        let dataEntries = [
-            BarChartDataEntry(x: 0, yValues: [9, 6, 7]),
-            // Add more monthly data entries
-        ]
-        updateChart(with: dataEntries)
+        fetchData(for: .month) { dataEntries, hobbies in
+            self.updateChart(with: dataEntries, hobbies: hobbies)
+        }
     }
     
-    func updateChart(with dataEntries: [BarChartDataEntry]) {
+    
+    func updateChart(with dataEntries: [BarChartDataEntry], hobbies: [String: Double]) {
+        for hobby in hobbies.keys where hobbyColors[hobby] == nil {
+            hobbyColors[hobby] = generateUniqueColor()
+        }
+
         let dataSet = BarChartDataSet(entries: dataEntries, label: "Hobbies")
-        dataSet.colors = [UIColor.red, UIColor.green, UIColor.blue]
+        dataSet.colors = dataEntries.map { entry in
+            let hobbyIndex = Int(entry.x)
+            let hobby = Array(hobbies.keys)[hobbyIndex]
+            return hobbyColors[hobby] ?? .black
+        }
 
         let data = BarChartData(dataSets: [dataSet])
         customBarChartView.data = data
+        customBarChartView.legend.setCustom(entries: createLegendEntries(hobbies: hobbies))
         customBarChartView.notifyDataSetChanged() // Refresh chart
     }
+    
+    
+    private func fetchData(for period: Calendar.Component, completion: @escaping ([BarChartDataEntry], [String: Double]) -> Void) {
+        guard let userID = currentUser?.uid else { return }
+        let db = Firestore.firestore()
+        db.collection("posts").whereField("userID", isEqualTo: userID).getDocuments { (querySnapshot, error) in
+            guard let documents = querySnapshot?.documents else {
+                print("Error fetching documents: \(String(describing: error))")
+                return
+            }
+
+            let calendar = Calendar.current
+            let now = Date()
+
+            var hobbyDurations: [String: Double] = [:]  // hold the total durations for each hobby.
+
+            for document in documents {
+                if let postDate = (document.data()["postDate"] as? Timestamp)?.dateValue(),
+                   let hobby = document.data()["hobby"] as? String,
+                   let duration = document.data()["duration"] as? Double {
+                    var shouldInclude = false
+                    switch period {
+                    case .day:
+                        shouldInclude = calendar.isDateInToday(postDate)
+                    case .weekOfYear:
+                        shouldInclude = calendar.isDate(postDate, equalTo: now, toGranularity: .weekOfYear)
+                    case .month:
+                        shouldInclude = calendar.isDate(postDate, equalTo: now, toGranularity: .month)
+                    default:
+                        break
+                    }
+                    
+                    if shouldInclude {
+                        hobbyDurations[hobby, default: 0.0] += duration
+                    }
+                }
+            }
+
+            let dataEntries = hobbyDurations.enumerated().map { index, hobbyDuration in
+                BarChartDataEntry(x: Double(index), y: hobbyDuration.value)
+            }
+            
+            completion(dataEntries, hobbyDurations)
+        }
+    }
+
+    private func generateUniqueColor() -> UIColor {
+        return UIColor(hue: CGFloat(drand48()), saturation: 1, brightness: 1, alpha: 1)
+    }
+
+    private func createLegendEntries(hobbies: [String: Double]) -> [LegendEntry] {
+        return hobbies.map { hobby, _ in
+            let entry = LegendEntry(label: hobby)
+            entry.form = .square
+            entry.formSize = 10.0
+            entry.formLineWidth = 1.0
+            entry.formLineDashPhase = 0.0
+            entry.formLineDashLengths = nil
+            entry.formColor = hobbyColors[hobby] ?? .gray
+            return entry
+        }
+    }
+
+    
+    
+    // ======================================================================================
     
     
     

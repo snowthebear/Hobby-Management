@@ -14,6 +14,7 @@ import TOCropViewController
 
 class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UIPickerViewDelegate, UINavigationControllerDelegate, TOCropViewControllerDelegate, UIImagePickerControllerDelegate {
     
+    @IBOutlet weak var defaultMenuAction: UICommand!
     var goals: [String] = []
     weak var databaseController: DatabaseProtocol?
     var currentUser: FirebaseAuth.User?
@@ -73,35 +74,63 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
     }
     
     func setPopUpMenu() {
-        guard let hobbies = currentUserList?.hobbies, !hobbies.isEmpty else {
-            print("No hobbies available or currentUserList is nil")
-            return
-        }
-        
-        let optionClosure = {(action: UIAction) in
-                    print(action.title)
-                }
-        
+        // Initialize the options array with the default "Select" action
         var optionsArray = [UIAction]()
-        let defaultAction = UIAction(title: "Select", state: .off, handler: optionClosure)
-        optionsArray.append(defaultAction)
-
-        for hobby in hobbies{
-            let action = UIAction(title: hobby.name!, state: .off, handler: optionClosure)
-            optionsArray.append(action)
+        
+        let optionClosure = { (action: UIAction) in
+            print("\(action.title) selected")
         }
-                
-        optionsArray[0].state = .on
-
-        // create an options menu
-        let optionsMenu = UIMenu(title: "", options: .displayInline, children: optionsArray)
-                
-        // add everything
+        
+        // Create the default "Select" action and set it to be on by default
+        let defaultAction = UIAction(title: "Select", state: .on, handler: optionClosure)
+        optionsArray.append(defaultAction)
+        
+        // Check if there are any hobbies and add them to the menu
+        if let hobbies = currentUserList?.hobbies, !hobbies.isEmpty {
+            for hobby in hobbies {
+                let action = UIAction(title: hobby.name ?? "None", handler: optionClosure)
+                optionsArray.append(action)
+            }
+        }
+        
+        // Create an options menu with the array of actions
+        let optionsMenu = UIMenu(title: "", children: optionsArray)
         hobbyButton.menu = optionsMenu
-
         hobbyButton.changesSelectionAsPrimaryAction = true
         hobbyButton.showsMenuAsPrimaryAction = true
     }
+
+    
+//    func setPopUpMenu() {
+//        guard let hobbies = currentUserList?.hobbies, !hobbies.isEmpty else {
+//            print("No hobbies available or currentUserList is nil")
+//            return
+//        }
+//        
+//        let optionClosure = {(action: UIAction) in
+//            print(action.title)
+//        }
+//        
+//        var optionsArray = [UIAction]()
+//        let defaultAction = UIAction(title: "Select", state: .on, handler: optionClosure)
+//        optionsArray.append(defaultAction)
+//
+//        for hobby in hobbies{
+//            let action = UIAction(title: hobby.name!, state: .off, handler: optionClosure)
+//            optionsArray.append(action)
+//        }
+//                
+//        optionsArray[0].state = .on
+//
+//        // create an options menu
+//        let optionsMenu = UIMenu(title: "", options: .displayInline, children: optionsArray)
+//                
+//        // add everything
+//        hobbyButton.menu = optionsMenu
+//
+//        hobbyButton.changesSelectionAsPrimaryAction = true
+//        hobbyButton.showsMenuAsPrimaryAction = true
+//    }
 
     
     func configureDurationPicker() {
