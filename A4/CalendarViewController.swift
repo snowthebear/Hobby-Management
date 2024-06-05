@@ -45,7 +45,11 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.tabBarController?.navigationController?.isNavigationBarHidden = false
-        self.fetchCalendarEvents(accessToken: UserManager.shared.accessToken!)
+        guard let accessToken = UserManager.shared.accessToken else {
+            print("Access token is nil")
+            return
+        }
+        self.fetchCalendarEvents(accessToken: accessToken)
 //        self.collectionView.reloadData()
         
     }
@@ -62,7 +66,6 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
  
         setupCalendar()
         self.setCellsView()
-        self.fetchCalendarEvents(accessToken: UserManager.shared.accessToken!)
         
         if let user = UserManager.shared.currentUser {
             if currentUser == nil{
@@ -74,6 +77,12 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
                     currentUserList = list
                 }
             }
+            
+            guard let accessToken = UserManager.shared.accessToken else {
+                print("Access token is nil")
+                return
+            }
+            self.fetchCalendarEvents(accessToken: accessToken)
         }
         
     }

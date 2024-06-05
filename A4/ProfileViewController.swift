@@ -29,6 +29,8 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     var userEmail: String?
 //    var name: String?
     
+    var imageUrls: [String] = []
+    
     private var isHamburgerMenuShown: Bool = false
     
     
@@ -80,6 +82,21 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             await loadUserData()
         }
         
+        postCollectionView.delegate = self
+        postCollectionView.dataSource = self
+        postCollectionView.register(PhotoCollectionViewCell.self, forCellWithReuseIdentifier: PhotoCollectionViewCell.identifier)
+        
+        if let userID = currentUser?.uid {
+            fetchImagesURL(userID: userID) { [weak self] fetchedUrls in
+                self?.imageUrls = fetchedUrls
+                DispatchQueue.main.async {
+                    self?.postCollectionView.reloadData()
+                }
+            }
+        } else {
+            print("Current user ID is nil.")
+        }
+        
         
         
 //        // for feed:
@@ -129,7 +146,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         let allPostsLabelHeight = allPostsLabel.frame.size.height + 5
         let yOffset = allPostsLabel.frame.origin.y + allPostsLabelHeight
         
-        let tabBarHeight = (tabBarController?.tabBar.frame.size.height)! + 5
+        let tabBarHeight = (tabBarController?.tabBar.frame.size.height ?? 0) + 5
         
         // Adjust the height of the collection view to take up the remaining space
         let collectionViewHeight = view.bounds.height - yOffset - tabBarHeight
@@ -147,7 +164,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         layout.itemSize = CGSize(width: size, height: size)
         
         postCollectionView.setCollectionViewLayout(layout, animated: true)
-        postCollectionView.backgroundColor = .blue
+//        postCollectionView.backgroundColor = .blue
         
         postCollectionView.delegate = self
         postCollectionView.dataSource = self
@@ -169,7 +186,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     func editProfile() {
         self.performSegue(withIdentifier: "editProfileSegue", sender: self)
-        print("cc")
         setupProfile()
     }
     
@@ -460,7 +476,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     func setupProfilePicture() {
-        print("setupprofile")
         guard let userID = Auth.auth().currentUser?.uid else { return }
         
         usersReference.document(userID).getDocument { [weak self] (document, error) in
@@ -614,7 +629,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     func loadUserData() async{
-        print("haga")
         guard let user = currentUser else { return }
         
         let userDocRef = usersReference.document(user.uid)
@@ -657,8 +671,9 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         profilePictureView.sd_setImage(with: url, placeholderImage: UIImage(named: "default_picture"), options: .continueInBackground, completed: nil)
     }
     
+    
     func fetchImagesURL(userID: String, completion: @escaping ([String]) -> Void) {
-        let postsRef = usersReference.document(userID).collection("posts")
+        let postsRef = Firestore.firestore().collection("posts").whereField("userID", isEqualTo: userID)
         postsRef.getDocuments { (snapshot, error) in
             var imageUrls: [String] = []
             if let error = error {
@@ -666,14 +681,35 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                 completion([])
             } else {
                 for document in snapshot!.documents {
-                    if let imageUrl = document.data()["url"] as? String {
+                    if let imageUrl = document.data()["imageUrl"] as? String {
                         imageUrls.append(imageUrl)
+                    } else {
+                        print("Document \(document.documentID) does not contain a valid 'imageUrl'")
                     }
                 }
+                print("Fetched image URLs: \(imageUrls)")  // Check the fetched URLs.
                 completion(imageUrls)
             }
         }
     }
+    
+//    func fetchImagesURL(userID: String, completion: @escaping ([String]) -> Void) {
+//        let postsRef = usersReference.document(userID).collection("posts")
+//        postsRef.getDocuments { (snapshot, error) in
+//            var imageUrls: [String] = []
+//            if let error = error {
+//                print("Error fetching posts: \(error)")
+//                completion([])
+//            } else {
+//                for document in snapshot!.documents {
+//                    if let imageUrl = document.data()["url"] as? String {
+//                        imageUrls.append(imageUrl)
+//                    }
+//                }
+//                completion(imageUrls)
+//            }
+//        }
+//    }
     
 }
 
@@ -681,7 +717,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
 extension ProfileViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 30
+        return imageUrls.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -690,18 +726,15 @@ extension ProfileViewController: UICollectionViewDelegate, UICollectionViewDataS
 //        
 //        cell.backgroundColor = .systemCyan
 //        return cell
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PhotoCollectionViewCell.identifier, for: indexPath) as! PhotoCollectionViewCell
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PhotoCollectionViewCell.identifier, for: indexPath) as? PhotoCollectionViewCell else {
+            fatalError("Unable to dequeue PhotoCollectionViewCell")
+        }
 
-            fetchImagesURL(userID: currentUser?.uid ?? "") { imageUrls in
-                if indexPath.row < imageUrls.count {
-                    let imageUrl = imageUrls[indexPath.row]
-                    DispatchQueue.main.async {
-                        self.profilePictureView.sd_setImage(with: URL(string: imageUrl), placeholderImage: UIImage(named: "placeholder"))
-                    }
-                }
-            }
+        if indexPath.row < imageUrls.count, let imageUrl = URL(string: imageUrls[indexPath.row]) {
+            cell.configure(with: imageUrl) // Using the new configure method
+        }
 
-            return cell
+        return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {

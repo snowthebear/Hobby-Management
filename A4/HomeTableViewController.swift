@@ -86,7 +86,6 @@ class HomeTableViewController: UITableViewController {
             return cell
         case 1: // Post content cell
             let cell = tableView.dequeueReusableCell(withIdentifier: "postCell", for: indexPath) as! FeedPostTableViewCell
-            print("Setting image for section \(indexPath.section): \(post.photoURL)")
             cell.configure(with: post.photoURL, date: post.date, duration: post.duration)
             return cell
         case 2: // Caption cell
@@ -95,7 +94,6 @@ class HomeTableViewController: UITableViewController {
             return cell
         case 3: // Goals cell
             let cell = tableView.dequeueReusableCell(withIdentifier: "goalCell", for: indexPath) as! FeedGoalsTableViewCell
-            print("post.goals = \(post.goals)")
             cell.configure(with: post.goals)
             return cell
         case 4:
