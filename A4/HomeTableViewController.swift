@@ -29,6 +29,8 @@ class HomeTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.tabBarController?.navigationItem.hidesBackButton = true
+        self.tabBarController?.navigationController?.isNavigationBarHidden = false
+        self.tabBarController?.navigationItem.title = "HOBSNAP"
      
      
         if let user = UserManager.shared.currentUser {
@@ -46,20 +48,116 @@ class HomeTableViewController: UITableViewController {
         
     }
     
+    
     func fetchPosts() {
         let db = Firestore.firestore()
-        db.collection("posts").order(by: "postDate", descending: true).getDocuments { (querySnapshot, error) in
+        db.collection("posts").order(by: "postDate", descending: true).getDocuments { [weak self] (querySnapshot, error) in
+            guard let self = self else { return }
+
             if let error = error {
                 print("Error getting documents: \(error)")
-            } else {
-                self.posts = querySnapshot?.documents.compactMap { UserPost(dictionary: $0.data()) } ?? []
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
+                return
+            }
+
+            var fetchedPosts = [UserPost]()
+            let group = DispatchGroup()
+            
+            for document in querySnapshot!.documents {
+                group.enter()
+                let data = document.data()
+                let userID = data["userID"] as? String ?? ""
+                
+                db.collection("users").document(userID).getDocument { userSnapshot, userError in
+                    if let userDoc = userSnapshot, userError == nil, let userData = userDoc.data() {
+                        let userName = userData["displayName"] as? String ?? "Unknown"
+                        let storageURL = userData["storageURL"] as? String
+                        let userProfileImageURL = URL(string: storageURL ?? "")
+                        
+                        if let post = UserPost(dictionary: data, userName: userName, userProfileImageURL: userProfileImageURL) {
+                            fetchedPosts.append(post)
+                        } else {
+                            print("Error parsing document: \(data)")
+                        }
+                    }
+                    group.leave()
                 }
+            }
+
+            group.notify(queue: .main) {
+                self.posts = fetchedPosts
+                self.tableView.reloadData()
             }
         }
     }
+
+
+
     
+    
+//    func fetchPosts() {
+//        let db = Firestore.firestore()
+//        db.collection("posts").order(by: "postDate", descending: true).getDocuments { [weak self] (querySnapshot, error) in
+//            guard let self = self else { return }
+//
+//            if let error = error {
+//                print("Error getting documents: \(error)")
+//                return
+//            }
+//
+//            var fetchedPosts = [UserPost]()
+//            let group = DispatchGroup()
+//
+//            for document in querySnapshot!.documents {
+//                group.enter()
+//                let postData = document.data()
+//                if let userID = postData["userID"] as? String {
+//                    db.collection("users").document(userID).getDocument { (userDoc, error) in
+//                        defer { group.leave() }
+//                        if let userDict = userDoc?.data() {
+//                            let userName = userDict["displayName"] as? String ?? "Unknown"
+//                            let userProfileImageURL = URL(string: userDict["profilePictureURL"] as? String ?? "")
+//                            if let post = UserPost(dictionary: postData, userName: userName, userProfileImageURL: userProfileImageURL) {
+//                                fetchedPosts.append(post)
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//
+//            group.notify(queue: .main) {
+//                self.posts = fetchedPosts
+//                self.tableView.reloadData()
+//            }
+//        }
+//    }
+    
+//    func fetchPosts() {
+//        let db = Firestore.firestore()
+//        db.collection("posts").order(by: "postDate", descending: true).getDocuments { [weak self] (querySnapshot, error) in
+//            guard let self = self else { return }
+//
+//            if let error = error {
+//                print("Error getting documents: \(error)")
+//                return
+//            }
+//
+//            var fetchedPosts = [UserPost]()
+//            for document in querySnapshot!.documents {
+//                if let post = UserPost(dictionary: document.data()) {
+//                    fetchedPosts.append(post)
+//                    print("Fetched post: \(post)")
+//                } else {
+//                    print("Error parsing document: \(document.data())")
+//                }
+//            }
+//            
+//            self.posts = fetchedPosts
+//            DispatchQueue.main.async {
+//                self.tableView.reloadData()
+//            }
+//        }
+//    }
+
     
 
     // MARK: - Table view data source
@@ -82,7 +180,7 @@ class HomeTableViewController: UITableViewController {
         switch sectionType {
         case 0: // Header cell
             let cell = tableView.dequeueReusableCell(withIdentifier: "headerCell", for: indexPath) as! FeedHeaderTableViewCell
-            cell.configure(with: post.userID, userName: post.userName)
+            cell.configure(with: post.userProfileImageURL, userName: post.userName)
             return cell
         case 1: // Post content cell
             let cell = tableView.dequeueReusableCell(withIdentifier: "postCell", for: indexPath) as! FeedPostTableViewCell

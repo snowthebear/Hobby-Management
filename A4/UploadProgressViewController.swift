@@ -181,8 +181,8 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
     }
     
     func resetHolder() {
-        imageView = nil
-        captionTextField = nil
+//        imageView = nil
+//        captionTextField = nil
         
     }
     

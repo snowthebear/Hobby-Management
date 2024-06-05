@@ -128,6 +128,17 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         super.viewWillAppear(animated)
         self.tabBarController?.navigationController?.isNavigationBarHidden = true
         
+        if let userID = currentUser?.uid {
+            fetchImagesURL(userID: userID) { [weak self] fetchedUrls in
+                self?.imageUrls = fetchedUrls
+                DispatchQueue.main.async {
+                    self?.postCollectionView.reloadData()
+                }
+            }
+        } else {
+            print("Current user ID is nil.")
+        }
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {

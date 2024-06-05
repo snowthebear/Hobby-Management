@@ -24,19 +24,20 @@ public enum UserPostType: String {
 struct UserPost {
     var userID: String
     var userName: String
+    var userProfileImageURL: URL?
     var photoURL: URL
     var date: Date
     var caption: String
     var goals: String
     var duration: Int
 
-    init?(dictionary: [String: Any]) {
+    init?(dictionary: [String: Any], userName: String, userProfileImageURL: URL?) {
         guard let userID = dictionary["userID"] as? String else {
             return nil
         }
-        guard let userName = UserManager.shared.currentUser?.displayName else {
-            return nil
-        }
+//        guard let userName = UserManager.shared.currentUser?.displayName else {
+//            return nil
+//        }
         guard let photoURLString = dictionary["imageUrl"] as? String, let photoURL = URL(string: photoURLString) else {
             return nil
         }
@@ -46,6 +47,7 @@ struct UserPost {
 
         self.userID = userID
         self.userName = userName
+        self.userProfileImageURL = userProfileImageURL
         self.photoURL = photoURL
         self.date = date.dateValue()
         self.caption = dictionary["caption"] as? String ?? " - "
