@@ -682,12 +682,18 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
 
             let sortedHobbies = hobbyDurations.keys.sorted()
             let dataEntries = sortedHobbies.enumerated().map { index, hobby in
-                BarChartDataEntry(x: Double(index), y: hobbyDurations[hobby] ?? 0.0)
+                // Ensure there's a minimal visual representation for zero values but mark them as zero
+                let actualValue = hobbyDurations[hobby] ?? 0.0
+                let visualValue = max(actualValue, 0.49) // Minimal value for visual effect only
+                let entry = BarChartDataEntry(x: Double(index), y: visualValue)
+                entry.data = actualValue as AnyObject // Store the actual value for later use
+                return entry
             }
             
             completion(dataEntries, hobbyDurations)
         }
     }
+
     
     private func initializeHobbyColors(hobbies: [String]) {
         loadUserSettings()

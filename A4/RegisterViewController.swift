@@ -28,6 +28,8 @@ class RegisterViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.tabBarController?.navigationController?.isNavigationBarHidden = false
+        self.tabBarController?.navigationItem.title = "HOBSNAP"
         configurePasswordTextField()
 //        passwordTextField.textContentType = .password
 //        confirmPasswordTextField.textContentType = .password
@@ -39,6 +41,16 @@ class RegisterViewController: UIViewController {
 //        confirmPasswordTextField.spellCheckingType = .no
 //        confirmPasswordTextField.autocapitalizationType = .none
         
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.tabBarController?.navigationController?.isNavigationBarHidden = false
+        self.tabBarController?.navigationItem.title = "HOBSNAP"
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillAppear(animated)
     }
     
     @IBAction func registerButton(_ sender: Any) {

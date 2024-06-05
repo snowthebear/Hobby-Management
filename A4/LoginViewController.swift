@@ -23,10 +23,22 @@ class LoginViewController: UIViewController {
     var currentUserList: UserList?
     
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.tabBarController?.navigationController?.isNavigationBarHidden = false
+        self.tabBarController?.navigationItem.title = "HOBSNAP"
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationItem.hidesBackButton = true
+        self.tabBarController?.navigationController?.isNavigationBarHidden = false
+        self.tabBarController?.navigationItem.title = "HOBSNAP"
+        
         passwordTextField.isSecureTextEntry = true
         
     }

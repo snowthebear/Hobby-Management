@@ -45,6 +45,7 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.tabBarController?.navigationController?.isNavigationBarHidden = false
+        self.tabBarController?.navigationItem.title = "Calendar"
         guard let accessToken = UserManager.shared.accessToken else {
             print("Access token is nil")
             return
@@ -61,6 +62,8 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.tabBarController?.navigationController?.isNavigationBarHidden = false
+        self.tabBarController?.navigationItem.title = "Calendar"
         collectionView.delegate = self
         collectionView.dataSource = self
  
