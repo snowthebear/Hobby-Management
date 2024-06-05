@@ -310,11 +310,11 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" showsMenuAsPrimaryAction="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" changesSelectionAsPrimaryAction="YES" translatesAutoresizingMaskIntoConstraints="NO" id="495-bj-fdZ">
-                                <rect key="frame" x="284.66666666666669" y="123" width="41" height="30"/>
+                                <rect key="frame" x="284.66666666666669" y="123" width="44" height="30"/>
                                 <menu key="menu" title="Menu" id="K6R-r7-aRN">
                                     <menuOptions key="menuOptions" displayInline="YES"/>
                                     <children>
-                                        <command title="Item 1" id="ypW-n5-de8"/>
+                                        <command title="Select" menuElementState="on" id="ypW-n5-de8"/>
                                         <command title="Item 2" id="30F-QG-7Nv"/>
                                     </children>
                                 </menu>
@@ -381,6 +381,7 @@
                     </navigationItem>
                     <connections>
                         <outlet property="captionTextField" destination="QET-AT-GnZ" id="ucH-7Z-vzY"/>
+                        <outlet property="defaultMenuAction" destination="ypW-n5-de8" id="gc6-yb-CLF"/>
                         <outlet property="durationPicker" destination="sDI-D2-ZyJ" id="CJr-CK-83e"/>
                         <outlet property="goalsPicker" destination="0bU-y6-ptC" id="r95-CX-Ypq"/>
                         <outlet property="hobbyButton" destination="495-bj-fdZ" id="sXq-zn-53O"/>
@@ -392,52 +393,6 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jLf-v0-ybH" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2177.8625954198474" y="1472.5352112676057"/>
-        </scene>
-        <!--Calendar View Controller2-->
-        <scene sceneID="oNq-Nf-Emh">
-            <objects>
-                <viewController id="Xh4-yy-5p5" customClass="CalendarViewController2" customModule="A4" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="hGb-RZ-QuI">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="AxV-YN-Evi">
-                                <rect key="frame" x="16" y="118" width="240" height="128"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                                <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="d1p-Ls-iDz">
-                                    <size key="itemSize" width="128" height="128"/>
-                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
-                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
-                                </collectionViewFlowLayout>
-                                <cells>
-                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="calendarCollectionView" id="kG6-YJ-dp9">
-                                        <rect key="frame" x="56" y="0.0" width="128" height="128"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="OTk-My-7xI">
-                                            <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                        </collectionViewCellContentView>
-                                    </collectionViewCell>
-                                </cells>
-                            </collectionView>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="d3o-oY-Kk4"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <constraints>
-                            <constraint firstItem="d3o-oY-Kk4" firstAttribute="trailing" secondItem="AxV-YN-Evi" secondAttribute="trailing" constant="137" id="cko-6k-5T5"/>
-                            <constraint firstItem="AxV-YN-Evi" firstAttribute="leading" secondItem="d3o-oY-Kk4" secondAttribute="leading" constant="16" id="gQ1-35-xSS"/>
-                            <constraint firstItem="d3o-oY-Kk4" firstAttribute="bottom" secondItem="AxV-YN-Evi" secondAttribute="bottom" constant="572" id="lln-1j-5TP"/>
-                            <constraint firstItem="AxV-YN-Evi" firstAttribute="top" secondItem="d3o-oY-Kk4" secondAttribute="top" constant="59" id="z0B-ec-m7j"/>
-                        </constraints>
-                    </view>
-                    <connections>
-                        <outlet property="calendarCollectionView" destination="AxV-YN-Evi" id="H4U-fV-FL0"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="aar-Yj-MS5" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="189" y="2298"/>
         </scene>
         <!--Calendar-->
         <scene sceneID="Y4f-HZ-ezA">
@@ -1158,25 +1113,6 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="N77-Se-6Jn" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="3762.5954198473282" y="1472.5352112676057"/>
-        </scene>
-        <!--Calendar-->
-        <scene sceneID="FY4-Wa-LpU">
-            <objects>
-                <viewController id="0Mf-3c-7au" customClass="CalendarView" customModule="A4" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="fn4-Et-dgQ" customClass="JTACMonthView" customModule="JTAppleCalendar">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <viewLayoutGuide key="safeArea" id="Jx6-69-rUH"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                    </view>
-                    <tabBarItem key="tabBarItem" title="Calendar" image="calendar" catalog="system" id="FgI-EY-KZJ"/>
-                    <connections>
-                        <outlet property="calendarView" destination="fn4-Et-dgQ" id="0PQ-A5-m6v"/>
-                    </connections>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="F18-LQ-zHm" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="2602" y="2416"/>
         </scene>
         <!--Edit Profile-->
         <scene sceneID="drv-kS-Mpd">

@@ -84,6 +84,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         setProfilePicture()
 
         customBarChartView.setupChart()
+        loadUserSettings()
         loadDailyData()
 
         setupCollectionView()
@@ -539,32 +540,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         }
     }
     
-//    func loadDailyData() {
-//        let dataEntries = [
-//            BarChartDataEntry(x: 0, yValues: [1, 2, 3]),
-//            // Add more daily data entries
-//        ]
-//        updateChart(with: dataEntries)
-//    }
-//    
-//    
-//    func loadWeeklyData() {
-//        let dataEntries = [
-//            BarChartDataEntry(x: 0, yValues: [5, 4, 3]),
-//            // Add more weekly data entries
-//        ]
-//        updateChart(with: dataEntries)
-//    }
-//    
-//    func loadMonthlyData() {
-//        let dataEntries = [
-//            BarChartDataEntry(x: 0, yValues: [9, 6, 7]),
-//            // Add more monthly data entries
-//        ]
-//        updateChart(with: dataEntries)
-//    }
-//    
-    
     func loadDailyData() {
         fetchData(for: .day) { dataEntries, hobbies in
             self.updateChart(with: dataEntries, hobbies: hobbies)
@@ -582,40 +557,106 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             self.updateChart(with: dataEntries, hobbies: hobbies)
         }
     }
+//    
+//    func updateChart(with dataEntries: [BarChartDataEntry], hobbies: [String: Double]) {
+//        // Sort the hobbies keys to maintain the order
+//        let sortedHobbies = hobbies.keys.sorted()
+//
+//        // Assign colors to the hobbies
+//        for hobby in sortedHobbies where hobbyColors[hobby] == nil {
+//            hobbyColors[hobby] = generateUniqueColor(for: hobby)
+//        }
+//
+//        // Create chart data entries and ensure they are sorted
+//        let sortedDataEntries = dataEntries.sorted {
+//            let hobby1 = Array(hobbies.keys)[Int($0.x)]
+//            let hobby2 = Array(hobbies.keys)[Int($1.x)]
+//            return hobby1 < hobby2
+//        }
+//
+//        let dataSet = BarChartDataSet(entries: sortedDataEntries, label: "Hobbies")
+//        dataSet.colors = sortedDataEntries.map { entry in
+//            let hobbyIndex = Int(entry.x)
+//            let hobby = sortedHobbies[hobbyIndex]
+//            return hobbyColors[hobby] ?? .black
+//        }
+//
+//        let data = BarChartData(dataSets: [dataSet])
+//        customBarChartView.data = data
+//        let entries = createLegendEntries(hobbies: hobbies, sortedKeys: sortedHobbies)
+//        customBarChartView.legend.setCustom(entries: entries)
+//        customBarChartView.notifyDataSetChanged() // Refresh the chart
+//    }
     
     
     func updateChart(with dataEntries: [BarChartDataEntry], hobbies: [String: Double]) {
-        for hobby in hobbies.keys where hobbyColors[hobby] == nil {
-            hobbyColors[hobby] = generateUniqueColor()
+        let sortedHobbies = hobbies.keys.sorted()
+
+        initializeHobbyColors(hobbies: sortedHobbies)
+
+        let sortedDataEntries = dataEntries.sorted {
+            let hobby1 = Array(hobbies.keys)[Int($0.x)]
+            let hobby2 = Array(hobbies.keys)[Int($1.x)]
+            return hobby1 < hobby2
         }
 
-        let dataSet = BarChartDataSet(entries: dataEntries, label: "Hobbies")
-        dataSet.colors = dataEntries.map { entry in
+        let dataSet = BarChartDataSet(entries: sortedDataEntries, label: "Hobbies")
+        dataSet.colors = sortedDataEntries.map { entry in
             let hobbyIndex = Int(entry.x)
-            let hobby = Array(hobbies.keys)[hobbyIndex]
+            let hobby = sortedHobbies[hobbyIndex]
             return hobbyColors[hobby] ?? .black
         }
 
         let data = BarChartData(dataSets: [dataSet])
         customBarChartView.data = data
-        customBarChartView.legend.setCustom(entries: createLegendEntries(hobbies: hobbies))
-        customBarChartView.notifyDataSetChanged() // Refresh chart
+        customBarChartView.legend.setCustom(entries: createLegendEntries(hobbies: hobbies, sortedKeys: sortedHobbies))
+        customBarChartView.notifyDataSetChanged() // Refresh the chart
     }
+
+    
+    
+//    func updateChart(with dataEntries: [BarChartDataEntry], hobbies: [String: Double]) {
+//        for hobby in hobbies.keys where hobbyColors[hobby] == nil {
+//            hobbyColors[hobby] = generateUniqueColor()
+//        }
+//
+//        let dataSet = BarChartDataSet(entries: dataEntries, label: "Hobbies")
+//        dataSet.colors = dataEntries.map { entry in
+//            let hobbyIndex = Int(entry.x)
+//            let hobby = Array(hobbies.keys)[hobbyIndex]
+//            return hobbyColors[hobby] ?? .black
+//        }
+//
+//        let data = BarChartData(dataSets: [dataSet])
+//        customBarChartView.data = data
+//        customBarChartView.legend.setCustom(entries: createLegendEntries(hobbies: hobbies))
+//        customBarChartView.notifyDataSetChanged() // Refresh chart
+//    }
     
     
     private func fetchData(for period: Calendar.Component, completion: @escaping ([BarChartDataEntry], [String: Double]) -> Void) {
-        guard let userID = currentUser?.uid else { return }
+        guard let userID = currentUser?.uid, let hobbiesList = currentUserList?.hobbies else {
+            print("No user or hobbies available")
+            completion([], [:])
+            return
+        }
+        
+        // Initialize all hobbies with zero duration
+        var hobbyDurations = [String: Double]()
+        for hobby in hobbiesList {
+            hobbyDurations[hobby.name ?? ""] = 0.0
+        }
+
         let db = Firestore.firestore()
         db.collection("posts").whereField("userID", isEqualTo: userID).getDocuments { (querySnapshot, error) in
             guard let documents = querySnapshot?.documents else {
                 print("Error fetching documents: \(String(describing: error))")
+                completion([], hobbyDurations)
                 return
             }
 
             let calendar = Calendar.current
             let now = Date()
-
-            var hobbyDurations: [String: Double] = [:]  // hold the total durations for each hobby.
 
             for document in documents {
                 if let postDate = (document.data()["postDate"] as? Timestamp)?.dateValue(),
@@ -634,36 +675,129 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                     }
                     
                     if shouldInclude {
-                        hobbyDurations[hobby, default: 0.0] += duration
+                        hobbyDurations[hobby] = (hobbyDurations[hobby] ?? 0.0) + duration
                     }
                 }
             }
 
-            let dataEntries = hobbyDurations.enumerated().map { index, hobbyDuration in
-                BarChartDataEntry(x: Double(index), y: hobbyDuration.value)
+            let sortedHobbies = hobbyDurations.keys.sorted()
+            let dataEntries = sortedHobbies.enumerated().map { index, hobby in
+                BarChartDataEntry(x: Double(index), y: hobbyDurations[hobby] ?? 0.0)
             }
             
             completion(dataEntries, hobbyDurations)
         }
     }
-
+    
+    private func initializeHobbyColors(hobbies: [String]) {
+        loadUserSettings()
+        let colors = generateDistinctColors()
+        var colorIndex = 0
+        for hobby in hobbies {
+            if hobbyColors[hobby] == nil {
+                hobbyColors[hobby] = colors[colorIndex % colors.count]
+                colorIndex += 1
+            }
+        }
+        saveUserSettings()
+    }
+    
     private func generateUniqueColor() -> UIColor {
         return UIColor(hue: CGFloat(drand48()), saturation: 1, brightness: 1, alpha: 1)
     }
 
-    private func createLegendEntries(hobbies: [String: Double]) -> [LegendEntry] {
-        return hobbies.map { hobby, _ in
+
+//    private func generateUniqueColor(for hobby: String) -> UIColor {
+//        var total: Int = 0
+//        for character in hobby.utf8 {
+//            total += Int(character)
+//        }
+//        srand48(total * 200)
+//
+//        return UIColor(hue: CGFloat(drand48()), saturation: 0.5, brightness: 0.9, alpha: 1)
+//    }
+
+    private func createLegendEntries(hobbies: [String: Double],  sortedKeys: [String]) -> [LegendEntry] {
+        
+        return sortedKeys.map { hobby in
             let entry = LegendEntry(label: hobby)
             entry.form = .square
             entry.formSize = 10.0
             entry.formLineWidth = 1.0
             entry.formLineDashPhase = 0.0
             entry.formLineDashLengths = nil
-            entry.formColor = hobbyColors[hobby] ?? .gray
+            entry.formColor = hobbyColors[hobby] ?? .gray // Ensure the color is consistent
             return entry
         }
     }
+    
+    
+    // Helper function to convert UIColor to Data
+    func colorToData(color: UIColor) -> Data? {
+        do {
+            let data = try NSKeyedArchiver.archivedData(withRootObject: color, requiringSecureCoding: false)
+            return data
+        } catch {
+            print("Error converting color to data: \(error)")
+            return nil
+        }
+    }
 
+    // Helper function to convert Data back to UIColor
+    func dataToColor(data: Data) -> UIColor? {
+        do {
+            if let color = try NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: data) {
+                return color
+            }
+        } catch {
+            print("Error converting data to color: \(error)")
+        }
+        return nil
+    }
+    
+    func loadUserSettings() {
+        let userDefaults = UserDefaults.standard
+        if let storedHobbyColors = userDefaults.object(forKey: "HobbyColors") as? [String: Data] {
+            hobbyColors = storedHobbyColors.compactMapValues { dataToColor(data: $0) }
+        }
+    }
+
+    func saveUserSettings() {
+        let userDefaults = UserDefaults.standard
+        let storedHobbyColors = hobbyColors.compactMapValues { colorToData(color: $0) }
+        userDefaults.set(storedHobbyColors, forKey: "HobbyColors")
+    }
+    
+    
+    private func generateDistinctColors() -> [UIColor] {
+        return [
+            
+            UIColor.red,
+            UIColor.green,
+            UIColor.magenta,
+            UIColor.orange,
+            UIColor.purple,
+            UIColor.cyan,
+            UIColor.blue,
+            UIColor.yellow,
+            UIColor.brown,
+            
+            UIColor.systemMint,
+            UIColor.systemCyan,
+            UIColor.systemRed,
+            UIColor.systemBlue,
+            UIColor.systemGreen,
+            UIColor.systemYellow,
+            UIColor.systemOrange,
+            UIColor.systemPurple,
+            UIColor.systemTeal,
+            UIColor.systemPink,
+            UIColor.systemIndigo,
+            UIColor.systemBrown,
+            UIColor.systemGray
+            
+        ]
+    }
     
     
     // ======================================================================================
