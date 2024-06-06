@@ -99,7 +99,6 @@ class UserHobbiesTableViewController: UITableViewController, DatabaseListener {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if indexPath.section == SECTION_HOBBY {
-            // Configure and return a hero cell
             let hobbyCell = tableView.dequeueReusableCell(withIdentifier: CELL_HOBBY, for: indexPath)
             
             if let currentUserList = currentUserList {
@@ -111,10 +110,9 @@ class UserHobbiesTableViewController: UITableViewController, DatabaseListener {
             return hobbyCell
         }
         else {
-            // Configure and return an info cell instead
             let infoCell = tableView.dequeueReusableCell(withIdentifier: CELL_INFO, for: indexPath)
                     
-            let listCount = self.currentUserList?.hobbies.count
+            let listCount = currentUserList?.hobbies.count
             var content = infoCell.defaultContentConfiguration()
             if listCount == 0 {
                 content.text = "No Hobbies in list. Tap + to add some."
@@ -147,7 +145,13 @@ class UserHobbiesTableViewController: UITableViewController, DatabaseListener {
             guard let currentUserList = currentUserList else {
                 return
             }
+            
+            
             self.databaseController?.removeHobbyFromUserList(hobby: currentUserList.hobbies[indexPath.row], userList:  currentUserList)
+            currentUserList.hobbies.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .fade)
+            tableView.reloadData()
+            
         }
     }
     

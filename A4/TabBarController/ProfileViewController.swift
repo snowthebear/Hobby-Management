@@ -227,7 +227,11 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             // Navigate to login screen
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             let loginViewController = storyboard.instantiateViewController(withIdentifier: "LoginViewController") as! LoginViewController
+//            loginViewController.passwordTextField = UITextField()
+            
             loginViewController.modalPresentationStyle = .fullScreen
+            loginViewController.navigationController?.isNavigationBarHidden = false
+            loginViewController.title = "HOBSNAP"
             // loginViewController.modalPresentationStyle = .fullScreen
             
             // Access the window property from the scene delegate if using UISceneDelegate

@@ -45,7 +45,7 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.tabBarController?.navigationController?.isNavigationBarHidden = false
-        self.tabBarController?.navigationItem.title = "Calendar"
+        self.tabBarController?.navigationController?.title = "Calendar"
         guard let accessToken = UserManager.shared.accessToken else {
             print("Access token is nil")
             return

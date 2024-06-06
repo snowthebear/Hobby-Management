@@ -181,7 +181,7 @@ class GoalsTableViewController: UITableViewController, DatabaseListener, UISearc
     // Override to support editing the table view.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete && indexPath.section == SECTION_GOAL {
-            self.databaseController?.deleteGoals(goalId: allGoals[indexPath.row].title) // Ensure your database method can handle this identifier
+            self.databaseController?.deleteGoals(goalId: allGoals[indexPath.row].title)
             allGoals.remove(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .fade)
         }

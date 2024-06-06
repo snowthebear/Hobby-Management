@@ -38,7 +38,7 @@ class FirebaseController: NSObject, DatabaseProtocol {
         hobbyList = [Hobby]()
         
         super.init()
-        
+
         hobbiesRef = database.collection("hobbies")
         userListRef = database.collection("userlists")
         self.setupHobbyListener()
@@ -159,11 +159,7 @@ class FirebaseController: NSObject, DatabaseProtocol {
         
         let userHobbyRef = userListRef?.document(userListId)
         
-        // Reference to the specific team's document
         let hobbyRef = hobbiesRef.document(hobbyId)
-        print ("hobbyRef \(hobbyRef)")
-        // Add the hero to the team's "heroes" array
-        print("\(hobbyId)")
 
         userHobbyRef?.updateData([
             "hobbies": FieldValue.arrayUnion([hobbyId])
@@ -179,11 +175,10 @@ class FirebaseController: NSObject, DatabaseProtocol {
     }
     
     func removeHobbyFromUserList(hobby: Hobby, userList: UserList) {
-        guard let hobbyId = hobby.id, let userListId = currentUser?.uid else {
-            print("Invalid hobby or user ID.")
+        guard let hobbyId = hobby.id, let userListId = userList.id else {
+            print("Invalid hobby ID or user list ID.")
             return
         }
-
         let userHobbyRef = database.collection("userlists").document(userListId)
 
         // Using Firestore arrayRemove to remove the hobby
@@ -194,6 +189,7 @@ class FirebaseController: NSObject, DatabaseProtocol {
                 print("Error removing hobby from user list: \(error)")
             } else {
                 print("Hobby removed successfully from user list.")
+                
             }
         }
     }
