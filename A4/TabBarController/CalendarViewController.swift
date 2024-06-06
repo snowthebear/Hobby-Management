@@ -63,7 +63,7 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     override func viewDidLoad() {
         super.viewDidLoad()
         self.tabBarController?.navigationController?.isNavigationBarHidden = false
-        self.tabBarController?.navigationItem.title = "Calendar"
+        self.tabBarController?.navigationController?.title = "Calendar"
         collectionView.delegate = self
         collectionView.dataSource = self
  
