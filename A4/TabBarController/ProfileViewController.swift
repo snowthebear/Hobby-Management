@@ -638,6 +638,67 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
 //    }
     
     
+//    private func fetchData(for period: Calendar.Component, completion: @escaping ([BarChartDataEntry], [String: Double]) -> Void) {
+//        guard let userID = currentUser?.uid, let hobbiesList = currentUserList?.hobbies else {
+//            print("No user or hobbies available")
+//            completion([], [:])
+//            return
+//        }
+//        
+//        // Initialize all hobbies with zero duration
+//        var hobbyDurations = [String: Double]()
+//        for hobby in hobbiesList {
+//            hobbyDurations[hobby.name ?? ""] = 0.0
+//        }
+//
+//        let db = Firestore.firestore()
+//        db.collection("posts").whereField("userID", isEqualTo: userID).getDocuments { (querySnapshot, error) in
+//            guard let documents = querySnapshot?.documents else {
+//                print("Error fetching documents: \(String(describing: error))")
+//                completion([], hobbyDurations)
+//                return
+//            }
+//
+//            let calendar = Calendar.current
+//            let now = Date()
+//
+//            for document in documents {
+//                if let postDate = (document.data()["postDate"] as? Timestamp)?.dateValue(),
+//                   let hobby = document.data()["hobby"] as? String,
+//                   let duration = document.data()["duration"] as? Double {
+//                    var shouldInclude = false
+//                    switch period {
+//                    case .day:
+//                        shouldInclude = calendar.isDateInToday(postDate)
+//                    case .weekOfYear:
+//                        shouldInclude = calendar.isDate(postDate, equalTo: now, toGranularity: .weekOfYear)
+//                    case .month:
+//                        shouldInclude = calendar.isDate(postDate, equalTo: now, toGranularity: .month)
+//                    default:
+//                        break
+//                    }
+//                    
+//                    if shouldInclude {
+//                        hobbyDurations[hobby] = (hobbyDurations[hobby] ?? 0.0) + duration
+//                    }
+//                }
+//            }
+//
+//            let sortedHobbies = hobbyDurations.keys.sorted()
+//            let dataEntries = sortedHobbies.enumerated().map { index, hobby in
+//                // Ensure there's a minimal visual representation for zero values but mark them as zero
+//                let actualValue = hobbyDurations[hobby] ?? 0.0
+//                let visualValue = max(actualValue, 0.49) // Minimal value for visual effect only
+//                let entry = BarChartDataEntry(x: Double(index), y: visualValue)
+//                entry.data = actualValue as AnyObject // Store the actual value for later use
+//                return entry
+//            }
+//            
+//            completion(dataEntries, hobbyDurations)
+//        }
+//    }
+    
+    
     private func fetchData(for period: Calendar.Component, completion: @escaping ([BarChartDataEntry], [String: Double]) -> Void) {
         guard let userID = currentUser?.uid, let hobbiesList = currentUserList?.hobbies else {
             print("No user or hobbies available")
@@ -645,7 +706,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             return
         }
         
-        // Initialize all hobbies with zero duration
         var hobbyDurations = [String: Double]()
         for hobby in hobbiesList {
             hobbyDurations[hobby.name ?? ""] = 0.0
@@ -664,8 +724,10 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
 
             for document in documents {
                 if let postDate = (document.data()["postDate"] as? Timestamp)?.dateValue(),
-                   let hobby = document.data()["hobby"] as? String,
-                   let duration = document.data()["duration"] as? Double {
+                   let hobbyName = document.data()["hobby"] as? String,
+                   let duration = document.data()["duration"] as? Double,
+                   hobbyDurations[hobbyName] != nil { // Only count durations for hobbies in the current list
+                    
                     var shouldInclude = false
                     switch period {
                     case .day:
@@ -679,22 +741,28 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                     }
                     
                     if shouldInclude {
-                        hobbyDurations[hobby] = (hobbyDurations[hobby] ?? 0.0) + duration
+                        hobbyDurations[hobbyName]! += duration
                     }
                 }
             }
 
-            let sortedHobbies = hobbyDurations.keys.sorted()
-            let dataEntries = sortedHobbies.enumerated().map { index, hobby in
-                // Ensure there's a minimal visual representation for zero values but mark them as zero
-                let actualValue = hobbyDurations[hobby] ?? 0.0
-                let visualValue = max(actualValue, 0.49) // Minimal value for visual effect only
-                let entry = BarChartDataEntry(x: Double(index), y: visualValue)
-                entry.data = actualValue as AnyObject // Store the actual value for later use
-                return entry
-            }
-            
+            let dataEntries = hobbyDurations.compactMap { (hobby, duration) -> BarChartDataEntry? in
+                if let index = hobbiesList.firstIndex(where: {$0.name == hobby}) {
+                    let visualValue = max(0.5, duration) // Ensure a minimum height of 0.5 for visual effect
+                    let entry = BarChartDataEntry(x: Double(index), y: visualValue)
+                    entry.data = duration as AnyObject  // Store the actual value
+                    return entry
+                }
+                return nil
+            }.sorted(by: {$0.x < $1.x})
+
             completion(dataEntries, hobbyDurations)
+        }
+    }
+    
+    func chartValueSelected(_ chartView: ChartViewBase, entry: ChartDataEntry, highlight: Highlight) {
+        if let actualValue = entry.data as? Double {
+            print("Selected value: \(actualValue)")
         }
     }
 
