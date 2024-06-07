@@ -6,3 +6,18 @@
 //
 
 import Foundation
+
+struct UserProfile: Codable {
+    var displayName: String
+    var email: String
+    var storageURL: String
+    var userListId: String
+    
+
+    enum CodingKeys: String, CodingKey {
+        case displayName = "displayName"
+        case email = "email"
+        case storageURL = "storageURL"
+        case userListId = "userListId"
+    }
+}

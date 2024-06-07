@@ -748,7 +748,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
 
             let dataEntries = hobbyDurations.compactMap { (hobby, duration) -> BarChartDataEntry? in
                 if let index = hobbiesList.firstIndex(where: {$0.name == hobby}) {
-                    let visualValue = max(0.5, duration) // Ensure a minimum height of 0.5 for visual effect
+                    let visualValue = max(0.1, duration) // Ensure a minimum height of 0.5 for visual effect
                     let entry = BarChartDataEntry(x: Double(index), y: visualValue)
                     entry.data = duration as AnyObject  // Store the actual value
                     return entry

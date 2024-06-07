@@ -1,5 +1,5 @@
 //
-//  SerachUserCell.swift
+//  SearchUserCell.swift
 //  A4
 //
 //  Created by Yenny Fransisca Halim on 07/06/24.

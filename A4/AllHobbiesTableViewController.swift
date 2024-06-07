@@ -8,10 +8,6 @@
 import UIKit
 
 class AllHobbiesTableViewController: UITableViewController, UISearchResultsUpdating, DatabaseListener {
-    func onGoalsChange(change: DatabaseChange, goals: [Goal]) {
-        
-    }
-
 
     let SECTION_HOBBY = 0
     
@@ -33,11 +29,9 @@ class AllHobbiesTableViewController: UITableViewController, UISearchResultsUpdat
 
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
-        searchController.obscuresBackgroundDuringPresentation = true
+        searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.placeholder = "Search All Hobbies"
         navigationItem.searchController = searchController
-                
-        // This view controller decides how the search controller is presented
         definesPresentationContext = true
 
         filteredHobbies = allHobbies
@@ -66,6 +60,10 @@ class AllHobbiesTableViewController: UITableViewController, UISearchResultsUpdat
     }
     
     func onUserListChange(change: DatabaseChange, userHobbies: [Hobby]) {
+        
+    }
+    
+    func onGoalsChange(change: DatabaseChange, goals: [Goal]) {
         
     }
     

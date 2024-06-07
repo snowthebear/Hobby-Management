@@ -51,6 +51,8 @@
 		7F739F482C0ECB8100FD2188 /* EventCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7F739F472C0ECB8100FD2188 /* EventCell.xib */; };
 		7F739F4C2C0EDD9400FD2188 /* CalendarHelp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F739F4B2C0EDD9400FD2188 /* CalendarHelp.swift */; };
 		7FBA11582C10E73C001BAB0B /* AxisBarChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FBA11572C10E73C001BAB0B /* AxisBarChart.swift */; };
+		7FBA115C2C121229001BAB0B /* SearchUserCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FBA115B2C121229001BAB0B /* SearchUserCell.swift */; };
+		7FBA115E2C121516001BAB0B /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FBA115D2C121516001BAB0B /* UserProfile.swift */; };
 		7FD484062BE73E1000C46142 /* MulticastDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FD484022BE73E1000C46142 /* MulticastDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -100,6 +102,8 @@
 		7F739F472C0ECB8100FD2188 /* EventCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = EventCell.xib; sourceTree = "<group>"; };
 		7F739F4B2C0EDD9400FD2188 /* CalendarHelp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarHelp.swift; sourceTree = "<group>"; };
 		7FBA11572C10E73C001BAB0B /* AxisBarChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AxisBarChart.swift; sourceTree = "<group>"; };
+		7FBA115B2C121229001BAB0B /* SearchUserCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchUserCell.swift; sourceTree = "<group>"; };
+		7FBA115D2C121516001BAB0B /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
 		7FD483D02BE730C900C46142 /* A4.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = A4.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FD484022BE73E1000C46142 /* MulticastDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MulticastDelegate.swift; sourceTree = "<group>"; };
 		9A137F085A9FDC909FD7BA3E /* Pods-A4.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-A4.debug.xcconfig"; path = "Target Support Files/Pods-A4/Pods-A4.debug.xcconfig"; sourceTree = "<group>"; };
@@ -141,6 +145,7 @@
 				7F739F262C08480000FD2188 /* Home Feed & Post */,
 				7F739F1E2C0787C200FD2188 /* PhotoCollectionViewCell.swift */,
 				7F739F452C0EC83800FD2188 /* EventCell.swift */,
+				7FBA115B2C121229001BAB0B /* SearchUserCell.swift */,
 			);
 			path = Cell;
 			sourceTree = "<group>";
@@ -172,9 +177,10 @@
 				7F4E74912BF5DAF900F8E9FB /* CalendarListResponse.swift */,
 				7F4763CA2BE7B6E5007BA9AC /* UserManager.swift */,
 				7F3616C62BF2388A007C155B /* UserList.swift */,
+				7F739F3F2C09E84D00FD2188 /* UserPosts.swift */,
+				7FBA115D2C121516001BAB0B /* UserProfile.swift */,
 				7F3616C42BF21D75007C155B /* Hobby.swift */,
 				7F739F2E2C08495F00FD2188 /* StorageManager.swift */,
-				7F739F3F2C09E84D00FD2188 /* UserPosts.swift */,
 				7F3616CC2BF4E418007C155B /* EventCollectionViewCell.swift */,
 			);
 			path = Resource;
@@ -400,6 +406,7 @@
 				7F739F252C08411500FD2188 /* FeedPostTableViewCell.swift in Sources */,
 				7F4763C52BE7B691007BA9AC /* LoginViewController.swift in Sources */,
 				7F739F342C0873E900FD2188 /* UploadProgressViewController.swift in Sources */,
+				7FBA115E2C121516001BAB0B /* UserProfile.swift in Sources */,
 				7F739F2A2C08488600FD2188 /* FeedCaptionTableViewCell.swift in Sources */,
 				7F4763CF2BE7B735007BA9AC /* SceneDelegate.swift in Sources */,
 				7F7081832BEBA33D00E8F590 /* EditProfileViewController.swift in Sources */,
@@ -416,6 +423,7 @@
 				7F3616BF2BEFA35E007C155B /* AllHobbiesTableViewController.swift in Sources */,
 				7F739F282C08485500FD2188 /* FeedHeaderTableViewCell.swift in Sources */,
 				7F3616C52BF21D75007C155B /* Hobby.swift in Sources */,
+				7FBA115C2C121229001BAB0B /* SearchUserCell.swift in Sources */,
 				7F739F3A2C08B38500FD2188 /* GoalsTableViewController.swift in Sources */,
 				7F739F2C2C08489F00FD2188 /* FeedGoalsTableViewCell.swift in Sources */,
 				7F739F3C2C08B89100FD2188 /* CreateGoalsViewController.swift in Sources */,

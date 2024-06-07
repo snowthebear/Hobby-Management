@@ -16,4 +16,5 @@ class UserManager {
     var accessToken: String?
 
     private init() {}
+    
 }
