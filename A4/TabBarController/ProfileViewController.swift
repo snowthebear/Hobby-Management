@@ -176,10 +176,42 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                 return
             }
 
+            // References to the followings subcollection of the current user and the followers subcollection of the viewed user
+            let currentUserFollowingRef = usersReference.document(currentUserID).collection("following").document(viewedUserID)
+            let viewedUserFollowersRef = usersReference.document(viewedUserID).collection("followers").document(currentUserID)
+
+            // Check if the current user is already following the viewed user
+            currentUserFollowingRef.getDocument { [weak self] documentSnapshot, error in
+                if let document = documentSnapshot, document.exists {
+                    print("Already following this user.")
+                } else {
+                    // Not following yet, proceed to follow
+                    let batch = Firestore.firestore().batch()
+                    batch.setData([:], forDocument: currentUserFollowingRef)
+                    batch.setData([:], forDocument: viewedUserFollowersRef)
+
+                    batch.commit { err in
+                        if let err = err {
+                            print("Error following user: \(err)")
+                        } else {
+                            print("User followed successfully")
+                            DispatchQueue.main.async {
+                                self?.updateFollowersFollowingLabels()
+                            }
+                        }
+                    }
+                }
+            }
+        guard let viewedUserID = userProfile?.userID,
+                  let currentUserID = currentUser?.uid,
+                  viewedUserID != currentUserID else {
+                print("Cannot follow oneself or invalid user state")
+                return
+            }
+
             let viewedUserRef = usersReference.document(viewedUserID)
             let currentUserRef = usersReference.document(currentUserID)
-
-           
+          
             let db = Firestore.firestore()
             db.runTransaction({ (transaction, errorPointer) -> Any? in
                 let viewedUserDocument: DocumentSnapshot
@@ -212,41 +244,87 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             }
     }
     
+//    func updateFollowersFollowingLabels() {
+//        guard let currentUserID = currentUser?.uid else { return }
+//        
+//        if isCurrentUser {
+//            let currentUserRef = usersReference.document(currentUserID)
+//            currentUserRef.getDocument { [weak self] (document, error) in
+//                guard let self = self, let document = document, document.exists else { return }
+//                if let currentUserData = document.data() {
+//                    DispatchQueue.main.async {
+//                        if let followingCount = currentUserData["following"] as? Int {
+//                            self.followingLabel.text = "\(followingCount)"
+//                        }
+//                        if let followersCount = currentUserData["followers"] as? Int {
+//                            self.followersLabel.text = "\(followersCount)"
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        
+//        if !isCurrentUser {
+//            if let viewedUserID = userProfile?.userID, viewedUserID != currentUserID {
+//                let viewedUserRef = usersReference.document(viewedUserID)
+//                viewedUserRef.getDocument { [weak self] (document, error) in
+//                    if let document = document, document.exists {
+//                        if let viewedUserData = document.data() {
+//                            DispatchQueue.main.async {
+//                                if let followersCount = viewedUserData["followers"] as? Int {
+//                                    self?.followersLabel.text = "\(followersCount)"
+//                                }
+//                                if let followingCount = viewedUserData["following"] as? Int {
+//                                    self?.followingLabel.text = "\(followingCount)"
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        
+//    }
+    
     func updateFollowersFollowingLabels() {
-        guard let currentUserID = currentUser?.uid else { return }
-        
-        if isCurrentUser {
-            let currentUserRef = usersReference.document(currentUserID)
-            currentUserRef.getDocument { [weak self] (document, error) in
-                guard let self = self, let document = document, document.exists else { return }
-                if let currentUserData = document.data() {
+        // Helper function to update labels based on the user's ID and labels
+        func updateLabels(for userID: String, followersLabel: UILabel, followingLabel: UILabel) {
+            let userRef = usersReference.document(userID)
+
+            // Fetch the count of followings
+            userRef.collection("following").getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching followings: \(error)")
+                } else {
+                    let followingCount = snapshot?.documents.count ?? 0
                     DispatchQueue.main.async {
-                        if let followingCount = currentUserData["following"] as? Int {
-                            self.followingLabel.text = "\(followingCount)"
-                        }
+                        followingLabel.text = "\(followingCount)"
+                    }
+                }
+            }
+
+            // Fetch the count of followers
+            userRef.collection("followers").getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching followers: \(error)")
+                } else {
+                    let followersCount = snapshot?.documents.count ?? 0
+                    DispatchQueue.main.async {
+                        followersLabel.text = "\(followersCount)"
                     }
                 }
             }
         }
-        
-        if !isCurrentUser {
-            if let viewedUserID = userProfile?.userID, viewedUserID != currentUserID {
-                let viewedUserRef = usersReference.document(viewedUserID)
-                viewedUserRef.getDocument { [weak self] (document, error) in
-                    if let document = document, document.exists {
-                        if let viewedUserData = document.data() {
-                            DispatchQueue.main.async {
-                                if let followersCount = viewedUserData["followers"] as? Int {
-                                    self?.followersLabel.text = "\(followersCount)"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+
+        // Determine which user profile to update
+        if isCurrentUser {
+            guard let currentUserID = currentUser?.uid else { return }
+            updateLabels(for: currentUserID, followersLabel: self.followersLabel, followingLabel: self.followingLabel)
+        } else if let viewedUserID = userProfile?.userID, viewedUserID != currentUser?.uid {
+            updateLabels(for: viewedUserID, followersLabel: self.followersLabel, followingLabel: self.followingLabel)
         }
-        
     }
+
     
     
     private func setupCollectionView() {
