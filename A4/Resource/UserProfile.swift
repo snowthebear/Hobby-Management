@@ -11,8 +11,9 @@ struct UserProfile: Codable {
     var displayName: String
     var email: String
     var storageURL: String
-    var userListId: String
+    var userListId: String?
     var userID: String?
+    var userHobby: [Hobby]?
 
     enum CodingKeys: String, CodingKey {
         case displayName = "displayName"
@@ -29,15 +30,15 @@ struct UserProfile: Codable {
             email = try container.decode(String.self, forKey: .email)
             storageURL = try container.decode(String.self, forKey: .storageURL)
             userListId = try container.decode(String.self, forKey: .userListId)
-            // userID is not decoded because it's not part of the document's fields
         }
 
         // Use this initializer when creating a UserProfile from Firestore data, passing documentID as userID
-        init(displayName: String, email: String, storageURL: String, userListId: String, userID: String) {
-            self.displayName = displayName
-            self.email = email
-            self.storageURL = storageURL
-            self.userListId = userListId
-            self.userID = userID
-        }
+    init(displayName: String, email: String, storageURL: String, userListId: String?, userHobby: [Hobby]?, userID: String) {
+        self.displayName = displayName
+        self.email = email
+        self.storageURL = storageURL
+        self.userListId = userListId
+        self.userID = userID
+        self.userHobby = userHobby
+    }
 }

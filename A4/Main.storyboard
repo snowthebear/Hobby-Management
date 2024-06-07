@@ -826,6 +826,7 @@
                         <outlet property="goalsMenu" destination="Oat-CS-eTh" id="EbV-of-cZ2"/>
                         <outlet property="hamburgerMenu" destination="p4j-Bf-nPg" id="G1e-io-rMe"/>
                         <outlet property="hamburgerView" destination="4D2-Fa-gIj" id="p7K-bJ-AoB"/>
+                        <outlet property="hobbyButton" destination="JdT-on-NKY" id="x9i-66-DDB"/>
                         <outlet property="leadingConstraintForHM" destination="ovK-Gn-wZP" id="Rzs-Jn-VI1"/>
                         <outlet property="postCollectionView" destination="kNe-bf-1uB" id="J8W-bP-sct"/>
                         <outlet property="profilePictureView" destination="pqK-Hr-xDo" id="nkb-8Z-FaL"/>
@@ -1060,7 +1061,6 @@
                                 <connections>
                                     <outlet property="nameLabel" destination="pVq-6z-KmQ" id="0OO-Aw-Rae"/>
                                     <outlet property="profileImageView" destination="Xa5-N5-zi7" id="w2L-yf-0w9"/>
-                                    <segue destination="0XG-BH-s6x" kind="show" identifier="showUserProfile" id="2gt-iC-bwK"/>
                                 </connections>
                             </tableViewCell>
                         </prototypes>
@@ -1070,6 +1070,9 @@
                         </connections>
                     </tableView>
                     <navigationItem key="navigationItem" id="Bm4-fb-jhd"/>
+                    <connections>
+                        <segue destination="0XG-BH-s6x" kind="show" identifier="showUserProfile" id="cVf-dz-xJg"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Q9L-z6-oWh" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -1623,7 +1626,7 @@
     </scenes>
     <inferredMetricsTieBreakers>
         <segue reference="AMB-DN-ChV"/>
-        <segue reference="2gt-iC-bwK"/>
+        <segue reference="cVf-dz-xJg"/>
         <segue reference="SrC-ZJ-3Vr"/>
     </inferredMetricsTieBreakers>
     <resources>

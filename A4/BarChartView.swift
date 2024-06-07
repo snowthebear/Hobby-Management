@@ -14,7 +14,7 @@ class CustomBarChartView: BarChartView {
     private var hobbyColors: [String: UIColor] = [:]
     
     func setupChart() {
-        self.chartDescription.text = "Hobby Progress"
+        self.chartDescription.text = "Minutes / Hobby Progress"
         self.noDataText = "No data available."
     }
     
@@ -33,31 +33,4 @@ class CustomBarChartView: BarChartView {
         self.notifyDataSetChanged()
     }
 
-//    func updateChartData(dataEntries: [BarChartDataEntry]) {
-//        let dataSet = BarChartDataSet(entries: dataEntries, label: "Hobbies")
-//        dataSet.colors = ChartColorTemplates.colorful()
-//        
-//        let data = BarChartData(dataSets: [dataSet])
-//        self.data = data
-//        self.notifyDataSetChanged()
-//    }
-
-//    func setupChart() {
-//        // Example data
-//        let dataEntries = [
-//            BarChartDataEntry(x: 0, yValues: [1, 2, 3]),
-//            BarChartDataEntry(x: 1, yValues: [2, 1, 4])
-//        ]
-//        
-//        // Create dataset with custom colors
-//        let dataSet = BarChartDataSet(entries: dataEntries, label: "Hobbies")
-//        dataSet.colors = [UIColor.red, UIColor.green, UIColor.blue]
-//
-//        // Create chart data and assign it to the chart view
-//        let data = BarChartData(dataSets: [dataSet])
-//        self.data = data
-//
-//        // Customize the chart
-//        self.chartDescription.text = "Hobby Progress"
-//    }
 }

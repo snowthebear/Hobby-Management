@@ -6,6 +6,10 @@
 //
 
 import Foundation
+import Charts
 
-class AxisBarChart {
+class AxisBarChart: IndexAxisValueFormatter {
+    override func stringForValue(_ value: Double, axis: AxisBase?) -> String {
+        return "\(Int(value))"
+    }
 }

@@ -17,10 +17,12 @@ class SearchTableViewController: UITableViewController, UISearchResultsUpdating 
     var users: [UserProfile] = []
     var filteredUsers: [UserProfile] = []
     let db = Firestore.firestore()
+    var selectedUser: UserProfile?
     
     weak var databaseController: DatabaseProtocol?
     
     var selectedUserDocumentIDs: [String] = []
+    var selectedUserLists: [String] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -69,6 +71,7 @@ class SearchTableViewController: UITableViewController, UISearchResultsUpdating 
     }
     
     func loadUsers() {
+        print("=============================")
         db.collection("users").getDocuments { (querySnapshot, err) in
             if let err = err {
                 print("Error getting documents: \(err)")
@@ -85,6 +88,44 @@ class SearchTableViewController: UITableViewController, UISearchResultsUpdating 
             }
         }
     }
+    
+    
+    func fetchUserList(userListId: String, completion: @escaping (UserList?) -> Void) {
+        db.collection("userlists").document(userListId).getDocument { (document, error) in
+            if let document = document, document.exists {
+                let data = document.data()
+//                let userList = data? as UserList
+                print("data = \(data)")
+                let hobby = data?["hobbies"] as? [Hobby]
+            } else {
+                print("Error fetching user list: \(error?.localizedDescription ?? "Unknown error")")
+                completion(nil)
+            }
+        }
+    }
+    
+    func fetchHobbies(hobbyIDs: [String], completion: @escaping ([Hobby]) -> Void) {
+        var hobbies: [Hobby] = []
+        let group = DispatchGroup()
+        
+        for id in hobbyIDs {
+            group.enter()
+            db.collection("hobbies").document(id).getDocument { (document, error) in
+                defer { group.leave() }
+                if let document = document, document.exists, let hobby = try? document.data(as: Hobby.self) {
+                    hobbies.append(hobby)
+                } else {
+                    print("Error fetching hobby: \(error?.localizedDescription ?? "Unknown error")")
+                }
+            }
+        }
+
+        group.notify(queue: .main) {
+            completion(hobbies)
+        }
+    }
+
+
     
 
     // MARK: - Table view data source
@@ -108,15 +149,33 @@ class SearchTableViewController: UITableViewController, UISearchResultsUpdating 
         let cell = tableView.dequeueReusableCell(withIdentifier: CELL_USER, for: indexPath) as! SearchUserCell
         let user = filteredUsers[indexPath.row]
         cell.configure(with: URL(string: user.storageURL), userName: user.displayName)
-        print("ccc")
         return cell
     }
     
 //    
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        performSegue(withIdentifier: "showUserProfile", sender: self)
+        //        performSegue(withIdentifier: "showUserProfile", sender: self)
         var selectedUser = filteredUsers[indexPath.row]
-        selectedUser.userID = selectedUserDocumentIDs[indexPath.row] // Assuming you store document IDs in an array
+        selectedUser.userID = selectedUserDocumentIDs[indexPath.row]
+        
+        if let userListId = selectedUser.userListId {
+            db.collection("userlists").document(userListId).getDocument { [weak self] (document, error) in
+                guard let self = self else { return }
+                if let document = document, document.exists {
+                    let data = document.data()
+                    if let hobbyIDs = data?["hobbies"] as? [String] {
+                        self.fetchHobbies(hobbyIDs: hobbyIDs) { hobbies in
+                            selectedUser.userHobby = hobbies
+                            self.selectedUser = selectedUser
+                           
+                            print("tableview")
+                            self.performSegue(withIdentifier: "showUserProfile", sender: self)
+                            
+                        }
+                    }
+                }
+            }
+        }
     }
     
 
@@ -161,16 +220,12 @@ class SearchTableViewController: UITableViewController, UISearchResultsUpdating 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showUserProfile", let destinationVC = segue.destination as? ProfileViewController {
-            if let indexPath = tableView.indexPathForSelectedRow {
-                var selectedUser = filteredUsers[indexPath.row]
-                selectedUser.userID = selectedUserDocumentIDs[indexPath.row]
-                destinationVC.isCurrentUser = false
-                destinationVC.userProfile = selectedUser
-                print(selectedUser)
-                
-            }
+            print("prepare")
+            destinationVC.isCurrentUser = false
+            destinationVC.userProfile = self.selectedUser
+            
         }
     }
-    
+
 
 }

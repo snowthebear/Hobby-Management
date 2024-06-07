@@ -51,7 +51,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     @IBOutlet weak var hamburgerView: UIView!
     @IBOutlet weak var backViewForHamburger: UIView!
     @IBOutlet weak var followButton: UIButton!
-    
+    @IBOutlet weak var hobbyButton: UIButton!
     @IBOutlet weak var displayNameLabel: UILabel!
     @IBOutlet weak var followersLabel: UILabel!
     @IBOutlet weak var followingLabel: UILabel!
@@ -96,7 +96,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         }
         
         setProfilePicture()
-
+        
         customBarChartView.setupChart()
         loadUserSettings()
         loadDailyData()
@@ -120,6 +120,20 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         } else {
             print("Current user ID is nil.")
         }
+        
+//        if !isCurrentUser {
+//            if let userListId = userProfile?.userListId {
+//                guard let userID = userProfile?.userID else {
+//                    return
+//                }
+//                fetchUserList(userListId: userListId) { (userList, hobbies) in
+//                    DispatchQueue.main.async {
+//                        // Update the UI with the fetched data
+//                        self.setupProfile(for: userID, isCurrentUser: self.isCurrentUser)
+//                    }
+//                }
+//            }
+//        }
         
         print("viewdidload = \(userProfile)")
         
@@ -153,6 +167,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.tabBarController?.navigationController?.isNavigationBarHidden = true
+        print("viewwill appear --------------- \(userProfile)")
 
         if isCurrentUser {
             print("iscurrentuser")
@@ -233,6 +248,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
 
         hamburgerMenu.isHidden = !isCurrentUser
         goalsMenu.isHidden = !isCurrentUser
+        hobbyButton.isHidden = !isCurrentUser
 
         followButton.isHidden = isCurrentUser
     }
@@ -337,32 +353,27 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     
     
-    func loadUserProfile(for userID: String) {
-        let usersReference = Firestore.firestore().collection("users")
+    private func loadUserProfile(for userID: String) {
         usersReference.document(userID).getDocument { [weak self] (document, error) in
-            guard let self = self else { return }
-            if let error = error {
-                print("Error retrieving document: \(error)")
-                return
-            }
-            guard let document = document, document.exists else {
-                print("Document does not exist")
+            guard let self = self, let document = document, document.exists else {
+                print("Document does not exist or error occurred: \(error?.localizedDescription ?? "No error")")
                 return
             }
 
             do {
-                var userProfile = try document.data(as: UserProfile.self)
-                userProfile.userID = document.documentID
-                self.fetchImagesURL(userID: document.documentID) { fetchedUrls in
-                    self.imageUrls = fetchedUrls
-                    
-                    self.postCollectionView.reloadData()
-                    self.updateUI(with: userProfile)
-                    
+//                var userProfile = try document.data(as: UserProfile.self)
+                guard let userProfile = self.userProfile else {
+                    return
                 }
-
-            } catch {
-                print("Error decoding user profile: \(error)")
+//                userProfile.userID = userID
+                self.userProfile = userProfile
+                self.updateUI(with: userProfile)
+                self.fetchImagesURL(userID: userID) { [weak self] fetchedUrls in
+                    self?.imageUrls = fetchedUrls
+                    DispatchQueue.main.async {
+                        self?.postCollectionView.reloadData()
+                    }
+                }
             }
         }
     }
@@ -375,6 +386,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             if let url = URL(string: userProfile.storageURL) {
                 self.profilePictureView.sd_setImage(with: url, placeholderImage: UIImage(named: "defaultProfile"))
             }
+            self.updateChartData()
         }
     }
     
@@ -385,6 +397,56 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         imageUrls.removeAll()
         postCollectionView.reloadData()
     }
+    
+    func resolveHobbies(hobbyReferences: [DocumentReference], completion: @escaping ([Hobby]) -> Void) {
+        var hobbies: [Hobby] = []
+        let group = DispatchGroup()
+
+        for reference in hobbyReferences {
+            group.enter()
+            reference.getDocument { (documentSnapshot, error) in
+                if let document = documentSnapshot, document.exists {
+                    do {
+                        let hobby = try document.data(as: Hobby.self)
+                        hobbies.append(hobby)
+                    } catch let error {
+                        print("Error decoding hobby: \(error)")
+                    }
+                }
+                group.leave()
+            }
+        }
+
+        group.notify(queue: .main) {
+            completion(hobbies)
+        }
+    }
+    
+//    func fetchUserList(userListId: String, completion: @escaping (UserList?, [Hobby]?) -> Void) {
+//        let userlistRef = Firestore.firestore().collection("userlists").document(userListId)
+//        userlistRef.getDocument { (documentSnapshot, error) in
+//            if let document = documentSnapshot, document.exists {
+//                do {
+//                    let userList = try document.data(as: UserList.self)
+////                    self.userProfile?.userList = userList
+//                    if let hobbyReferences = document.data()?["hobbies"] as? [DocumentReference] {
+//                        self.resolveHobbies(hobbyReferences: hobbyReferences) { resolvedHobbies in
+//                            completion(userList, resolvedHobbies)
+//                        }
+//                    } else {
+//                        completion(userList, nil)
+//                    }
+//                } catch let error {
+//                    print("Error decoding UserList: \(error)")
+//                    completion(nil, nil)
+//                }
+//            } else {
+//                print("Document does not exist")
+//                completion(nil, nil)
+//            }
+//        }
+//    }
+
 
     
 
@@ -655,6 +717,9 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     
     func updateChartData() {
+        let userID = isCurrentUser ? currentUser?.uid : userProfile?.userID
+        guard let userID = userID else { return }
+        
         switch progressSegmentedControl.selectedSegmentIndex {
         case 0:
             loadDailyData()
@@ -821,20 +886,26 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
 //        }
 //    }
     
-    
     private func fetchData(for period: Calendar.Component, completion: @escaping ([BarChartDataEntry], [String: Double]) -> Void) {
         print("fetchData")
-        guard let userID = currentUser?.uid, let hobbiesList = currentUserList?.hobbies else {
-            print("No user or hobbies available")
+        guard let userID = isCurrentUser ? currentUser?.uid : userProfile?.userID else {
+            print("No user ID available")
             completion([], [:])
             return
         }
         
+        print("userprofile = \(userProfile)")
+        guard let hobbiesList = (isCurrentUser ? currentUserList?.hobbies : userProfile?.userHobby) else {
+            print("No hobbies list available")
+            completion([], [:])
+            return
+        }
+            
         var hobbyDurations = [String: Double]()
         for hobby in hobbiesList {
             hobbyDurations[hobby.name ?? ""] = 0.0
         }
-
+        
         let db = Firestore.firestore()
         db.collection("posts").whereField("userID", isEqualTo: userID).getDocuments { (querySnapshot, error) in
             guard let documents = querySnapshot?.documents else {
@@ -842,10 +913,10 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                 completion([], hobbyDurations)
                 return
             }
-
+            
             let calendar = Calendar.current
             let now = Date()
-
+            
             for document in documents {
                 if let postDate = (document.data()["postDate"] as? Timestamp)?.dateValue(),
                    let hobbyName = document.data()["hobby"] as? String,
@@ -869,27 +940,74 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                     }
                 }
             }
-
+            
             let dataEntries = hobbyDurations.compactMap { (hobby, duration) -> BarChartDataEntry? in
                 if let index = hobbiesList.firstIndex(where: {$0.name == hobby}) {
                     let visualValue = max(0.1, duration) // Ensure a minimum height of 0.5 for visual effect
                     let entry = BarChartDataEntry(x: Double(index), y: visualValue)
-                    entry.data = duration as AnyObject  // Store the actual value
+                    entry.data = Int(duration) as AnyObject
                     return entry
                 }
                 return nil
             }.sorted(by: {$0.x < $1.x})
-
+            
             completion(dataEntries, hobbyDurations)
         }
     }
     
-    func chartValueSelected(_ chartView: ChartViewBase, entry: ChartDataEntry, highlight: Highlight) {
-        if let actualValue = entry.data as? Double {
-            print("Selected value: \(actualValue)")
-        }
-    }
 
+    
+//    private func fetchData(for period: Calendar.Component, userID: String, completion: @escaping ([BarChartDataEntry], [String: Double]) -> Void) {
+//        
+//        print("Fetching data for userID: \(userID)")
+//        let usersRef = Firestore.firestore().collection("users")
+//        let userlistsRef = Firestore.firestore().collection("userlists")
+//        let hobbiesRef = Firestore.firestore().collection("hobbies")
+//
+//        // Fetch user document to get userListId
+//        usersRef.document(userID).getDocument { (documentSnapshot, error) in
+//            guard let document = documentSnapshot, document.exists, let userListId = document.data()?["userListId"] as? String else {
+//                print("Error fetching user: \(error?.localizedDescription ?? "Unknown error")")
+//                completion([], [:])
+//                return
+//            }
+//            print("userlist id = \(userListId)")
+//
+//            // Fetch the userlist document to get hobbies references
+//            userlistsRef.document(userListId).getDocument { (docSnapshot, err) in
+//                guard let doc = docSnapshot, doc.exists, let hobbiesArray = doc.data()?["hobbies"] as? [DocumentReference] else {
+//                    print("Error fetching user list: \(err?.localizedDescription ?? "Unknown error")")
+//                    completion([], [:])
+//                    return
+//                }
+//
+//                // Resolve each hobby reference
+//                let group = DispatchGroup()
+//                var hobbyDurations = [String: Double]()
+//
+//                for hobbyRef in hobbiesArray {
+//                    group.enter()
+//                    hobbyRef.getDocument { (hobbyDoc, hobbyError) in
+//                        if let hobbyDocument = hobbyDoc, hobbyDocument.exists, let hobbyName = hobbyDocument.data()?["name"] as? String {
+//                            hobbyDurations[hobbyName] = 0.0
+//                        } else {
+//                            print("Error fetching hobby: \(hobbyError?.localizedDescription ?? "Unknown error")")
+//                        }
+//                        group.leave()
+//                    }
+//                }
+//
+//                group.notify(queue: .main) {
+//                    // Continue with original logic to fetch posts and calculate durations
+//                    print("Hobbies fetched: \(hobbyDurations.keys)")
+//                    // Here you would continue to fetch posts and calculate the durations...
+//                    // Placeholder: call completion with dummy data
+//                    completion([], hobbyDurations)
+//                }
+//            }
+//        }
+//    }
+    
     
     private func initializeHobbyColors(hobbies: [String]) {
         loadUserSettings()
@@ -1001,6 +1119,17 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         ]
     }
     
+    
+//    func setupChart() {
+//        let yAxis = customBarChartView.leftAxis // Assuming you are using the left axis for your values
+//        yAxis.valueFormatter = AxisBarChart()
+//        yAxis.axisMinimum = 0 // Ensure the minimum value is zero for clarity
+//        yAxis.granularity = 1 // Set granularity to 1 to avoid fractional labels if not already set
+//
+//        customBarChartView.rightAxis.enabled = false // Disable the right axis if not needed
+//        customBarChartView.notifyDataSetChanged()
+//    }
+//    
     
     // ======================================================================================
     
