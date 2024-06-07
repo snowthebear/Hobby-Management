@@ -137,9 +137,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                 setupProfile(for: userID)
                 updateFollowersFollowingLabels()
             }
-            
         }
-
     }
     
     
@@ -168,81 +166,140 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         postCollectionView.frame = CGRect(x: 0, y: yOffset, width: view.bounds.width, height: collectionViewHeight)
     }
     
-    @IBAction func followButton(_ sender: Any) {
-        guard let viewedUserID = userProfile?.userID,
-                  let currentUserID = currentUser?.uid,
-                  viewedUserID != currentUserID else {
-                print("Cannot follow oneself or invalid user state")
-                return
+    func followUser(withID userID: String, completion: @escaping () -> Void) {
+        guard let currentUserID = currentUser?.uid else { return }
+        let batch = Firestore.firestore().batch()
+        let followRef = usersReference.document(currentUserID).collection("following").document(userID)
+        let followerRef = usersReference.document(userID).collection("followers").document(currentUserID)
+        batch.setData([:], forDocument: followRef)
+        batch.setData([:], forDocument: followerRef)
+
+        batch.commit { error in
+            if let error = error {
+                print("Error following user: \(error)")
+            } else {
+                print("User followed successfully.")
+                completion()
             }
-
-            // References to the followings subcollection of the current user and the followers subcollection of the viewed user
-            let currentUserFollowingRef = usersReference.document(currentUserID).collection("following").document(viewedUserID)
-            let viewedUserFollowersRef = usersReference.document(viewedUserID).collection("followers").document(currentUserID)
-
-            // Check if the current user is already following the viewed user
-            currentUserFollowingRef.getDocument { [weak self] documentSnapshot, error in
-                if let document = documentSnapshot, document.exists {
-                    print("Already following this user.")
-                } else {
-                    // Not following yet, proceed to follow
-                    let batch = Firestore.firestore().batch()
-                    batch.setData([:], forDocument: currentUserFollowingRef)
-                    batch.setData([:], forDocument: viewedUserFollowersRef)
-
-                    batch.commit { err in
-                        if let err = err {
-                            print("Error following user: \(err)")
-                        } else {
-                            print("User followed successfully")
-                            DispatchQueue.main.async {
-                                self?.updateFollowersFollowingLabels()
-                            }
-                        }
-                    }
-                }
-            }
-        guard let viewedUserID = userProfile?.userID,
-                  let currentUserID = currentUser?.uid,
-                  viewedUserID != currentUserID else {
-                print("Cannot follow oneself or invalid user state")
-                return
-            }
-
-            let viewedUserRef = usersReference.document(viewedUserID)
-            let currentUserRef = usersReference.document(currentUserID)
-          
-            let db = Firestore.firestore()
-            db.runTransaction({ (transaction, errorPointer) -> Any? in
-                let viewedUserDocument: DocumentSnapshot
-                let currentUserDocument: DocumentSnapshot
-                do {
-                    try viewedUserDocument = transaction.getDocument(viewedUserRef)
-                    try currentUserDocument = transaction.getDocument(currentUserRef)
-                } catch let fetchError as NSError {
-                    errorPointer?.pointee = fetchError
-                    return nil
-                }
-
-                let currentViewedUserFollowers = viewedUserDocument.data()?["followers"] as? Int ?? 0
-                let currentUserFollowing = currentUserDocument.data()?["following"] as? Int ?? 0
-
-                transaction.updateData(["followers": currentViewedUserFollowers + 1], forDocument: viewedUserRef)
-                transaction.updateData(["following": currentUserFollowing + 1], forDocument: currentUserRef)
-                return nil
-
-                
-            }) { (object, error) in
-                if let error = error {
-                    print("Transaction failed: \(error)")
-                } else {
-                    print("Transaction successfully committed!")
-                    DispatchQueue.main.async {
-                        self.updateFollowersFollowingLabels()
-                    }
-                }
-            }
+        }
     }
+
+    func unfollowUser(withID userID: String, completion: @escaping () -> Void) {
+        guard let currentUserID = currentUser?.uid else { return }
+        let batch = Firestore.firestore().batch()
+        let followRef = usersReference.document(currentUserID).collection("following").document(userID)
+        let followerRef = usersReference.document(userID).collection("followers").document(currentUserID)
+        batch.deleteDocument(followRef)
+        batch.deleteDocument(followerRef)
+
+        batch.commit { error in
+            if let error = error {
+                print("Error unfollowing user: \(error)")
+            } else {
+                print("User unfollowed successfully.")
+                completion()
+            }
+        }
+    }
+    
+    @IBAction func followButton(_ sender: Any) {
+        
+        guard let viewedUserID = userProfile?.userID,
+              let currentUserID = currentUser?.uid,
+              viewedUserID != currentUserID else {
+            print("Action not permitted.")
+            return
+        }
+        
+        if (sender as AnyObject).title(for: .normal) == "Follow" {
+            followUser(withID: viewedUserID) { [weak self] in
+                self?.followButton.setTitle("Unfollow", for: .normal)
+                self?.updateFollowersFollowingLabels()
+            }
+        } else {
+            unfollowUser(withID: viewedUserID) { [weak self] in
+                self?.followButton.setTitle("Follow", for: .normal)
+                self?.updateFollowersFollowingLabels()
+            }
+        }
+    }
+        
+//        guard let viewedUserID = userProfile?.userID,
+//              let currentUserID = currentUser?.uid,
+//              viewedUserID != currentUserID else {
+//            print("Cannot follow oneself or invalid user state")
+//            return
+//        }
+//
+//        // References to the followings subcollection of the current user and the followers subcollection of the viewed user
+//        let currentUserFollowingRef = usersReference.document(currentUserID).collection("following").document(viewedUserID)
+//        let viewedUserFollowersRef = usersReference.document(viewedUserID).collection("followers").document(currentUserID)
+//
+//        // Check if the current user is already following the viewed user
+//        currentUserFollowingRef.getDocument { [weak self] documentSnapshot, error in
+//            if let document = documentSnapshot, document.exists {
+//                print("Already following this user.")
+//            } else {
+//                // Not following yet, proceed to follow
+//                let batch = Firestore.firestore().batch()
+//                batch.setData([:], forDocument: currentUserFollowingRef)
+//                batch.setData([:], forDocument: viewedUserFollowersRef)
+//
+//                batch.commit { err in
+//                    if let err = err {
+//                        print("Error following user: \(err)")
+//                    } else {
+//                        print("User followed successfully")
+//                        DispatchQueue.main.async {
+//                            self?.updateFollowersFollowingLabels()
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        guard let viewedUserID = userProfile?.userID,
+//              let currentUserID = currentUser?.uid,
+//              viewedUserID != currentUserID else {
+//            print("Cannot follow oneself or invalid user state")
+//            return
+//        }
+//        
+//
+//        let viewedUserRef = usersReference.document(viewedUserID)
+//        let currentUserRef = usersReference.document(currentUserID)
+//        
+//        let db = Firestore.firestore()
+//        db.runTransaction({ (transaction, errorPointer) -> Any? in
+//            let viewedUserDocument: DocumentSnapshot
+//            let currentUserDocument: DocumentSnapshot
+//            do {
+//                try viewedUserDocument = transaction.getDocument(viewedUserRef)
+//                try currentUserDocument = transaction.getDocument(currentUserRef)
+//            } catch let fetchError as NSError {
+//                errorPointer?.pointee = fetchError
+//                return nil
+//            }
+//
+//            let currentViewedUserFollowers = viewedUserDocument.data()?["followers"] as? Int ?? 0
+//            let currentUserFollowing = currentUserDocument.data()?["following"] as? Int ?? 0
+//
+//            transaction.updateData(["followers": currentViewedUserFollowers + 1], forDocument: viewedUserRef)
+//            transaction.updateData(["following": currentUserFollowing + 1], forDocument: currentUserRef)
+//            return nil
+//
+//            
+//        }) { (object, error) in
+//            if let error = error {
+//                print("Transaction failed: \(error)")
+//            } else {
+//                print("Transaction successfully committed!")
+//                DispatchQueue.main.async {
+//                    self.updateFollowersFollowingLabels()
+//                }
+//            }
+//        }
+//    }
+    // -----------------------------
     
 //    func updateFollowersFollowingLabels() {
 //        guard let currentUserID = currentUser?.uid else { return }
@@ -414,12 +471,28 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         }
     }
     
+    func checkIfUserIsFollowed(userID: String, completion: @escaping (Bool) -> Void) {
+        guard let currentUserID = currentUser?.uid else { return }
+
+        let followingRef = usersReference.document(currentUserID).collection("following").document(userID)
+        followingRef.getDocument { documentSnapshot, error in
+            completion(documentSnapshot?.exists ?? false)
+        }
+        
+    }
+    
     func setupProfile(for userID: String) {
         if isCurrentUser {
             loadCurrentUserProfile()
         } else {
             print(userID)
             loadUserProfile(for: userID)
+            
+            checkIfUserIsFollowed(userID: userID) { [weak self] isFollowed in
+                DispatchQueue.main.async {
+                    self?.followButton.setTitle(isFollowed ? "Unfollow" : "Follow", for: .normal)
+                }
+            }
         }
     }
 

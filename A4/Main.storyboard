@@ -674,7 +674,11 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="7Gs-AQ-DD8">
-                                        <rect key="frame" x="38.000000000000007" y="129" width="72.666666666666686" height="35"/>
+                                        <rect key="frame" x="28" y="129" width="95" height="30"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="30" id="Lad-fI-DeI"/>
+                                            <constraint firstAttribute="width" constant="95" id="Vm7-vY-OFa"/>
+                                        </constraints>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="gray" title="Follow"/>
                                         <connections>
@@ -701,13 +705,13 @@
                                     <constraint firstItem="7wK-wc-BbV" firstAttribute="top" secondItem="Dkt-r1-FpW" secondAttribute="bottom" constant="5" id="Wip-fX-sjL"/>
                                     <constraint firstAttribute="trailing" secondItem="YxL-gT-3s4" secondAttribute="trailing" constant="172.33333333333303" id="XBO-It-iho"/>
                                     <constraint firstAttribute="trailing" secondItem="CMj-Zn-1Cr" secondAttribute="trailing" constant="40" id="XGF-1m-pLO"/>
-                                    <constraint firstItem="7Gs-AQ-DD8" firstAttribute="leading" secondItem="lnZ-Ia-Tdf" secondAttribute="leading" constant="38" id="YZY-ed-t0c"/>
                                     <constraint firstItem="7wK-wc-BbV" firstAttribute="leading" secondItem="pqK-Hr-xDo" secondAttribute="trailing" constant="22" id="ZTx-rx-m2K"/>
                                     <constraint firstItem="CMj-Zn-1Cr" firstAttribute="top" secondItem="lnZ-Ia-Tdf" secondAttribute="top" constant="27" id="ZvN-AU-X44"/>
                                     <constraint firstItem="CMj-Zn-1Cr" firstAttribute="leading" secondItem="pqK-Hr-xDo" secondAttribute="trailing" constant="22" id="aJy-21-XAy"/>
                                     <constraint firstItem="zYv-58-GJe" firstAttribute="top" secondItem="CMj-Zn-1Cr" secondAttribute="bottom" constant="30" id="c4q-MO-6xn"/>
                                     <constraint firstItem="pqK-Hr-xDo" firstAttribute="leading" secondItem="lnZ-Ia-Tdf" secondAttribute="leading" constant="23" id="ciN-3T-Rb8"/>
                                     <constraint firstAttribute="trailing" secondItem="nq4-1E-lF9" secondAttribute="trailing" constant="154" id="d5R-bC-JjZ"/>
+                                    <constraint firstItem="7Gs-AQ-DD8" firstAttribute="leading" secondItem="lnZ-Ia-Tdf" secondAttribute="leading" constant="28" id="hiq-IB-hmy"/>
                                     <constraint firstItem="nq4-1E-lF9" firstAttribute="leading" secondItem="zYv-58-GJe" secondAttribute="trailing" constant="9.6666666666669698" id="jFA-0V-Ajt"/>
                                     <constraint firstItem="YxL-gT-3s4" firstAttribute="top" secondItem="qsL-R3-s6g" secondAttribute="bottom" constant="5" id="ug2-rA-H8J"/>
                                 </constraints>
