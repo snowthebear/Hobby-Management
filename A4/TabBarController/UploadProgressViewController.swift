@@ -39,6 +39,7 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
         super.viewDidLoad()
         self.navigationItem.setHidesBackButton(true, animated: true)
         self.tabBarController?.navigationItem.hidesBackButton = true
+        
         goalsPicker.dataSource = self
         goalsPicker.delegate = self
         
@@ -49,16 +50,17 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
         fetchGoals()
         configureDurationPicker()
         setPopUpMenu()
+        addBorderAndAdjustSize(to: imageView, basedOnWidth: imageView.frame.width)
+            
+
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.tabBarController?.navigationController?.isNavigationBarHidden = true
-//        databaseController?.addListener(listener: self)
-//        self.currentUserList = UserManager.shared.currentUserList
+        
         fetchGoals()
         viewDidLoad()
-//        tableView.reloadData()
         
     }
     
@@ -68,6 +70,23 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
         fetchGoals()
     }
     
+    func addBorderAndAdjustSize(to view: UIView, basedOnWidth width: CGFloat) {
+            // Calculate height based on a 3:4 ratio
+            let height = (4.0 / 3.0) * width
+
+            // Adjusting constraints to maintain 3:4 aspect ratio
+            NSLayoutConstraint.activate([
+                view.widthAnchor.constraint(equalToConstant: width),
+                view.heightAnchor.constraint(equalToConstant: height)
+            ])
+            
+            // Add border properties
+            view.layer.borderWidth = 1.0
+            view.layer.borderColor = UIColor.gray.cgColor
+            view.layer.cornerRadius = 5.0
+            view.clipsToBounds = true
+        }
+
     
     @IBAction func hobbyButtonTapped(_ sender: UIButton) {
         setPopUpMenu()
@@ -99,39 +118,7 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
         hobbyButton.changesSelectionAsPrimaryAction = true
         hobbyButton.showsMenuAsPrimaryAction = true
     }
-
     
-//    func setPopUpMenu() {
-//        guard let hobbies = currentUserList?.hobbies, !hobbies.isEmpty else {
-//            print("No hobbies available or currentUserList is nil")
-//            return
-//        }
-//        
-//        let optionClosure = {(action: UIAction) in
-//            print(action.title)
-//        }
-//        
-//        var optionsArray = [UIAction]()
-//        let defaultAction = UIAction(title: "Select", state: .on, handler: optionClosure)
-//        optionsArray.append(defaultAction)
-//
-//        for hobby in hobbies{
-//            let action = UIAction(title: hobby.name!, state: .off, handler: optionClosure)
-//            optionsArray.append(action)
-//        }
-//                
-//        optionsArray[0].state = .on
-//
-//        // create an options menu
-//        let optionsMenu = UIMenu(title: "", options: .displayInline, children: optionsArray)
-//                
-//        // add everything
-//        hobbyButton.menu = optionsMenu
-//
-//        hobbyButton.changesSelectionAsPrimaryAction = true
-//        hobbyButton.showsMenuAsPrimaryAction = true
-//    }
-
     
     func configureDurationPicker() {
         durationPicker.datePickerMode = .countDownTimer
@@ -210,9 +197,8 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
     }
     
     func resetHolder() {
-//        imageView = nil
-//        captionTextField = nil
-        
+        imageView.image = nil
+        captionTextField.text = ""
     }
     
     func fetchGoals() {
@@ -260,6 +246,12 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
             return
         }
         
+        if hobbyButton.titleLabel?.text == "Select" {
+            displayMessage(title: "Hobby Required", message: "Please select a valid hobby before posting.")
+            completion(false)
+            return
+        }
+        
         
         let selectedRow = goalsPicker.selectedRow(inComponent: 0)
         let selectedGoal = (goals.indices.contains(selectedRow)) ? goals[selectedRow] : ""
@@ -303,6 +295,7 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
                             } else {
                                 self.displayAskToCompleteGoal(goal: selectedGoal)
                                 self.switchToHomePage()
+                                self.resetHolder()
                             }
                         }
                     } else {
@@ -329,12 +322,19 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
     
     
     private func displayAskToCompleteGoal(goal: String) {
-        let alert = UIAlertController(title: "Success!", message: "Do you want to mark the goal '\(goal)' as completed?", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { _ in
-            self.markGoalAsCompleted(goal: goal)
-        }))
-        alert.addAction(UIAlertAction(title: "No", style: .cancel))
-        present(alert, animated: true)
+        if goal == "" {
+            displayMessage(title: "Success", message: "Successfully post!")
+            return
+        }
+        else {
+            let alert = UIAlertController(title: "Success!", message: "Do you want to mark the goal '\(goal)' as completed?", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Yes", style: .default, handler: { _ in
+                self.markGoalAsCompleted(goal: goal)
+            }))
+            alert.addAction(UIAlertAction(title: "No", style: .cancel))
+            present(alert, animated: true)
+        }
+        
     }
     
     
