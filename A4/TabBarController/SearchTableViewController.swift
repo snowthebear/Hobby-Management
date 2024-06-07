@@ -71,7 +71,6 @@ class SearchTableViewController: UITableViewController, UISearchResultsUpdating 
     }
     
     func loadUsers() {
-        print("=============================")
         db.collection("users").getDocuments { (querySnapshot, err) in
             if let err = err {
                 print("Error getting documents: \(err)")
@@ -89,20 +88,6 @@ class SearchTableViewController: UITableViewController, UISearchResultsUpdating 
         }
     }
     
-    
-    func fetchUserList(userListId: String, completion: @escaping (UserList?) -> Void) {
-        db.collection("userlists").document(userListId).getDocument { (document, error) in
-            if let document = document, document.exists {
-                let data = document.data()
-//                let userList = data? as UserList
-                print("data = \(data)")
-                let hobby = data?["hobbies"] as? [Hobby]
-            } else {
-                print("Error fetching user list: \(error?.localizedDescription ?? "Unknown error")")
-                completion(nil)
-            }
-        }
-    }
     
     func fetchHobbies(hobbyIDs: [String], completion: @escaping ([Hobby]) -> Void) {
         var hobbies: [Hobby] = []
@@ -152,9 +137,8 @@ class SearchTableViewController: UITableViewController, UISearchResultsUpdating 
         return cell
     }
     
-//    
+  
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        //        performSegue(withIdentifier: "showUserProfile", sender: self)
         var selectedUser = filteredUsers[indexPath.row]
         selectedUser.userID = selectedUserDocumentIDs[indexPath.row]
         
@@ -167,8 +151,6 @@ class SearchTableViewController: UITableViewController, UISearchResultsUpdating 
                         self.fetchHobbies(hobbyIDs: hobbyIDs) { hobbies in
                             selectedUser.userHobby = hobbies
                             self.selectedUser = selectedUser
-                           
-                            print("tableview")
                             self.performSegue(withIdentifier: "showUserProfile", sender: self)
                             
                         }
@@ -220,7 +202,6 @@ class SearchTableViewController: UITableViewController, UISearchResultsUpdating 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showUserProfile", let destinationVC = segue.destination as? ProfileViewController {
-            print("prepare")
             destinationVC.isCurrentUser = false
             destinationVC.userProfile = self.selectedUser
             
