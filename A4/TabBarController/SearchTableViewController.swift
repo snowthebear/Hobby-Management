@@ -19,6 +19,8 @@ class SearchTableViewController: UITableViewController, UISearchResultsUpdating 
     let db = Firestore.firestore()
     
     weak var databaseController: DatabaseProtocol?
+    
+    var selectedUserDocumentIDs: [String] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -71,8 +73,13 @@ class SearchTableViewController: UITableViewController, UISearchResultsUpdating 
             if let err = err {
                 print("Error getting documents: \(err)")
             } else {
-                self.users = querySnapshot!.documents.compactMap { document -> UserProfile? in
-                    try? document.data(as: UserProfile.self)
+                self.users = []
+                self.selectedUserDocumentIDs = [] // Resetting or initializing the array
+                for document in querySnapshot!.documents {
+                    if let userProfile = try? document.data(as: UserProfile.self) {
+                        self.users.append(userProfile)
+                        self.selectedUserDocumentIDs.append(document.documentID) // Storing document IDs
+                    }
                 }
                 self.tableView.reloadData()
             }
@@ -99,9 +106,17 @@ class SearchTableViewController: UITableViewController, UISearchResultsUpdating 
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: CELL_USER, for: indexPath) as! SearchUserCell
-            let user = filteredUsers[indexPath.row]
-            cell.configure(with: URL(string: user.storageURL), userName: user.displayName)
-            return cell
+        let user = filteredUsers[indexPath.row]
+        cell.configure(with: URL(string: user.storageURL), userName: user.displayName)
+        print("ccc")
+        return cell
+    }
+    
+//    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+//        performSegue(withIdentifier: "showUserProfile", sender: self)
+        var selectedUser = filteredUsers[indexPath.row]
+        selectedUser.userID = selectedUserDocumentIDs[indexPath.row] // Assuming you store document IDs in an array
     }
     
 
@@ -140,14 +155,22 @@ class SearchTableViewController: UITableViewController, UISearchResultsUpdating 
     }
     */
 
-    /*
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+        if segue.identifier == "showUserProfile", let destinationVC = segue.destination as? ProfileViewController {
+            if let indexPath = tableView.indexPathForSelectedRow {
+                var selectedUser = filteredUsers[indexPath.row]
+                selectedUser.userID = selectedUserDocumentIDs[indexPath.row]
+                destinationVC.isCurrentUser = false
+                destinationVC.userProfile = selectedUser
+                print(selectedUser)
+                
+            }
+        }
     }
-    */
+    
 
 }

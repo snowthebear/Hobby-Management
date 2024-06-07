@@ -34,6 +34,8 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     var currentUser: FirebaseAuth.User?
     var currentUserList: UserList?
+    var userProfile: UserProfile?
+    var isCurrentUser: Bool = true
     var userEmail: String?
 //    var name: String?
     
@@ -41,11 +43,14 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     private var isHamburgerMenuShown: Bool = false
     
+    @IBOutlet weak var hamburgerMenu: UIBarButtonItem!
+    @IBOutlet weak var goalsMenu: UIBarButtonItem!
     
     @IBOutlet weak var leadingConstraintForHM: NSLayoutConstraint!
     
     @IBOutlet weak var hamburgerView: UIView!
     @IBOutlet weak var backViewForHamburger: UIView!
+    @IBOutlet weak var followButton: UIButton!
     
     @IBOutlet weak var displayNameLabel: UILabel!
     @IBOutlet weak var followersLabel: UILabel!
@@ -64,9 +69,12 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         updateChartData()
     }
     
+    @IBAction func followButton(_ sender: Any) {
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        hamburgerView.isHidden = true
         self.currentUser = UserManager.shared.currentUser
         self.currentUserList = UserManager.shared.currentUserList
 
@@ -80,7 +88,13 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         profilePictureView.isUserInteractionEnabled = true
         configureProfileImageView()
         addUploadHintImage()
-        setupProfile()
+        if isCurrentUser {
+            Task {
+                await loadUserData()
+            }
+            
+        }
+        
         setProfilePicture()
 
         customBarChartView.setupChart()
@@ -88,15 +102,15 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         loadDailyData()
 
         setupCollectionView()
-        Task {
-            await loadUserData()
-        }
+        
         
         postCollectionView.delegate = self
         postCollectionView.dataSource = self
         postCollectionView.register(PhotoCollectionViewCell.self, forCellWithReuseIdentifier: PhotoCollectionViewCell.identifier)
         
         if let userID = currentUser?.uid {
+//            print("viewdidload")
+//            setupProfile(for: userID, isCurrentUser: isCurrentUser)
             fetchImagesURL(userID: userID) { [weak self] fetchedUrls in
                 self?.imageUrls = fetchedUrls
                 DispatchQueue.main.async {
@@ -107,10 +121,9 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             print("Current user ID is nil.")
         }
         
+        print("viewdidload = \(userProfile)")
+        
 //        updateChartData()
-        
-        
-        
         
 //        // for feed:
 //        let layout = UICollectionViewFlowLayout()
@@ -140,25 +153,32 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.tabBarController?.navigationController?.isNavigationBarHidden = true
-        
-        if let userID = currentUser?.uid {
-            fetchImagesURL(userID: userID) { [weak self] fetchedUrls in
-                self?.imageUrls = fetchedUrls
-                DispatchQueue.main.async {
-                    self?.postCollectionView.reloadData()
-                }
-            }
-        } else {
-            print("Current user ID is nil.")
-        }
-        
-        loadDailyData()
 
-        
+        if isCurrentUser {
+            print("iscurrentuser")
+            // Fetch and update UI for the current logged-in user
+            if let userID = currentUser?.uid {
+                setupProfile(for: userID, isCurrentUser: true)
+            }
+        } else{
+            print("else")
+            guard let userID = self.userProfile?.userID else {
+                return
+            }
+            setupProfile(for: userID, isCurrentUser: false)
+        }
+//        guard let userProfile = self.userProfile else {
+//            return
+//        }
+//        updateUI(with: userProfile)
     }
+    
+    
+    
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        hamburgerView.isHidden = true
         self.backViewForHamburger.isHidden = true
 //        self.tabBarController?.navigationController?.isNavigationBarHidden = true
         if self.isHamburgerMenuShown {
@@ -169,6 +189,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     override func viewDidLayoutSubviews() {
+        print("viewDidLayoutSubviews")
         super.viewDidLayoutSubviews()
 //        postCollectionView.frame = view.bounds
         let allPostsLabelHeight = allPostsLabel.frame.size.height + 5
@@ -209,12 +230,17 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
 
     private func setupUI() {
         view.backgroundColor = .white
+
+        hamburgerMenu.isHidden = !isCurrentUser
+        goalsMenu.isHidden = !isCurrentUser
+
+        followButton.isHidden = isCurrentUser
     }
     
     
     func editProfile() {
         self.performSegue(withIdentifier: "editProfileSegue", sender: self)
-        setupProfile()
+        setupEditProfile()
     }
     
     func logout() {
@@ -246,7 +272,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         }
     }
     
-    func setupProfile() {
+    func setupEditProfile() {
         guard let userID = Auth.auth().currentUser?.uid else { return }
         
         usersReference.document(userID).getDocument { [weak self] (document, error) in
@@ -266,6 +292,100 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             }
         }
     }
+    
+    func setupProfile(for userID: String, isCurrentUser: Bool) {
+        print("user id = \(userID)")
+        if isCurrentUser {
+            print("setup profile 1")
+            loadCurrentUserProfile()
+        } else {
+            print("setup profile 2")
+            print(userID)
+            loadUserProfile(for: userID)
+        }
+    }
+    
+    
+
+
+    private func loadCurrentUserProfile() {
+        print("masuk loadcurrent")
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        let usersReference = Firestore.firestore().collection("users")
+        usersReference.document(userID).getDocument { [weak self] (document, error) in
+            guard let self = self, let document = document, document.exists else {
+                print("Document does not exist or error occurred: \(error?.localizedDescription ?? "No error")")
+                return
+            }
+
+            do {
+                var userProfile = try document.data(as: UserProfile.self)
+                userProfile.userID = userID // Set the userID manually
+                self.updateUI(with: userProfile)
+                self.fetchImagesURL(userID: userID) { [weak self] fetchedUrls in
+                    self?.imageUrls = fetchedUrls
+                    DispatchQueue.main.async {
+                        self?.postCollectionView.reloadData()
+                    }
+                }
+            } catch let error {
+                print("Error decoding user profile: \(error)")
+            }
+        }
+    }
+    
+    
+    
+    
+    func loadUserProfile(for userID: String) {
+        let usersReference = Firestore.firestore().collection("users")
+        usersReference.document(userID).getDocument { [weak self] (document, error) in
+            guard let self = self else { return }
+            if let error = error {
+                print("Error retrieving document: \(error)")
+                return
+            }
+            guard let document = document, document.exists else {
+                print("Document does not exist")
+                return
+            }
+
+            do {
+                var userProfile = try document.data(as: UserProfile.self)
+                userProfile.userID = document.documentID
+                self.fetchImagesURL(userID: document.documentID) { fetchedUrls in
+                    self.imageUrls = fetchedUrls
+                    
+                    self.postCollectionView.reloadData()
+                    self.updateUI(with: userProfile)
+                    
+                }
+
+            } catch {
+                print("Error decoding user profile: \(error)")
+            }
+        }
+    }
+
+
+
+    func updateUI(with userProfile: UserProfile) {
+        DispatchQueue.main.async {
+            self.displayNameLabel.text = userProfile.displayName
+            if let url = URL(string: userProfile.storageURL) {
+                self.profilePictureView.sd_setImage(with: url, placeholderImage: UIImage(named: "defaultProfile"))
+            }
+        }
+    }
+    
+    
+    func resetUI() {
+        displayNameLabel.text = ""
+        profilePictureView.image = UIImage(named: "defaultProfile")
+        imageUrls.removeAll()
+        postCollectionView.reloadData()
+    }
+
     
 
     func hideHamburgerMenu() {
@@ -301,6 +421,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     
     @IBAction func showHamburgerMenu(_ sender: Any) {
+        hamburgerView.isHidden = false
         hamburgerViewController?.setupPicture()
         hamburgerViewController?.setName()
         
@@ -508,6 +629,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     func setupProfilePicture() {
+        print("setupProfilePicture")
         guard let userID = Auth.auth().currentUser?.uid else { return }
         
         usersReference.document(userID).getDocument { [weak self] (document, error) in
@@ -526,6 +648,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             }
         }
     }
+
     
     
     // ---------------------------------------- Chart -----------------------------------------------------
@@ -700,6 +823,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     
     private func fetchData(for period: Calendar.Component, completion: @escaping ([BarChartDataEntry], [String: Double]) -> Void) {
+        print("fetchData")
         guard let userID = currentUser?.uid, let hobbiesList = currentUserList?.hobbies else {
             print("No user or hobbies available")
             completion([], [:])
@@ -1024,7 +1148,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                         print("Document \(document.documentID) does not contain a valid 'imageUrl'")
                     }
                 }
-                print("Fetched image URLs: \(imageUrls)")  // Check the fetched URLs.
                 completion(imageUrls)
             }
         }

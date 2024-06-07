@@ -46,6 +46,43 @@ class FirebaseController: NSObject, DatabaseProtocol {
 
     }
     
+//    
+//    func saveUserProfile(userProfile: UserProfile) {
+//        let db = Firestore.firestore()
+//        do {
+//            let userProfileData = try Firestore.Encoder().encode(userProfile)
+//            db.collection("userProfiles").document(userProfile.uid).setData(userProfileData) { error in
+//                if let error = error {
+//                    print("Error saving user profile: \(error.localizedDescription)")
+//                } else {
+//                    print("User profile successfully saved!")
+//                }
+//            }
+//        } catch let error {
+//            print("Error encoding user profile: \(error)")
+//        }
+//    }
+//    
+//    
+//    func fetchUserProfile(uid: String, completion: @escaping (UserProfile?, Error?) -> Void) {
+//        let userProfileRef = database.collection("userProfiles").document(uid)
+//        userProfileRef.getDocument { documentSnapshot, error in
+//            guard let document = documentSnapshot, document.exists else {
+//                print("No user profile found for UID: \(uid)")
+//                completion(nil, error)
+//                return
+//            }
+//            do {
+//                let userProfile = try document.data(as: UserProfile.self)
+//                completion(userProfile, nil)
+//            } catch {
+//                print("Error decoding user profile: \(error)")
+//                completion(nil, error)
+//            }
+//        }
+//    }
+
+    
     func addGoals(goal: String) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user logged in")

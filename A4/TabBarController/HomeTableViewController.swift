@@ -20,8 +20,8 @@ class HomeTableViewController: UITableViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.tabBarController?.navigationController?.isNavigationBarHidden = false
-        self.tabBarController?.navigationItem.title = "HOBSNAP"
+        self.tabBarController?.navigationController?.isNavigationBarHidden = true
+        self.title = "HOBSNAP"
         fetchPosts()
 //        tableView.reloadData()
     }
@@ -29,8 +29,8 @@ class HomeTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.tabBarController?.navigationItem.hidesBackButton = true
-        self.tabBarController?.navigationController?.isNavigationBarHidden = false
-        self.tabBarController?.navigationItem.title = "HOBSNAP"
+        self.tabBarController?.navigationController?.isNavigationBarHidden = true
+        self.title = "HOBSNAP"
      
      
         if let user = UserManager.shared.currentUser {

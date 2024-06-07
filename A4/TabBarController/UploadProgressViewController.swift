@@ -38,7 +38,6 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationItem.setHidesBackButton(true, animated: true)
-//        self.navigationController?.navigationBar.isHidden = true
         self.tabBarController?.navigationItem.hidesBackButton = true
         goalsPicker.dataSource = self
         goalsPicker.delegate = self
@@ -58,6 +57,7 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
 //        databaseController?.addListener(listener: self)
 //        self.currentUserList = UserManager.shared.currentUserList
         fetchGoals()
+        viewDidLoad()
 //        tableView.reloadData()
         
     }
