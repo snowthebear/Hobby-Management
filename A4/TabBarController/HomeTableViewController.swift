@@ -47,7 +47,7 @@ class HomeTableViewController: UITableViewController {
         
     }
     
-    
+//    
 //    func fetchPosts() {
 //        guard let currentUserID = currentUser?.uid else {
 //            print("Current user ID is not set.")
@@ -56,57 +56,71 @@ class HomeTableViewController: UITableViewController {
 //
 //        let db = Firestore.firestore()
 //        let followingRef = db.collection("users").document(currentUserID).collection("following")
-//
+//        
 //        // Fetch followed user IDs
 //        followingRef.getDocuments { [weak self] (snapshot, error) in
-//            guard let self = self, error == nil else {
-//                print("Error fetching following list: \(String(describing: error))")
+//            guard let self = self else { return }
+//            
+//            if let error = error {
+//                print("Error fetching following list: \(error.localizedDescription)")
 //                return
 //            }
-//
-//            var followedUserIDs = snapshot?.documents.map { $0.documentID } ?? []
-//            // Ensure the current user's posts are also fetched
-//            followedUserIDs.append(currentUserID)
-//
-//            // Fetch posts from followed users
-//            db.collection("posts").whereField("userID", in: followedUserIDs).order(by: "postDate", descending: true).getDocuments { (querySnapshot, error) in
-//                if let error = error {
-//                    print("Error getting posts: \(error)")
-//                    return
-//                }
-//
-//                var fetchedPosts = [UserPost]()
-//                let group = DispatchGroup()
+//            
+//            if let snapshot = snapshot, !snapshot.documents.isEmpty {
+//                // Use document IDs as user IDs
+//                var followedUserIDs = snapshot.documents.map { $0.documentID }
+//                // Ensure the current user's posts are also fetched
+//                followedUserIDs.append(currentUserID)
+//                print("Fetched following user IDs: \(followedUserIDs)")
 //                
-//                for document in querySnapshot!.documents {
-//                    group.enter()
-//                    let data = document.data()
-//                    let userID = data["userID"] as? String ?? ""
-//    
-//                    db.collection("users").document(userID).getDocument { userSnapshot, userError in
-//                        if let userDoc = userSnapshot, userError == nil, let userData = userDoc.data() {
-//                            let userName = userData["displayName"] as? String ?? "Unknown"
-//                            let storageURL = userData["storageURL"] as? String
-//                            let userProfileImageURL = URL(string: storageURL ?? "")
-//                            
-//                            if let post = UserPost(dictionary: data, userName: userName, userProfileImageURL: userProfileImageURL) {
-//                                fetchedPosts.append(post)
-//                            } else {
-//                                print("Error parsing document: \(data)")
+//                // Fetch posts from followed users
+//                db.collection("posts").whereField("userID", in: followedUserIDs).order(by: "postDate", descending: true).getDocuments { (querySnapshot, error) in
+//                    if let error = error {
+//                        print("Error getting posts: \(error.localizedDescription)")
+//                        return
+//                    }
+//                    
+//                    guard let documents = querySnapshot?.documents, !documents.isEmpty else {
+//                        print("No posts found for followed users.")
+//                        return
+//                    }
+//                    
+//                    var fetchedPosts = [UserPost]()
+//                    let group = DispatchGroup()
+//                    
+//                    for document in documents {
+//                        group.enter()
+//                        let data = document.data()
+//                        let userID = data["userID"] as? String ?? ""
+//                        
+//                        db.collection("users").document(userID).getDocument { userSnapshot, userError in
+//                            if let userDoc = userSnapshot, userError == nil, let userData = userDoc.data() {
+//                                let userName = userData["displayName"] as? String ?? "Unknown"
+//                                let storageURL = userData["storageURL"] as? String
+//                                let userProfileImageURL = URL(string: storageURL ?? "")
+//                                
+//                                if let post = UserPost(dictionary: data, userName: userName, userProfileImageURL: userProfileImageURL) {
+//                                    fetchedPosts.append(post)
+//                                } else {
+//                                    print("Error parsing document data: \(data)")
+//                                }
+//                            } else if let userError = userError {
+//                                print("Error fetching user details: \(userError.localizedDescription)")
 //                            }
+//                            group.leave()
 //                        }
-//                        group.leave()
+//                    }
+//                    group.notify(queue: .main) {
+//                        print("Updating UI with \(fetchedPosts.count) posts.")
+//                        self.posts = fetchedPosts
+//                        self.tableView.reloadData()
 //                    }
 //                }
-//                group.notify(queue: .main) {
-//                    self.posts = fetchedPosts
-//                    self.tableView.reloadData()
-//                }
+//            } else {
+//                print("No following data found, or user does not follow anyone.")
 //            }
 //        }
-//    
 //    }
-    
     
     func fetchPosts() {
         guard let currentUserID = currentUser?.uid else {
@@ -126,26 +140,25 @@ class HomeTableViewController: UITableViewController {
                 return
             }
             
+            var followedUserIDs = [String]()
+            
             if let snapshot = snapshot, !snapshot.documents.isEmpty {
                 // Use document IDs as user IDs
-                var followedUserIDs = snapshot.documents.map { $0.documentID }
-                // Ensure the current user's posts are also fetched
-                followedUserIDs.append(currentUserID)
-                print("Fetched following user IDs: \(followedUserIDs)")
+                followedUserIDs = snapshot.documents.map { $0.documentID }
+            }
+            
+            // Always include the current user's ID to ensure their posts are fetched
+            followedUserIDs.append(currentUserID)
+            
+            // Fetch posts from followed users (or just the user themselves if they follow no one)
+            db.collection("posts").whereField("userID", in: followedUserIDs).order(by: "postDate", descending: true).getDocuments { (querySnapshot, error) in
+                if let error = error {
+                    print("Error getting posts: \(error.localizedDescription)")
+                    return
+                }
                 
-                // Fetch posts from followed users
-                db.collection("posts").whereField("userID", in: followedUserIDs).order(by: "postDate", descending: true).getDocuments { (querySnapshot, error) in
-                    if let error = error {
-                        print("Error getting posts: \(error.localizedDescription)")
-                        return
-                    }
-                    
-                    guard let documents = querySnapshot?.documents, !documents.isEmpty else {
-                        print("No posts found for followed users.")
-                        return
-                    }
-                    
-                    var fetchedPosts = [UserPost]()
+                var fetchedPosts = [UserPost]()
+                if let documents = querySnapshot?.documents, !documents.isEmpty {
                     let group = DispatchGroup()
                     
                     for document in documents {
@@ -175,12 +188,15 @@ class HomeTableViewController: UITableViewController {
                         self.posts = fetchedPosts
                         self.tableView.reloadData()
                     }
+                } else {
+                    print("No posts found for the user.")
+                    self.posts = [] // Clear posts or display some default content
+                    self.tableView.reloadData()
                 }
-            } else {
-                print("No following data found, or user does not follow anyone.")
             }
         }
     }
+
 
 
 

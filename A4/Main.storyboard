@@ -1260,7 +1260,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="pw3-Rj-DWm" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3431" y="3023"/>
+            <point key="canvasLocation" x="3421" y="3025"/>
         </scene>
         <!--Hamburger View Controller-->
         <scene sceneID="3fj-Ef-C3i">
@@ -1361,7 +1361,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="9xd-To-Khb" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4124" y="2988"/>
+            <point key="canvasLocation" x="4096" y="2989"/>
         </scene>
         <!--Your Hobby(s)-->
         <scene sceneID="hHb-td-2eH">

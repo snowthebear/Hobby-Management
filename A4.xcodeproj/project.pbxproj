@@ -217,6 +217,18 @@
 			path = TabBarController;
 			sourceTree = "<group>";
 		};
+		7FBA115F2C141FED001BAB0B /* Secondary Class */ = {
+			isa = PBXGroup;
+			children = (
+				7F4763E42BE7B8ED007BA9AC /* BarChartView.swift */,
+				7F3616BE2BEFA35E007C155B /* AllHobbiesTableViewController.swift */,
+				7F3616C02BEFA702007C155B /* UserHobbiesTableViewController.swift */,
+				7F739F392C08B38500FD2188 /* GoalsTableViewController.swift */,
+				7F739F3B2C08B89100FD2188 /* CreateGoalsViewController.swift */,
+			);
+			path = "Secondary Class";
+			sourceTree = "<group>";
+		};
 		7FD483C72BE730C900C46142 = {
 			isa = PBXGroup;
 			children = (
@@ -247,17 +259,13 @@
 				7F4763E02BE7B87B007BA9AC /* Assets.xcassets */,
 				7F4763BF2BE7B62C007BA9AC /* Main.storyboard */,
 				7F4763E82BE7BBE0007BA9AC /* LaunchScreen.storyboard */,
-				7FBA115A2C10E76F001BAB0B /* TabBarController */,
 				7F4763D22BE7B77A007BA9AC /* FirebaseController.swift */,
-				7F739F3B2C08B89100FD2188 /* CreateGoalsViewController.swift */,
-				7F739F392C08B38500FD2188 /* GoalsTableViewController.swift */,
-				7F3616BE2BEFA35E007C155B /* AllHobbiesTableViewController.swift */,
-				7F4763CC2BE7B704007BA9AC /* RegisterViewController.swift */,
-				7F3616C02BEFA702007C155B /* UserHobbiesTableViewController.swift */,
 				7F4763C42BE7B691007BA9AC /* LoginViewController.swift */,
-				7F4763E42BE7B8ED007BA9AC /* BarChartView.swift */,
+				7F4763CC2BE7B704007BA9AC /* RegisterViewController.swift */,
 				7F7081822BEBA33D00E8F590 /* EditProfileViewController.swift */,
 				7F4763EA2BE914C4007BA9AC /* HamburgerViewController.swift */,
+				7FBA115A2C10E76F001BAB0B /* TabBarController */,
+				7FBA115F2C141FED001BAB0B /* Secondary Class */,
 				7FD483D12BE730C900C46142 /* Products */,
 				7F4763DC2BE7B824007BA9AC /* Info.plist */,
 				7F739F3D2C0988DE00FD2188 /* GoogleService-Info.plist */,

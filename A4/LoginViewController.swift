@@ -24,6 +24,7 @@ class LoginViewController: UIViewController {
     
     
     override func viewWillAppear(_ animated: Bool) {
+        self.navigationController?.navigationItem.hidesBackButton = true
         super.viewWillAppear(animated)
         self.title = "HOBSNAP"
     }
@@ -34,7 +35,8 @@ class LoginViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationItem.hidesBackButton = true
+        self.navigationController?.navigationItem.hidesBackButton = true
+//        self.navigationItem.hidesBackButton = true
         self.title = "HOBSNAP"
         
         passwordTextField.isSecureTextEntry = true
