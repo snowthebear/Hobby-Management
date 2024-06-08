@@ -143,7 +143,7 @@ class AllHobbiesTableViewController: UITableViewController, UISearchResultsUpdat
         // Adds the selected hobby to the user's list if it is not already present.
         
         guard let currentList = currentUserList else {
-            displayMessage(title: "No List Selected", message: "Please select a list first.")
+            DisplayMessage(title: "No List Selected", message: "Please select a list first.")
             return
         }
         
@@ -151,7 +151,7 @@ class AllHobbiesTableViewController: UITableViewController, UISearchResultsUpdat
         
         // Check if the hobby is already in the user's list
         if currentList.hobbies.contains(where: { $0.id == hobby.id }) {
-            displayMessage(title: "Oops!", message: "This hobby is already in your list.")
+            DisplayMessage(title: "Oops!", message: "This hobby is already in your list.")
             tableView.deselectRow(at: indexPath, animated: true)
             return
         }

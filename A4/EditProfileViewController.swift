@@ -93,7 +93,7 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
                 if let error = error {
                     // Display error message if email update fails
                     print("Failed to update email: \(error.localizedDescription)")
-                    self.displayMessage(title: "Error", message: "Failed to update email: \(error.localizedDescription)")
+                    self.DisplayMessage(title: "Error", message: "Failed to update email: \(error.localizedDescription)")
                     return
                 }
                 
@@ -121,7 +121,7 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
         }
         
         guard let userID = self.currentUser?.uid else { // Ensure there is a user ID available
-            displayMessage(title: "Error", message: "No user logged in!")
+            DisplayMessage(title: "Error", message: "No user logged in!")
             return
         }
         
@@ -151,7 +151,7 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
                 // Observe the failure of the upload task
                 uploadTask.observe(.failure) { snapshot in
                     // Display an error message if the upload fails
-                    self.displayMessage(title: "Error", message: "\(String(describing: snapshot.error))")
+                    self.DisplayMessage(title: "Error", message: "\(String(describing: snapshot.error))")
                 }
             }
         }

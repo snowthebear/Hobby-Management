@@ -9,6 +9,9 @@ import Foundation
 import GoogleAPIClientForREST
 
 
+/**
+ Represents the response from the Google Calendar API containing a list of calendars.
+ */
 struct CalendarListResponse: Codable {
     let kind: String
     let etag: String
@@ -16,6 +19,9 @@ struct CalendarListResponse: Codable {
     let items: [CalendarListEntry]
 }
 
+/**
+ Represents an entry in the calendar list.
+ */
 struct CalendarListEntry: Codable {
     let kind: String
     let etag: String
@@ -34,20 +40,32 @@ struct CalendarListEntry: Codable {
     let conferenceProperties: ConferenceProperties
 }
 
+/**
+ Represents a reminder for an event.
+ */
 struct Reminder: Codable {
     let method: String
     let minutes: Int
 }
 
+/**
+ Represents the notification settings for a calendar.
+ */
 struct NotificationSettings: Codable {
     let notifications: [Notification]
 }
 
+/**
+ Represents a notification for a calendar event.
+ */
 struct Notification: Codable {
     let type: String
     let method: String
 }
 
+/**
+ Represents the conference properties of a calendar.
+ */
 struct ConferenceProperties: Codable {
     let allowedConferenceSolutionTypes: [String]
 }

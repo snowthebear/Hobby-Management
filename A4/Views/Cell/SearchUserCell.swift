@@ -10,11 +10,20 @@ import UIKit
 import SDWebImage
 import FirebaseAuth
 
+/**
+ SearchUserCell is a custom table view cell that displays a user's profile image and name.
+ */
 class SearchUserCell: UITableViewCell {
 
     @IBOutlet weak var profileImageView: UIImageView!
     @IBOutlet weak var nameLabel: UILabel!
     
+    /**
+     Configures the cell with the user's profile image URL and name.
+     - Parameters:
+       - imageUrl: The URL of the user's profile image.
+       - userName: The name of the user.
+     */
     func configure(with imageUrl: URL?, userName: String) {
         nameLabel.text = userName
         if let imageUrl = imageUrl {
@@ -24,11 +33,18 @@ class SearchUserCell: UITableViewCell {
         }
     }
 
+    /**
+     Called after the cell is loaded from the nib or storyboard.
+     Sets up the profile image view's appearance.
+     */
     override func awakeFromNib() {
         super.awakeFromNib()
         setupProfileImageView()
     }
 
+    /**
+     Sets up the profile image view to be circular with a border.
+     */
     private func setupProfileImageView() {
         profileImageView.layer.cornerRadius = profileImageView.frame.height / 2
         profileImageView.clipsToBounds = true

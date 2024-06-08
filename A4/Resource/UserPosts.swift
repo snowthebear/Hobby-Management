@@ -8,10 +8,19 @@
 import Foundation
 import FirebaseFirestore
 
+
+/**
+ Represents the type of a user's post, either a photo or a video.
+ */
 public enum UserPostType: String {
     case photo
     case video
 
+    /**
+     Initializes a `UserPostType` from a raw string value.
+     - Parameters:
+       - rawValue: The raw string value representing the post type.
+     */
     public init?(rawValue: String) {
         switch rawValue {
         case "photo": self = .photo
@@ -21,6 +30,9 @@ public enum UserPostType: String {
     }
 }
 
+/**
+ Represents a user's post with various attributes such as user information, photo URL, date, caption, goals, and duration.
+ */
 struct UserPost {
     var userID: String
     var userName: String
@@ -31,13 +43,19 @@ struct UserPost {
     var goals: String
     var duration: Int
 
+    /**
+     Initializes a new UserPost instance from a dictionary.
+     - Parameters:
+       - dictionary: The dictionary containing post data.
+       - userName: The name of the user who made the post.
+       - userProfileImageURL: The URL of the user's profile image.
+     - Returns: An optional `UserPost` instance.
+     */
     init?(dictionary: [String: Any], userName: String, userProfileImageURL: URL?) {
         guard let userID = dictionary["userID"] as? String else {
             return nil
         }
-//        guard let userName = UserManager.shared.currentUser?.displayName else {
-//            return nil
-//        }
+
         guard let photoURLString = dictionary["imageUrl"] as? String, let photoURL = URL(string: photoURLString) else {
             return nil
         }
@@ -55,25 +73,3 @@ struct UserPost {
         self.duration = dictionary["duration"] as? Int ?? 0
     }
 }
-
-
-
-//struct PostComment {
-//    let identifier: String
-//    let username: String
-//    let text: String
-//    let createdDate: Date
-//
-//    init?(dictionary: [String: Any]) {
-//        guard let identifier = dictionary["identifier"] as? String,
-//              let username = dictionary["username"] as? String,
-//              let text = dictionary["text"] as? String,
-//              let createdDateTimestamp = dictionary["createdDate"] as? Timestamp else {
-//            return nil
-//        }
-//        self.identifier = identifier
-//        self.username = username
-//        self.text = text
-//        self.createdDate = createdDateTimestamp.dateValue()
-//    }
-//}

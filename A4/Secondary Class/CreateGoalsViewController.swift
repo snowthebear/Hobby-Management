@@ -43,7 +43,7 @@ class CreateGoalsViewController: UIViewController {
         if goals.isEmpty {
             var errorMsg = "Please Enter Your Goals:\n"
             
-            displayMessage(title: "Goals Field Empty!", message: errorMsg)
+            DisplayMessage(title: "Goals Field Empty!", message: errorMsg)
             return
         }
 

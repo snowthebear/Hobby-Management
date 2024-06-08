@@ -720,12 +720,12 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         let filename = "profile/profile_picture.jpg"
 
         guard let data = image.jpegData(compressionQuality: 0.8) else {
-            displayMessage(title: "Error", message: "Image data could not be compressed")
+            DisplayMessage(title: "Error", message: "Image data could not be compressed")
             return
         }
 
         guard let userID = self.currentUser?.uid else {
-            displayMessage(title: "Error", message: "No user logged in!")
+            DisplayMessage(title: "Error", message: "No user logged in!")
             return
         }
         
@@ -738,7 +738,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         
         imageRef.putData(data, metadata: metadata) { metadata, error in
             if let error = error {
-                self.displayMessage(title: "Error", message: "Failed to upload image: \(error.localizedDescription)")
+                self.DisplayMessage(title: "Error", message: "Failed to upload image: \(error.localizedDescription)")
                 return
             }
 

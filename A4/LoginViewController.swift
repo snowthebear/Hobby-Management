@@ -62,7 +62,7 @@ class LoginViewController: UIViewController {
         // Ensures non-empty credentials are provided before attempting login.
         guard let email = emailTextField.text, !email.isEmpty,
             let password = passwordTextField.text, !password.isEmpty else {
-            displayMessage(title: "Input Error", message: "Please enter both email and password.")
+            DisplayMessage(title: "Input Error", message: "Please enter both email and password.")
             return
         }
         
@@ -81,7 +81,7 @@ class LoginViewController: UIViewController {
                 
             case .failure(let error):
                 print("Error signing in: \(error.localizedDescription)")
-                self.displayMessage(title: "Login Error", message: "Failed to sign in. Please check your credentials and try again.")
+                self.DisplayMessage(title: "Login Error", message: "Failed to sign in. Please check your credentials and try again.")
             }
         }
     }
@@ -138,7 +138,7 @@ class LoginViewController: UIViewController {
                     
                 case .failure(let error):
                     print("Error signing in with Google: \(error.localizedDescription)")
-                    self.displayMessage(title: "Login Error", message: "Failed to sign in. Please try again.")
+                    self.DisplayMessage(title: "Login Error", message: "Failed to sign in. Please try again.")
                 }
             }
             
@@ -168,16 +168,16 @@ class LoginViewController: UIViewController {
                             UserManager.shared.currentUserList = self.firebaseController.currentUserList
                         } else {
                             print("No user list found or error: \(error?.localizedDescription ?? "Unknown error")")
-                            self.displayMessage(title: "Error", message: "No user list found.")
+                            self.DisplayMessage(title: "Error", message: "No user list found.")
                         }
                     }
                 } else {
                     print("No user list ID found in user document.")
-                    self.displayMessage(title: "Error", message: "No user list found.")
+                    self.DisplayMessage(title: "Error", message: "No user list found.")
                 }
             } else {
                 print("User document does not exist or error: \(error?.localizedDescription ?? "Unknown error")")
-                self.displayMessage(title: "Error", message: "Failed to fetch user data.")
+                self.DisplayMessage(title: "Error", message: "Failed to fetch user data.")
             }
         }
     }
@@ -238,7 +238,7 @@ class LoginViewController: UIViewController {
         if identifier == "showHomeLogin" {
             guard let email = emailTextField.text, !email.isEmpty,
                   let password = passwordTextField.text, !password.isEmpty else {
-                displayMessage(title: "Input Error", message: "Please enter both email and password.")
+                DisplayMessage(title: "Input Error", message: "Please enter both email and password.")
                 return false
             }
             // Perform login validation asynchronously

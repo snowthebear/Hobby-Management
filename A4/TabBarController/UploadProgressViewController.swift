@@ -276,22 +276,22 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
     func uploadPost(completion: @escaping (Bool) -> Void) {
         // Extract data from the UI elements
         guard let image = imageView.image else {
-            displayMessage(title: "Error", message: "Please select an image.")
+            DisplayMessage(title: "Error", message: "Please select an image.")
             return
         }
         
         guard let userID = self.currentUser?.uid else {
-            displayMessage(title: "Error", message: "User not logged in.")
+            DisplayMessage(title: "Error", message: "User not logged in.")
             return
         }
         
         guard let hobby = hobbyButton.titleLabel?.text else {
-            displayMessage(title: "Error", message: "Select a hobby!")
+            DisplayMessage(title: "Error", message: "Select a hobby!")
             return
         }
         
         if hobbyButton.titleLabel?.text == "Select" {
-            displayMessage(title: "Hobby Required", message: "Please select a valid hobby before posting.")
+            DisplayMessage(title: "Hobby Required", message: "Please select a valid hobby before posting.")
             completion(false)
             return
         }
@@ -316,7 +316,7 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
         if let imageData = image.jpegData(compressionQuality: 0.8) {
             storageRef.putData(imageData, metadata: metadata) { metadata, error in
                 guard let metadata = metadata else {
-                    self.displayMessage(title: "Error", message: "Failed to upload image: \(error?.localizedDescription ?? "Unknown error")")
+                    self.DisplayMessage(title: "Error", message: "Failed to upload image: \(error?.localizedDescription ?? "Unknown error")")
                     return
                 }
     
@@ -335,7 +335,7 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
                         
                         Firestore.firestore().collection("posts").document(postID).setData(postData) { error in
                             if let error = error {
-                                self.displayMessage(title: "Error", message: "Failed to save post data: \(error.localizedDescription)")
+                                self.DisplayMessage(title: "Error", message: "Failed to save post data: \(error.localizedDescription)")
                             } else {
                                 self.displayAskToCompleteGoal(goal: selectedGoal)
                                 self.switchToHomePage()
@@ -343,14 +343,14 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
                             }
                         }
                     } else {
-                        self.displayMessage(title: "Error", message: "Failed to get download URL: \(error?.localizedDescription ?? "Unknown error")")
+                        self.DisplayMessage(title: "Error", message: "Failed to get download URL: \(error?.localizedDescription ?? "Unknown error")")
                     }
                 }
             }
         }
         
         else {
-            displayMessage(title: "Error", message: "Could not compress image.")
+            DisplayMessage(title: "Error", message: "Could not compress image.")
         }
     }
     
@@ -374,7 +374,7 @@ class UploadProgressViewController: UIViewController, UIPickerViewDataSource, UI
     */
     private func displayAskToCompleteGoal(goal: String) { // to display whether the user wants to mark the goals as completed
         if goal == "" {
-            displayMessage(title: "Success", message: "Successfully post!")
+            DisplayMessage(title: "Success", message: "Successfully post!")
             return
         }
         else {
