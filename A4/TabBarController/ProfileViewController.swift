@@ -166,41 +166,106 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         postCollectionView.frame = CGRect(x: 0, y: yOffset, width: view.bounds.width, height: collectionViewHeight)
     }
     
-    func followUser(withID userID: String, completion: @escaping () -> Void) {
-        guard let currentUserID = currentUser?.uid else { return }
-        let batch = Firestore.firestore().batch()
-        let followRef = usersReference.document(currentUserID).collection("following").document(userID)
-        let followerRef = usersReference.document(userID).collection("followers").document(currentUserID)
-        batch.setData([:], forDocument: followRef)
-        batch.setData([:], forDocument: followerRef)
-
+    func followUser(withID viewedUserID: String, completion: @escaping () -> Void) {
+        let db = Firestore.firestore()
+        let currentUserID = currentUser?.uid ?? ""
+        let batch = db.batch()
+        
+        // References to the user documents
+        let currentUserRef = db.collection("users").document(currentUserID)
+        let viewedUserRef = db.collection("users").document(viewedUserID)
+        
+        // Update following and followers subcollections
+        let currentUserFollowingRef = currentUserRef.collection("following").document(viewedUserID)
+        let viewedUserFollowersRef = viewedUserRef.collection("followers").document(currentUserID)
+        
+        batch.setData([:], forDocument: currentUserFollowingRef)
+        batch.setData([:], forDocument: viewedUserFollowersRef)
+        
+        
+        // Update following and followers counts
+        
+        batch.updateData(["following": FieldValue.increment(Int64(1))], forDocument: currentUserRef)
+        batch.updateData(["followers": FieldValue.increment(Int64(1))], forDocument: viewedUserRef)
+        
+        // Commit the batch
         batch.commit { error in
             if let error = error {
-                print("Error following user: \(error)")
+                print("Error updating following/followers: \(error.localizedDescription)")
             } else {
-                print("User followed successfully.")
+                print("Successfully followed user")
+                completion()
+            }
+        }
+    }
+    
+    func unfollowUser(withID viewedUserID: String, completion: @escaping () -> Void) {
+        let db = Firestore.firestore()
+        let currentUserID = currentUser?.uid ?? ""
+        let batch = db.batch()
+        
+        // References to the user documents
+        let currentUserRef = db.collection("users").document(currentUserID)
+        let viewedUserRef = db.collection("users").document(viewedUserID)
+        
+        // Update following and followers subcollections
+        let currentUserFollowingRef = currentUserRef.collection("following").document(viewedUserID)
+        let viewedUserFollowersRef = viewedUserRef.collection("followers").document(currentUserID)
+        
+        batch.deleteDocument(currentUserFollowingRef)
+        batch.deleteDocument(viewedUserFollowersRef)
+        
+        // Update following and followers counts
+        batch.updateData(["following": FieldValue.increment(Int64(-1))], forDocument: currentUserRef)
+        batch.updateData(["followers": FieldValue.increment(Int64(-1))], forDocument: viewedUserRef)
+        
+        // Commit the batch
+        batch.commit { error in
+            if let error = error {
+                print("Error updating following/followers: \(error.localizedDescription)")
+            } else {
+                print("Successfully unfollowed user")
                 completion()
             }
         }
     }
 
-    func unfollowUser(withID userID: String, completion: @escaping () -> Void) {
-        guard let currentUserID = currentUser?.uid else { return }
-        let batch = Firestore.firestore().batch()
-        let followRef = usersReference.document(currentUserID).collection("following").document(userID)
-        let followerRef = usersReference.document(userID).collection("followers").document(currentUserID)
-        batch.deleteDocument(followRef)
-        batch.deleteDocument(followerRef)
+    
+//    func followUser(withID userID: String, completion: @escaping () -> Void) {
+//        guard let currentUserID = currentUser?.uid else { return }
+//        let batch = Firestore.firestore().batch()
+//        let followRef = usersReference.document(currentUserID).collection("following").document(userID)
+//        let followerRef = usersReference.document(userID).collection("followers").document(currentUserID)
+//        batch.setData([:], forDocument: followRef)
+//        batch.setData([:], forDocument: followerRef)
+//
+//        batch.commit { error in
+//            if let error = error {
+//                print("Error following user: \(error)")
+//            } else {
+//                print("User followed successfully.")
+//                completion()
+//            }
+//        }
+//    }
 
-        batch.commit { error in
-            if let error = error {
-                print("Error unfollowing user: \(error)")
-            } else {
-                print("User unfollowed successfully.")
-                completion()
-            }
-        }
-    }
+//    func unfollowUser(withID userID: String, completion: @escaping () -> Void) {
+//        guard let currentUserID = currentUser?.uid else { return }
+//        let batch = Firestore.firestore().batch()
+//        let followRef = usersReference.document(currentUserID).collection("following").document(userID)
+//        let followerRef = usersReference.document(userID).collection("followers").document(currentUserID)
+//        batch.deleteDocument(followRef)
+//        batch.deleteDocument(followerRef)
+//
+//        batch.commit { error in
+//            if let error = error {
+//                print("Error unfollowing user: \(error)")
+//            } else {
+//                print("User unfollowed successfully.")
+//                completion()
+//            }
+//        }
+//    }
     
     @IBAction func followButton(_ sender: Any) {
         

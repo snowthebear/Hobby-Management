@@ -44,14 +44,13 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.tabBarController?.navigationController?.isNavigationBarHidden = false
-        self.tabBarController?.navigationController?.title = "Calendar"
+        self.tabBarController?.navigationController?.isNavigationBarHidden = true
+        self.title = "Calendar"
         guard let accessToken = UserManager.shared.accessToken else {
             print("Access token is nil")
             return
         }
         self.fetchCalendarEvents(accessToken: accessToken)
-//        self.collectionView.reloadData()
         
     }
     
@@ -92,7 +91,7 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        setCellsView()  // Adjust collection view cell layout
+        setCellsView()
     }
     
     
@@ -157,9 +156,6 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     
     
     
-    
-    
-    
     func fetchCalendarEvents(accessToken: String) {
         print("here")
         guard let url = URL(string: "https://www.googleapis.com/calendar/v3/users/me/calendarList") else {
@@ -186,7 +182,6 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
                 DispatchQueue.main.async {
                     self.events = events
                     self.fetchEventsForCalendars(accessToken: accessToken, calendars: events)
-//                    self.collectionView.reloadData()
                     print("Fetched and parsed \(events.count) calendar events.")
                 }
             } else {
@@ -307,9 +302,6 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     
     // MARK: UICollectionViewDataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-//        print("Number of events: \(events.count)")
-//        return events.count
-            
         return totalSquares.count
     }
     
@@ -352,10 +344,7 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
     override open var shouldAutorotate: Bool {
         return false
     }
-    
-    
-    
-    
+
     
     struct APIErrorResponse: Codable {
         let error: APIError
@@ -373,11 +362,10 @@ class CalendarViewController: UIViewController, UICollectionViewDataSource, UICo
         let domain: String
         let reason: String
     }
-    
-    
-    
 
 }
+
+
 extension Date {
     func startOfMonth() -> Date {
         let components = Calendar.current.dateComponents([.year, .month], from: self)

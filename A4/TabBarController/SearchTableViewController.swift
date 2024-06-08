@@ -14,6 +14,8 @@ class SearchTableViewController: UITableViewController, UISearchResultsUpdating 
     var SECTION_USER = 0
     var CELL_USER = "searchUserCell"
     
+    var currentUser: User?
+    
     var users: [UserProfile] = []
     var filteredUsers: [UserProfile] = []
     let db = Firestore.firestore()
@@ -30,6 +32,8 @@ class SearchTableViewController: UITableViewController, UISearchResultsUpdating 
         
         let appDelegate = UIApplication.shared.delegate as? AppDelegate
         databaseController = appDelegate?.databaseController
+        
+        self.currentUser = UserManager.shared.currentUser
         
         loadUsers()
         
@@ -79,8 +83,11 @@ class SearchTableViewController: UITableViewController, UISearchResultsUpdating 
                 self.selectedUserDocumentIDs = [] // Resetting or initializing the array
                 for document in querySnapshot!.documents {
                     if let userProfile = try? document.data(as: UserProfile.self) {
-                        self.users.append(userProfile)
-                        self.selectedUserDocumentIDs.append(document.documentID) // Storing document IDs
+                        if document.documentID != self.currentUser?.uid {
+                            self.users.append(userProfile)
+                            self.selectedUserDocumentIDs.append(document.documentID) // Storing document IDs
+                        }
+        
                     }
                 }
                 self.tableView.reloadData()

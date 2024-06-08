@@ -23,7 +23,6 @@ class HomeTableViewController: UITableViewController {
         self.tabBarController?.navigationController?.isNavigationBarHidden = true
         self.title = "HOBSNAP"
         fetchPosts()
-//        tableView.reloadData()
     }
 
     override func viewDidLoad() {
@@ -49,50 +48,144 @@ class HomeTableViewController: UITableViewController {
     }
     
     
+//    func fetchPosts() {
+//        guard let currentUserID = currentUser?.uid else {
+//            print("Current user ID is not set.")
+//            return
+//        }
+//
+//        let db = Firestore.firestore()
+//        let followingRef = db.collection("users").document(currentUserID).collection("following")
+//
+//        // Fetch followed user IDs
+//        followingRef.getDocuments { [weak self] (snapshot, error) in
+//            guard let self = self, error == nil else {
+//                print("Error fetching following list: \(String(describing: error))")
+//                return
+//            }
+//
+//            var followedUserIDs = snapshot?.documents.map { $0.documentID } ?? []
+//            // Ensure the current user's posts are also fetched
+//            followedUserIDs.append(currentUserID)
+//
+//            // Fetch posts from followed users
+//            db.collection("posts").whereField("userID", in: followedUserIDs).order(by: "postDate", descending: true).getDocuments { (querySnapshot, error) in
+//                if let error = error {
+//                    print("Error getting posts: \(error)")
+//                    return
+//                }
+//
+//                var fetchedPosts = [UserPost]()
+//                let group = DispatchGroup()
+//                
+//                for document in querySnapshot!.documents {
+//                    group.enter()
+//                    let data = document.data()
+//                    let userID = data["userID"] as? String ?? ""
+//    
+//                    db.collection("users").document(userID).getDocument { userSnapshot, userError in
+//                        if let userDoc = userSnapshot, userError == nil, let userData = userDoc.data() {
+//                            let userName = userData["displayName"] as? String ?? "Unknown"
+//                            let storageURL = userData["storageURL"] as? String
+//                            let userProfileImageURL = URL(string: storageURL ?? "")
+//                            
+//                            if let post = UserPost(dictionary: data, userName: userName, userProfileImageURL: userProfileImageURL) {
+//                                fetchedPosts.append(post)
+//                            } else {
+//                                print("Error parsing document: \(data)")
+//                            }
+//                        }
+//                        group.leave()
+//                    }
+//                }
+//                group.notify(queue: .main) {
+//                    self.posts = fetchedPosts
+//                    self.tableView.reloadData()
+//                }
+//            }
+//        }
+//    
+//    }
+    
+    
     func fetchPosts() {
-        let db = Firestore.firestore()
-        db.collection("posts").order(by: "postDate", descending: true).getDocuments { [weak self] (querySnapshot, error) in
-            guard let self = self else { return }
+        guard let currentUserID = currentUser?.uid else {
+            print("Current user ID is not set.")
+            return
+        }
 
+        let db = Firestore.firestore()
+        let followingRef = db.collection("users").document(currentUserID).collection("following")
+
+        // Fetch followed user IDs
+        followingRef.getDocuments { [weak self] (snapshot, error) in
+            guard let self = self else { return }
+            
             if let error = error {
-                print("Error getting documents: \(error)")
+                print("Error fetching following list: \(error.localizedDescription)")
                 return
             }
-
-            var fetchedPosts = [UserPost]()
-            let group = DispatchGroup()
             
-            for document in querySnapshot!.documents {
-                group.enter()
-                let data = document.data()
-                let userID = data["userID"] as? String ?? ""
+            if let snapshot = snapshot, !snapshot.documents.isEmpty {
+                // Use document IDs as user IDs
+                var followedUserIDs = snapshot.documents.map { $0.documentID }
+                // Ensure the current user's posts are also fetched
+                followedUserIDs.append(currentUserID)
+                print("Fetched following user IDs: \(followedUserIDs)")
                 
-                db.collection("users").document(userID).getDocument { userSnapshot, userError in
-                    if let userDoc = userSnapshot, userError == nil, let userData = userDoc.data() {
-                        let userName = userData["displayName"] as? String ?? "Unknown"
-                        let storageURL = userData["storageURL"] as? String
-                        let userProfileImageURL = URL(string: storageURL ?? "")
+                // Fetch posts from followed users
+                db.collection("posts").whereField("userID", in: followedUserIDs).order(by: "postDate", descending: true).getDocuments { (querySnapshot, error) in
+                    if let error = error {
+                        print("Error getting posts: \(error.localizedDescription)")
+                        return
+                    }
+                    
+                    guard let documents = querySnapshot?.documents, !documents.isEmpty else {
+                        print("No posts found for followed users.")
+                        return
+                    }
+                    
+                    var fetchedPosts = [UserPost]()
+                    let group = DispatchGroup()
+                    
+                    for document in documents {
+                        group.enter()
+                        let data = document.data()
+                        let userID = data["userID"] as? String ?? ""
                         
-                        if let post = UserPost(dictionary: data, userName: userName, userProfileImageURL: userProfileImageURL) {
-                            fetchedPosts.append(post)
-                        } else {
-                            print("Error parsing document: \(data)")
+                        db.collection("users").document(userID).getDocument { userSnapshot, userError in
+                            if let userDoc = userSnapshot, userError == nil, let userData = userDoc.data() {
+                                let userName = userData["displayName"] as? String ?? "Unknown"
+                                let storageURL = userData["storageURL"] as? String
+                                let userProfileImageURL = URL(string: storageURL ?? "")
+                                
+                                if let post = UserPost(dictionary: data, userName: userName, userProfileImageURL: userProfileImageURL) {
+                                    fetchedPosts.append(post)
+                                } else {
+                                    print("Error parsing document data: \(data)")
+                                }
+                            } else if let userError = userError {
+                                print("Error fetching user details: \(userError.localizedDescription)")
+                            }
+                            group.leave()
                         }
                     }
-                    group.leave()
+                    group.notify(queue: .main) {
+                        print("Updating UI with \(fetchedPosts.count) posts.")
+                        self.posts = fetchedPosts
+                        self.tableView.reloadData()
+                    }
                 }
-            }
-
-            group.notify(queue: .main) {
-                self.posts = fetchedPosts
-                self.tableView.reloadData()
+            } else {
+                print("No following data found, or user does not follow anyone.")
             }
         }
     }
 
 
 
-    
+
+
     
 //    func fetchPosts() {
 //        let db = Firestore.firestore()
@@ -106,53 +199,30 @@ class HomeTableViewController: UITableViewController {
 //
 //            var fetchedPosts = [UserPost]()
 //            let group = DispatchGroup()
-//
+//            
 //            for document in querySnapshot!.documents {
 //                group.enter()
-//                let postData = document.data()
-//                if let userID = postData["userID"] as? String {
-//                    db.collection("users").document(userID).getDocument { (userDoc, error) in
-//                        defer { group.leave() }
-//                        if let userDict = userDoc?.data() {
-//                            let userName = userDict["displayName"] as? String ?? "Unknown"
-//                            let userProfileImageURL = URL(string: userDict["profilePictureURL"] as? String ?? "")
-//                            if let post = UserPost(dictionary: postData, userName: userName, userProfileImageURL: userProfileImageURL) {
-//                                fetchedPosts.append(post)
-//                            }
+//                let data = document.data()
+//                let userID = data["userID"] as? String ?? ""
+//                
+//                db.collection("users").document(userID).getDocument { userSnapshot, userError in
+//                    if let userDoc = userSnapshot, userError == nil, let userData = userDoc.data() {
+//                        let userName = userData["displayName"] as? String ?? "Unknown"
+//                        let storageURL = userData["storageURL"] as? String
+//                        let userProfileImageURL = URL(string: storageURL ?? "")
+//                        
+//                        if let post = UserPost(dictionary: data, userName: userName, userProfileImageURL: userProfileImageURL) {
+//                            fetchedPosts.append(post)
+//                        } else {
+//                            print("Error parsing document: \(data)")
 //                        }
 //                    }
+//                    group.leave()
 //                }
 //            }
 //
 //            group.notify(queue: .main) {
 //                self.posts = fetchedPosts
-//                self.tableView.reloadData()
-//            }
-//        }
-//    }
-    
-//    func fetchPosts() {
-//        let db = Firestore.firestore()
-//        db.collection("posts").order(by: "postDate", descending: true).getDocuments { [weak self] (querySnapshot, error) in
-//            guard let self = self else { return }
-//
-//            if let error = error {
-//                print("Error getting documents: \(error)")
-//                return
-//            }
-//
-//            var fetchedPosts = [UserPost]()
-//            for document in querySnapshot!.documents {
-//                if let post = UserPost(dictionary: document.data()) {
-//                    fetchedPosts.append(post)
-//                    print("Fetched post: \(post)")
-//                } else {
-//                    print("Error parsing document: \(document.data())")
-//                }
-//            }
-//            
-//            self.posts = fetchedPosts
-//            DispatchQueue.main.async {
 //                self.tableView.reloadData()
 //            }
 //        }
