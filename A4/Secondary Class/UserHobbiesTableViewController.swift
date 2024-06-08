@@ -8,11 +8,23 @@
 import UIKit
 import FirebaseAuth
 
+
+/**
+ UserHobbiesTableViewController displays a user's list of hobbies in a table view.
+ It listens for changes in the database and updates the view accordingly.
+ */
 class UserHobbiesTableViewController: UITableViewController, DatabaseListener {
-    func onGoalsChange(change: DatabaseChange, goals: [Goal]) {
+    func onGoalsChange(change: DatabaseChange, goals: [Goal]) { // This method is not used in this class.
         
     }
     
+    /**
+     Called when there is a change in the user's list of hobbies in the database.
+     Updates the user's list of hobbies and reloads the table view.
+     - Parameters:
+       - change: The type of change in the database.
+       - userHobbies: The updated list of user hobbies.
+     */
     func onUserListChange(change: DatabaseChange, userHobbies: [Hobby]) {
         DispatchQueue.main.async { [weak self] in
             self?.currentUserList?.hobbies = userHobbies
@@ -20,27 +32,29 @@ class UserHobbiesTableViewController: UITableViewController, DatabaseListener {
         }
     }
     
-    func onAllHobbyChange(change: DatabaseChange, hobbies: [Hobby]) {
+    func onAllHobbyChange(change: DatabaseChange, hobbies: [Hobby]) { // This method is not used in this class.
         
     }
     
+    let SECTION_HOBBY = 0 // section index for hobbies in the table view
+    let SECTION_INFO = 1 // section index for info in the table view
 
-    let SECTION_HOBBY = 0
-    let SECTION_INFO = 1
+    let CELL_HOBBY = "hobbyCell" // cell identifier for hobby cells.
+    let CELL_INFO = "totalCell" // cell identifier for info cells.
 
-    let CELL_HOBBY = "hobbyCell"
-    let CELL_INFO = "totalCell"
-
-    var currentParty: [Hobby] = []
-    var currentUserList: UserList?
+    var currentParty: [Hobby] = [] // to store the current list of hobbies
     
-    var currentUser: FirebaseAuth.User?
+    var currentUserList: UserList? // current user's list of hobbies
+    var currentUser: FirebaseAuth.User? // current logged-in Firebase user
     
-    var firebaseController: FirebaseController?
-    var listenerType: ListenerType = .list
-    weak var databaseController: DatabaseProtocol?
+    var firebaseController: FirebaseController? // reference to the Firebase controller for Firebase operations
+    var listenerType: ListenerType = .list // type of listener to listen for changes in the user's list.
+    weak var databaseController: DatabaseProtocol? // reference to the database controller for database operations
     
-    
+    /**
+     Called after the controller's view is loaded into memory.
+     Sets up the database controller and reloads the table view.
+     */
     override func viewDidLoad() {
         super.viewDidLoad()
             
@@ -54,23 +68,27 @@ class UserHobbiesTableViewController: UITableViewController, DatabaseListener {
         self.currentUserList = UserManager.shared.currentUserList
 
         tableView.reloadData()
-        
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem
     }
     
-    
+    /**
+     Called before the view is added to the window.
+     Adds the current view controller as a listener to the database controller.
+     - Parameters:
+       - animated: If true, the view is being added to the window using an animation.
+     */
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         databaseController?.addListener(listener: self)
         self.currentUserList = UserManager.shared.currentUserList
         tableView.reloadData()
-        
     }
     
+    /**
+     Called before the view is removed from the window.
+     Removes the current view controller as a listener from the database controller.
+     - Parameters:
+       - animated: If true, the disappearance of the view is animated.
+     */
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         databaseController?.removeListener(listener: self)
@@ -80,12 +98,12 @@ class UserHobbiesTableViewController: UITableViewController, DatabaseListener {
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
+        // Returns the number of sections in the table view.
         return 2
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
+        //  Returns the number of rows in a given section of the table view
         switch section {
             case SECTION_HOBBY:
             return currentUserList?.hobbies.count ?? 0
@@ -98,6 +116,7 @@ class UserHobbiesTableViewController: UITableViewController, DatabaseListener {
 
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        // Configures and returns a cell for the specified index path in the table view.
         if indexPath.section == SECTION_HOBBY {
             let hobbyCell = tableView.dequeueReusableCell(withIdentifier: CELL_HOBBY, for: indexPath)
             
@@ -124,8 +143,6 @@ class UserHobbiesTableViewController: UITableViewController, DatabaseListener {
             return infoCell
         }
     }
-    
-
 
     // Override to support conditional editing of the table view.
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
@@ -137,15 +154,13 @@ class UserHobbiesTableViewController: UITableViewController, DatabaseListener {
         return false
     }
     
-
-    
     // Override to support editing the table view.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        //  Commits the editing actions for the specified row in the table view.
         if editingStyle == .delete && indexPath.section == SECTION_HOBBY {
             guard let currentUserList = currentUserList else {
                 return
             }
-            
             
             self.databaseController?.removeHobbyFromUserList(hobby: currentUserList.hobbies[indexPath.row], userList:  currentUserList)
             currentUserList.hobbies.remove(at: indexPath.row)

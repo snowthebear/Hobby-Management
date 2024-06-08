@@ -7,20 +7,30 @@
 
 import UIKit
 
+
+/**
+ AllHobbiesTableViewController displays a list of all hobbies in a table view.
+ It includes search functionality to filter hobbies and allows adding hobbies to the user's list.
+ */
 class AllHobbiesTableViewController: UITableViewController, UISearchResultsUpdating, DatabaseListener {
 
-    let SECTION_HOBBY = 0
+    let SECTION_HOBBY = 0 // section index for hobbies in the table view.
     
-    let CELL_HOBBY = "hobbyCell"
+    let CELL_HOBBY = "hobbyCell" // cell identifier for hobby cells
     
-    var allHobbies: [Hobby] = []
-    var filteredHobbies: [Hobby] = []
+    var allHobbies: [Hobby] = [] // to store all hobbies.
+    var filteredHobbies: [Hobby] = [] // to store filtered hobbies based on search input
     
-    var listenerType = ListenerType.hobbies
-    weak var databaseController: DatabaseProtocol?
+    var listenerType = ListenerType.hobbies // type of listener to listen for hobby changes in the database
+    weak var databaseController: DatabaseProtocol? // reference to the database controller for database operations
     
-    var currentUserList: UserList?
+    var currentUserList: UserList? // current user's list of hobbies
     
+    
+    /**
+     Called after the controller's view is loaded into memory.
+     Sets up the database controller, search controller, and initializes filtered hobbies.
+     */
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -35,47 +45,57 @@ class AllHobbiesTableViewController: UITableViewController, UISearchResultsUpdat
         definesPresentationContext = true
 
         filteredHobbies = allHobbies
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem
     }
     
-    
+    /**
+     Called before the view is added to the window.
+     Adds the current view controller as a listener to the database controller.
+     - Parameters:
+       - animated: If true, the view is being added to the window using an animation.
+     */
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         databaseController?.addListener(listener: self)
     }
     
+    /**
+     Called before the view is removed from the window.
+     Removes the current view controller as a listener from the database controller.
+     - Parameters:
+       - animated: If true, the disappearance of the view is animated.
+     */
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         databaseController?.removeListener(listener: self)
     }
     
+    /**
+     Called when there is a change in all hobbies in the database.
+     Updates the list of all hobbies and the search results.
+     - Parameters:
+       - change: The type of change in the database.
+       - hobbies: The updated list of hobbies.
+     */
     func onAllHobbyChange(change: DatabaseChange, hobbies: [Hobby]) {
         allHobbies = hobbies
         updateSearchResults(for: navigationItem.searchController!)
     }
     
-    func onUserListChange(change: DatabaseChange, userHobbies: [Hobby]) {
-        
+    
+    func onUserListChange(change: DatabaseChange, userHobbies: [Hobby]) { // this method is not used in this class.
     }
     
-    func onGoalsChange(change: DatabaseChange, goals: [Goal]) {
-        
+    func onGoalsChange(change: DatabaseChange, goals: [Goal]) { // this method is not used in this class.
     }
     
 
     // MARK: - Table view data source
 
-    override func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
+    override func numberOfSections(in tableView: UITableView) -> Int { // returns the number of sections in the table view.
         return 1
     }
 
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { // returns the number of rows in a given section of the table view.
         // #warning Incomplete implementation, return the number of rows
         switch section {
             case SECTION_HOBBY:
@@ -85,9 +105,8 @@ class AllHobbiesTableViewController: UITableViewController, UISearchResultsUpdat
         }
     }
 
-    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        // Configure and return a hero cell
+        // configures and returns a cell for the specified index path in the table view.
         let hobbyCell = tableView.dequeueReusableCell(withIdentifier: CELL_HOBBY, for: indexPath)
         
         var content = hobbyCell.defaultContentConfiguration()
@@ -97,7 +116,6 @@ class AllHobbiesTableViewController: UITableViewController, UISearchResultsUpdat
         
         return hobbyCell
     }
-    
 
     
     // Override to support conditional editing of the table view.
@@ -106,17 +124,12 @@ class AllHobbiesTableViewController: UITableViewController, UISearchResultsUpdat
         if indexPath.section == SECTION_HOBBY {
             return true
         }
-
         return false
     }
-    
-
     
     // Override to support editing the table view.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete && indexPath.section == SECTION_HOBBY {
-            // Delete the row from the data source
-//            tableView.deleteRows(at: [indexPath], with: .fade)
             let hobby = filteredHobbies[indexPath.row]
             databaseController?.deleteHobby(hobby: hobby)
         } else if editingStyle == .insert {
@@ -124,7 +137,11 @@ class AllHobbiesTableViewController: UITableViewController, UISearchResultsUpdat
         }    
     }
     
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // Handles the selection of a row in the table view.
+        // Adds the selected hobby to the user's list if it is not already present.
+        
         guard let currentList = currentUserList else {
             displayMessage(title: "No List Selected", message: "Please select a list first.")
             return
@@ -147,7 +164,6 @@ class AllHobbiesTableViewController: UITableViewController, UISearchResultsUpdat
             navigationController?.popViewController(animated: false)
             return
         }
-//        displayMessage(title: "Party Full", message: "Unable to add more members to party")
         tableView.deselectRow(at: indexPath, animated: true)
 
     }
@@ -180,7 +196,13 @@ class AllHobbiesTableViewController: UITableViewController, UISearchResultsUpdat
     
     
     // MARK: - Search Results Updating protocol
-
+    
+    /**
+     Updates the search results based on the search controller's search bar text.
+     Filters the list of hobbies and reloads the table view.
+     - Parameters:
+       - searchController: The search controller containing the search bar.
+     */
     func updateSearchResults(for searchController: UISearchController) {
         guard let searchText = searchController.searchBar.text?.lowercased() else {
             return

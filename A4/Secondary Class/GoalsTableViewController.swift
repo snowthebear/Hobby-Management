@@ -9,31 +9,42 @@ import UIKit
 import FirebaseAuth
 import FirebaseFirestore
 
+
+/**
+ Represents a user's goal with a title and completion status.
+ */
 struct Goal {
     var title: String
     var isCompleted: Bool
 }
 
-class GoalsTableViewController: UITableViewController, DatabaseListener, UISearchResultsUpdating {
+/**
+ GoalsTableViewController displays and manages a list of user goals in a table view.
+ It listens for changes in the database and updates the view accordingly.
+ */
+class GoalsTableViewController: UITableViewController, DatabaseListener {
     
-    let SECTION_GOAL = 0
-    let SECTION_INFO = 1
+    let SECTION_GOAL = 0 // section index for goals in the table view.
+    let SECTION_INFO = 1 // section index for info in the table view.
     
-    let CELL_GOAL = "goalCell"
-    let CELL_INFO = "totalCell"
+    let CELL_GOAL = "goalCell" // cell identifier for goal cells
+    let CELL_INFO = "totalCell" // cell identifier for info cells
     
     
-    var allGoals: [Goal] = []
-    var filteredGoals: [String] = []
+    var allGoals: [Goal] = [] // to store all goals
+    var filteredGoals: [String] = [] // to store filtered goals
     
-    var currentUserList: UserList?
-    var currentUser: FirebaseAuth.User?
+    var currentUserList: UserList? // current user's list of hobbies
+    var currentUser: FirebaseAuth.User? // current logged-in Firebase user
     
-    var firebaseController: FirebaseController?
-    var listenerType = ListenerType.goals
-    weak var databaseController: DatabaseProtocol?
+    var firebaseController: FirebaseController? // Reference to the Firebase controller for Firebase operations.
+    var listenerType = ListenerType.goals // Type of listener to listen for changes in goals
+    weak var databaseController: DatabaseProtocol? // Reference to the database controller for database operations
 
-    
+    /**
+     Called after the controller's view is loaded into memory.
+     Sets up the database controller and reloads the table view.
+     */
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -47,14 +58,14 @@ class GoalsTableViewController: UITableViewController, DatabaseListener, UISearc
         tableView.allowsMultipleSelectionDuringEditing = true
         fetchGoals()
         tableView.reloadData()
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem
     }
     
+    /**
+     Called before the view is added to the window.
+     Adds the current view controller as a listener to the database controller.
+     - Parameters:
+       - animated: If true, the view is being added to the window using an animation.
+     */
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         databaseController?.addListener(listener: self)
@@ -64,20 +75,33 @@ class GoalsTableViewController: UITableViewController, DatabaseListener, UISearc
         
     }
     
+    /**
+     Called before the view is removed from the window.
+     Removes the current view controller as a listener from the database controller.
+     - Parameters:
+       - animated: If true, the disappearance of the view is animated.
+     */
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         databaseController?.removeListener(listener: self)
 
     }
     
-    func onUserListChange(change: DatabaseChange, userHobbies: [Hobby]) {
+    func onUserListChange(change: DatabaseChange, userHobbies: [Hobby]) { // This method is not used in this class.
         
     }
     
-    func onAllHobbyChange(change: DatabaseChange, hobbies: [Hobby]) {
+    func onAllHobbyChange(change: DatabaseChange, hobbies: [Hobby]) { // This method is not used in this class.
         
     }
     
+    /**
+     Called when there is a change in the user's goals in the database.
+     Updates the list of goals and reloads the table view.
+     - Parameters:
+       - change: The type of change in the database.
+       - goals: The updated list of goals.
+     */
     func onGoalsChange(change: DatabaseChange, goals: [Goal]) {
         DispatchQueue.main.async { [weak self] in
             self?.allGoals = goals
@@ -85,14 +109,17 @@ class GoalsTableViewController: UITableViewController, DatabaseListener, UISearc
         }
     }
     
+    /**
+     Saves the changes made to the goals.
+     Filters out the completed goals and updates the database.
+     */
     func saveGoalChanges() {
-        let updatedGoals = allGoals.filter { $0.isCompleted }
+        _ = allGoals.filter { $0.isCompleted }
     }
     
-    func updateSearchResults(for searchController: UISearchController) {
-        
-    }
-    
+    /**
+     Fetches the goals from the database and reloads the table view.
+     */
     func fetchGoals() {
         databaseController?.fetchGoals { [weak self] goals in
             print("Fetched goals:", goals)
@@ -102,37 +129,13 @@ class GoalsTableViewController: UITableViewController, DatabaseListener, UISearc
             }
         }
     }
-
-
-    // MARK: - Table view data source
-
-    override func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
-        return 1
-    }
-
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
-        return allGoals.count
-    }
-
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: CELL_GOAL, for: indexPath)
-        let goal = allGoals[indexPath.row]
-        cell.textLabel?.text = goal.title
-        cell.accessoryType = goal.isCompleted ? .checkmark : .none
-        return cell
-    }
-    
-    
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        allGoals[indexPath.row].isCompleted.toggle()
-        updateGoalCompletion(goalTitle: allGoals[indexPath.row].title, isCompleted: allGoals[indexPath.row].isCompleted)
-        
-        tableView.reloadRows(at: [indexPath], with: .none)
-    }
-    
+    /**
+    Updates the completion status of a goal in the database.
+    - Parameters:
+      - goalTitle: The title of the goal to update.
+      - isCompleted: The new completion status of the goal.
+    */
     func updateGoalCompletion(goalTitle: String, isCompleted: Bool) {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user logged in")
@@ -166,6 +169,37 @@ class GoalsTableViewController: UITableViewController, DatabaseListener, UISearc
     }
 
 
+    // MARK: - Table view data source
+
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        // Returns the number of sections in the table view.
+        return 1
+    }
+
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        // Returns the number of rows in a given section of the table view.
+        return allGoals.count
+    }
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        // Configures and returns a cell for the specified index path in the table view.
+        let cell = tableView.dequeueReusableCell(withIdentifier: CELL_GOAL, for: indexPath)
+        let goal = allGoals[indexPath.row]
+        cell.textLabel?.text = goal.title
+        cell.accessoryType = goal.isCompleted ? .checkmark : .none
+        return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // Handles the selection of a row in the table view.
+        // Toggles the completion status of the selected goal and updates the database.
+
+        allGoals[indexPath.row].isCompleted.toggle()
+        updateGoalCompletion(goalTitle: allGoals[indexPath.row].title, isCompleted: allGoals[indexPath.row].isCompleted)
+        
+        tableView.reloadRows(at: [indexPath], with: .none)
+    }
+
     // Override to support conditional editing of the table view.
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         // Return false if you do not want the specified item to be editable.
@@ -175,8 +209,6 @@ class GoalsTableViewController: UITableViewController, DatabaseListener, UISearc
 
         return false
     }
-    
-
     
     // Override to support editing the table view.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
