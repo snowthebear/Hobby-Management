@@ -11,24 +11,28 @@ import FirebaseFirestoreSwift
 import FirebaseAuth
 
 
+/**
+FirebaseController manages interactions with Firebase Firestore and Firebase Authentication to handle user data and actions such as adding, updating, and deleting goals, hobbies, and user lists.
 
+It implements the DatabaseProtocol interface to provide structured ways to interact with database operations.
+*/
 class FirebaseController: NSObject, DatabaseProtocol {
     
+    var listeners = MulticastDelegate<DatabaseListener>() // Holds multiple listeners for database changes.
+    var authController: Auth // Firebase Authentication controller
+    var database: Firestore // Firestore database instance.
     
+    var currentUser: FirebaseAuth.User? // authenticated Firebase user.
+    var currentUserList: UserList? // user hobbies list
+    var hobbyList: [Hobby] // hobby list
     
-    var listeners = MulticastDelegate<DatabaseListener>()
-    var authController: Auth
-    var database: Firestore
+    var hobbiesRef: CollectionReference? // Reference to the hobbies collection in Firestore.
+    var userListRef: CollectionReference? // Reference to the user lists collection in Firestore.
+
     
-    var currentUser: FirebaseAuth.User?
-    var currentUserList: UserList?
-    var hobbyList: [Hobby]
-    
-    var hobbiesRef: CollectionReference?
-//    var userListRef: DocumentReference? // userTeamRef
-    var userListRef: CollectionReference? // teamsRef
-//    var goalsRef: CollectionReference?
-    
+    /**
+     Initializes the FirebaseController, sets up Firebase, and configures listeners for hobbies and user lists.
+    */
     override init() {
         if FirebaseApp.app() == nil {
             FirebaseApp.configure()
@@ -45,45 +49,14 @@ class FirebaseController: NSObject, DatabaseProtocol {
         self.setupUserListListener()
 
     }
-    
-//    
-//    func saveUserProfile(userProfile: UserProfile) {
-//        let db = Firestore.firestore()
-//        do {
-//            let userProfileData = try Firestore.Encoder().encode(userProfile)
-//            db.collection("userProfiles").document(userProfile.uid).setData(userProfileData) { error in
-//                if let error = error {
-//                    print("Error saving user profile: \(error.localizedDescription)")
-//                } else {
-//                    print("User profile successfully saved!")
-//                }
-//            }
-//        } catch let error {
-//            print("Error encoding user profile: \(error)")
-//        }
-//    }
-//    
-//    
-//    func fetchUserProfile(uid: String, completion: @escaping (UserProfile?, Error?) -> Void) {
-//        let userProfileRef = database.collection("userProfiles").document(uid)
-//        userProfileRef.getDocument { documentSnapshot, error in
-//            guard let document = documentSnapshot, document.exists else {
-//                print("No user profile found for UID: \(uid)")
-//                completion(nil, error)
-//                return
-//            }
-//            do {
-//                let userProfile = try document.data(as: UserProfile.self)
-//                completion(userProfile, nil)
-//            } catch {
-//                print("Error decoding user profile: \(error)")
-//                completion(nil, error)
-//            }
-//        }
-//    }
 
-    
+    /**
+     Adds a goal to the current user's document in Firestore.
+     
+     - Parameter goal: The title of the goal to be added.
+    */
     func addGoals(goal: String) {
+        // Check if a user is logged in before attempting to add a goal.
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user logged in")
             return
@@ -96,7 +69,7 @@ class FirebaseController: NSObject, DatabaseProtocol {
         ]
 
         // Update the user's document by appending the new goal to the goals array
-        let userRef = database.collection("users").document(userID)
+        let userRef = database.collection("users").document(userID)  // Reference to the current user's document in the Firestore 'users' collection.
         userRef.updateData([
             "goals": FieldValue.arrayUnion([newGoal])
         ]) { error in
@@ -108,17 +81,26 @@ class FirebaseController: NSObject, DatabaseProtocol {
         }
     }
     
+    /**
+         Deletes a specified goal from the current user's document in Firestore.
+         
+         - Parameter goalId: The identifier of the goal to be removed.
+        */
     func deleteGoals(goalId: String) {
+        // Ensure there is a logged-in user before attempting to delete a goal.
         guard let userID = Auth.auth().currentUser?.uid else {
             print("No user logged in")
             return
         }
         
-        let userDocRef = database.collection("users").document(userID)
+        let userDocRef = database.collection("users").document(userID) // Reference to the current user's document.
         
+        // Retrieve the current document to access its goals.
         userDocRef.getDocument { (document, error) in
             if let document = document, let data = document.data(), let goals = data["goals"] as? [[String: Any]] {
+                // Identify the goal to delete by its title.
                 if let goalToDelete = goals.first(where: { $0["title"] as? String == goalId }) {
+                    // try to remove the goal from the Firestore document.
                     userDocRef.updateData([
                         "goals": FieldValue.arrayRemove([goalToDelete])
                     ]) { error in
@@ -133,6 +115,15 @@ class FirebaseController: NSObject, DatabaseProtocol {
         }
     }
     
+    /**
+     Adds a new hobby to the Firestore database.
+
+     - Parameters:
+        - name: The name of the hobby to be added.
+        - interest: The interest type associated with the hobby.
+
+     - Returns: The newly created Hobby object with its name and interest set.
+    */
     func addHobby(name: String, interest: Interest) -> Hobby {
         let hobby = Hobby() //create an object first then set the name, abilities, and universe.
         hobby.name = name
@@ -153,12 +144,24 @@ class FirebaseController: NSObject, DatabaseProtocol {
         return hobby
     }
     
+    /**
+     Deletes a hobby from the Firestore database.
+
+     - Parameter hobby: The hobby object to be deleted.
+    */
     func deleteHobby(hobby: Hobby) {
         if let hobbyId = hobby.id { // check if they have a valid ID
             hobbiesRef?.document(hobbyId).delete() // combined with the database references to delete them.
         }
     }
     
+    /**
+     Adds a new user list to the Firestore database.
+
+     - Parameter listName: The name of the list to be added.
+
+     - Returns: The newly created UserList object.
+    */
     func addUserList(listName: String) -> UserList {
         let userList = UserList()
         userList.name = listName
@@ -174,16 +177,28 @@ class FirebaseController: NSObject, DatabaseProtocol {
         return userList
     }
     
-    
+    /**
+     Deletes a user list from the Firestore database.
+
+     - Parameter list: The UserList object to be deleted.
+    */
     func deleteUserList(list: UserList) {
-//        userListRef?.delete()
-        
         if let listId = list.id {
             userListRef?.document(listId).delete()
         }
     }
     
+    /**
+     Adds a hobby to a specific user list in Firestore.
+
+     - Parameters:
+        - hobby: The hobby to be added to the list.
+        - userList: The user list to which the hobby will be added.
+
+     - Returns: Boolean indicating if the operation was successful.
+    */
     func addHobbyToUserList(hobby: Hobby, userList: UserList) -> Bool {
+        // Validate necessary IDs and references.
         guard let hobbyId = hobby.id, let hobbiesRef = self.hobbiesRef else {
             print("Invalid hobby or hobby list ID.")
             return false
@@ -194,10 +209,10 @@ class FirebaseController: NSObject, DatabaseProtocol {
             return false
         }
         
-        let userHobbyRef = userListRef?.document(userListId)
-        
+        let userHobbyRef = userListRef?.document(userListId) // Reference to the specific user list document.
         let hobbyRef = hobbiesRef.document(hobbyId)
-
+        
+        // // Attempt to add the hobby ID to the user list's hobbies array.
         userHobbyRef?.updateData([
             "hobbies": FieldValue.arrayUnion([hobbyId])
         ]) { error in
@@ -211,12 +226,20 @@ class FirebaseController: NSObject, DatabaseProtocol {
         return true
     }
     
+    /**
+     Removes a hobby from a specific user list in Firestore.
+
+     - Parameters:
+        - hobby: The hobby to be removed from the list.
+        - userList: The user list from which the hobby will be removed.
+    */
     func removeHobbyFromUserList(hobby: Hobby, userList: UserList) {
+        // Ensure both hobby and user list IDs are valid.
         guard let hobbyId = hobby.id, let userListId = userList.id else {
             print("Invalid hobby ID or user list ID.")
             return
         }
-        let userHobbyRef = database.collection("userlists").document(userListId)
+        let userHobbyRef = database.collection("userlists").document(userListId)  // Reference to the specific user list document.
 
         // Using Firestore arrayRemove to remove the hobby
         userHobbyRef.updateData([
@@ -231,8 +254,11 @@ class FirebaseController: NSObject, DatabaseProtocol {
         }
     }
     
-    
-    
+    /**
+     Sets up a listener for changes to the hobbies collection in Firestore. This method initializes the listener and updates the local hobby list based on changes in the database.
+
+     The listener will update the local hobby list whenever a document in the "hobbies" collection is added, modified, or removed.
+    */
     func setupHobbyListener(){
         hobbiesRef = database.collection("hobbies") // get a Firestore reference to the SUperheroes collection
         
@@ -243,11 +269,14 @@ class FirebaseController: NSObject, DatabaseProtocol {
             }
             self.parseHobbiesSnapshot(snapshot: snapshot)
         }
-        
     }
     
+    /**
+     Sets up a listener for changes to a specific user list document in Firestore based on the currentUserList ID.
+
+     This method is responsible for attaching a snapshot listener to the user's current list document, enabling real-time updates within the app when changes occur in Firestore.
+    */
     func setupUserListListener(){
- 
         guard let listId = currentUserList?.id else {
             print("No current user list found")
             return
@@ -263,6 +292,11 @@ class FirebaseController: NSObject, DatabaseProtocol {
         }
     }
     
+    /**
+     Parses a snapshot of Firestore document changes for hobbies, updating the local cache of hobbies and notifying all registered listeners of the changes.
+
+     - Parameter snapshot: The snapshot containing changes to hobby documents.
+    */
     func parseHobbiesSnapshot(snapshot: QuerySnapshot) {
         // parse the snapshot and make any changes as required to our local properties and call local listeners.
         
@@ -299,6 +333,11 @@ class FirebaseController: NSObject, DatabaseProtocol {
         }
     }
     
+    /**
+     Parses the snapshot of a specific user list document, updating the local user list model and notifying all registered listeners of the changes.
+
+     - Parameter snapshot: The document snapshot of the user list containing its current state and data.
+    */
     func parseUserListSnapshot(snapshot: DocumentSnapshot) {
         guard let userListData = snapshot.data(), snapshot.exists else {
             print("Document does not exist or data could not be retrieved")
@@ -351,16 +390,22 @@ class FirebaseController: NSObject, DatabaseProtocol {
                 listener.onUserListChange(change: .update, userHobbies: userList.hobbies)
             }
         }
-        
     }
     
-    
+    /**
+     Cleans up the current user and user list references when a user logs out or their session is terminated.
+    */
     func cleanup() {
         currentUser = nil
         currentUserList = nil
         
     }
     
+    /**
+     Adds a listener to the list of active listeners and immediately updates it with the latest data.
+
+     - Parameter listener: The listener object that conforms to the DatabaseListener protocol.
+    */
     func addListener(listener: any DatabaseListener) {
         listeners.addDelegate(listener)
         
@@ -375,11 +420,23 @@ class FirebaseController: NSObject, DatabaseProtocol {
 
     }
     
+    /**
+     Removes a listener from the list of active listeners.
+
+     - Parameter listener: The listener object that needs to be removed.
+    */
     func removeListener(listener: any DatabaseListener) {
         listeners.removeDelegate(listener)
 
     }
     
+    /**
+     Signs in a user using their email and password, handling authentication and setup of user-specific data.
+
+     - Parameter email: The user's email address.
+     - Parameter password: The user's password.
+     - Parameter completion: A completion handler that returns either the authenticated user or an error.
+    */
     func signInWithEmail(email: String, password: String, completion: @escaping (Result<User, Error>) -> Void) {
         
         Auth.auth().signIn(withEmail: email, password: password) { [weak self] authResult, error in
@@ -399,7 +456,7 @@ class FirebaseController: NSObject, DatabaseProtocol {
             }
 
             self.currentUser = user
-            UserManager.shared.currentUser = user
+            UserManager.shared.currentUser = user // set the user to the user manager's current user
             
             let userRef = self.database.collection("users").document(user.uid)
             
@@ -415,7 +472,7 @@ class FirebaseController: NSObject, DatabaseProtocol {
                                 completion(.success(user))
                             } else {
                                 // User list does not exist, create it
-                                let userList = self.addUserList(listName: "\(user.displayName ?? "User")'s List")
+                                let userList = self.addUserList(listName: "\(user.displayName ?? "User")'s List") // set the list name
                                 userRef.updateData(["userListId": userList.id!]) { error in
                                     if let error = error {
                                         completion(.failure(error))
@@ -433,7 +490,7 @@ class FirebaseController: NSObject, DatabaseProtocol {
                             if let error = error {
                                 completion(.failure(error))
                             } else {
-                                UserManager.shared.currentUserList = userList
+                                UserManager.shared.currentUserList = userList // set the user list to the user manager's currentUserList
                                 completion(.success(user))
                             }
                         }
@@ -443,7 +500,14 @@ class FirebaseController: NSObject, DatabaseProtocol {
         }
     }
 
-    
+    /**
+     Signs up a new user with email and password, creates a new user list for them, and saves their information to Firestore.
+
+     - Parameter email: The user's email address.
+     - Parameter password: The user's password.
+     - Parameter displayName: The display name of the user.
+     - Parameter completion: A completion handler that returns either the authenticated user or an error.
+    */
     func signUpWithEmail(email: String, password: String, displayName:String, completion: @escaping (Result<User, Error>) -> Void) {
         authController.createUser(withEmail: email, password: password) { [weak self] authResult, error in
             guard let self = self else {
@@ -472,7 +536,7 @@ class FirebaseController: NSObject, DatabaseProtocol {
                 "total posts": 0,
             ]
             
-            self.database.collection("users").document(user.uid).setData(userData) { error in
+            self.database.collection("users").document(user.uid).setData(userData) { error in // add the user data to the document id
                 if let error = error {
                     completion(.failure(error))
                 } else {
@@ -488,7 +552,13 @@ class FirebaseController: NSObject, DatabaseProtocol {
         }
     }
     
-    
+    /**
+     Signs in a user via Google OAuth2, handling authentication and setup of user-specific data.
+
+     - Parameter idToken: The ID token obtained from Google Sign-In.
+     - Parameter accessToken: The access token obtained from Google Sign-In.
+     - Parameter completion: A completion handler that returns either the authenticated user or an error.
+    */
     func signInWithGoogle(idToken: String, accessToken: String, completion: @escaping (Result<User, Error>) -> Void) {
         let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: accessToken)
         
@@ -571,7 +641,12 @@ class FirebaseController: NSObject, DatabaseProtocol {
         }
     }
     
-    
+    /**
+     Checks and creates a user list for the given user if it does not exist, ensuring the user has a default user list.
+
+     - Parameter user: The authenticated user whose user list needs to be verified or created.
+     - Parameter completion: A completion handler that confirms the creation or existence of the user list.
+    */
     func checkAndCreateUserList(for user: User, completion: @escaping (Result<Void, Error>) -> Void) {
         userListRef?.whereField("userId", isEqualTo: user.uid).getDocuments { (querySnapshot, error) in
             if let error = error {
@@ -581,8 +656,7 @@ class FirebaseController: NSObject, DatabaseProtocol {
             
             if let querySnapshot = querySnapshot, querySnapshot.isEmpty {
                 // No user list found, create a new one
-                let userList = self.addUserList(listName: "\(user.displayName ?? "User")'s List")
-//                self.userListRef?.document(userList.id!).setData(["userId": user.uid, "name": userList.name!])
+                let userList = self.addUserList(listName: "\(user.displayName ?? "User")'s List") // set the user list's name
                 self.database.collection("users").document(user.uid).updateData(["userListId": userList.id!]) { error in
                     if let error = error {
                         completion(.failure(error))
@@ -604,37 +678,54 @@ class FirebaseController: NSObject, DatabaseProtocol {
         }
     }
     
-    
+    /**
+     Fetches calendar events for the primary calendar of the authenticated user from Google Calendar API.
+
+     - Parameter accessToken: The OAuth2 access token that authorizes the request to Google Calendar API.
+     - Parameter completion: A completion handler that returns a list of calendar events or an error if the fetch fails.
+    */
     func fetchCalendarEvents(accessToken: String, completion: @escaping (Result<[GTLRCalendar_Event], Error>) -> Void) {
+        // Construct the URL for the Google Calendar API endpoint.
         let url = URL(string: "https://www.googleapis.com/calendar/v3/calendars/primary/events")!
         var request = URLRequest(url: url)
+        // Set the authorization header.
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         
+        // Create and start the network task.
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            // Check for errors, return failure if any.
             guard let data = data, error == nil else {
                 completion(.failure(error ?? NSError(domain: "CalendarError", code: -1, userInfo: nil)))
                 return
             }
             
             do {
-                let decoder = JSONDecoder()
+                // Decode the response data into the EventsResponse model.
+                let decoder = JSONDecoder() //
                 // Assuming you have a struct that conforms to Codable to parse events
                 let eventsResponse = try decoder.decode(EventsResponse.self, from: data)
                 completion(.success(eventsResponse.items))
             } catch {
+                // Handle decoding errors.
                 completion(.failure(error))
             }
         }
         task.resume()
     }
     
-    
+    /**
+     Fetches the goals for the currently authenticated user from Firestore.
+
+     - Parameter completion: A completion handler that passes an array of goals or an empty array if the fetch fails.
+    */
     func fetchGoals(completion: @escaping ([Goal]) -> Void) {
+        // Ensure the current user ID is available.
         guard let userID = Auth.auth().currentUser?.uid else {
             completion([])
             return
         }
         
+        // Reference to the user's document in Firestore.
         let userDocRef = database.collection("users").document(userID)
         userDocRef.getDocument { documentSnapshot, error in
             if let error = error {
@@ -652,6 +743,7 @@ class FirebaseController: NSObject, DatabaseProtocol {
                 return
             }
             
+            // Map the dictionary data to Goal objects.
             let goals = goalsData.compactMap { dict -> Goal? in
                 guard let title = dict["title"] as? String,
                       let completedValue = dict["completed"] as? Int else {
@@ -665,46 +757,14 @@ class FirebaseController: NSObject, DatabaseProtocol {
     }
     
     
+    // MARK: - Firebase Controller Specific Methods
     
-    
-//    func fetchPosts(completion: @escaping ([HomeFeedRenderViewModel]?) -> Void) {
-//        guard let userID = Auth.auth().currentUser?.uid else {
-//            print("Error: User not logged in")
-//            completion(nil)
-//            return
-//        }
-//        
-//        let postsRef = Firestore.firestore().collection("posts").whereField("userID", isEqualTo: userID)
-//        postsRef.getDocuments { (snapshot, error) in
-//            if let error = error {
-//                print("Error getting documents: \(error)")
-//                completion(nil)
-//                return
-//            }
-//
-//            guard let documents = snapshot?.documents, !documents.isEmpty else {
-//                print("No documents found")
-//                completion(nil)
-//                return
-//            }
-//
-//            let models = documents.compactMap { docSnapshot -> HomeFeedRenderViewModel? in
-//                guard let post = UserPost(dictionary: docSnapshot.data()) else { return nil }
-//                // Create your view models here
-//                return HomeFeedRenderViewModel(
-//                    header: RenderViewModel(renderType: .header(provider: self.currentUser!)),
-//                    post: RenderViewModel(renderType: .postContent(provider: post)),
-//                    actions: RenderViewModel(renderType: .actions(provider: "Actions for this post")),
-//                    comments: RenderViewModel(renderType: .comments(provider: post.comments ?? []))
-//                )
-//            }
-//            completion(models)
-//        }
-//    }
+    /**
+     Retrieves a hobby by its ID from the local hobby list.
 
-    
-    
-    // MARK: - Firebase Controller Specific m=Methods
+     - Parameter id: The unique identifier for the hobby.
+     - Returns: An optional Hobby object if found; otherwise, nil.
+    */
     func getHobbyByID(_ id: String) -> Hobby? {
         for hobby in hobbyList {
             if hobby.id == id { // get a specific hero within the heroList based on the provided ID
@@ -714,27 +774,16 @@ class FirebaseController: NSObject, DatabaseProtocol {
         return nil
     }
     
+    /**
+     Defines errors related to user authentication processes in Firebase.
+
+     - userNotFound: Indicates that the user was not found during an authentication attempt.
+     - userCreationFailed: Indicates a failure in creating a new user account.
+    */
     enum AuthError: Error {
         case userNotFound
         case userCreationFailed
     }
-    
-//    struct EventsResponse: Codable {
-//        let items: [Event]
-//    }
-//
-//    struct Event: Codable {
-//        let id: String
-//        let summary: String
-//        let description: String?
-//        let start: EventDateTime
-//        let end: EventDateTime
-//    }
-//
-//    struct EventDateTime: Codable {
-//        let dateTime: String
-//        let timeZone: String?
-//    }
 }
 
 

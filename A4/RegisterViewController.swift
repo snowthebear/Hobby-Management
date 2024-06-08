@@ -11,10 +11,13 @@ import Firebase
 import FirebaseAuth
 import FirebaseFirestore
 
-
+/**
+ RegisterViewController handles user registration using Firebase authentication.
+ It provides fields for inputting name, email, and password, and includes validation checks for these inputs.
+ */
 class RegisterViewController: UIViewController {
     
-    var firebaseController = FirebaseController()
+    var firebaseController = FirebaseController() //Firebase controller for handling sign-up operations
     
     @IBOutlet weak var nameTextField: UITextField!
     
@@ -25,39 +28,42 @@ class RegisterViewController: UIViewController {
     @IBOutlet weak var confirmPasswordTextField: UITextField!
     
     
-    
+    /**
+     Configures the view once it is loaded.
+     */
     override func viewDidLoad() {
         super.viewDidLoad()
         self.tabBarController?.navigationController?.isNavigationBarHidden = false
         self.tabBarController?.navigationItem.title = "HOBSNAP"
         configurePasswordTextField()
-//        passwordTextField.textContentType = .password
-//        confirmPasswordTextField.textContentType = .password
-//        
-//        passwordTextField.autocorrectionType = .no
-//        passwordTextField.spellCheckingType = .no
-//        passwordTextField.autocapitalizationType = .none
-//        confirmPasswordTextField.autocorrectionType = .no
-//        confirmPasswordTextField.spellCheckingType = .no
-//        confirmPasswordTextField.autocapitalizationType = .none
-        
     }
     
+    /**
+    Configures the navigation bar before the view appears.
+    - Parameters:
+      - animated: If true, the view is being added to the window using an animation.
+    */
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.tabBarController?.navigationController?.isNavigationBarHidden = false
         self.tabBarController?.navigationItem.title = "HOBSNAP"
     }
     
+    /**
+     Clears any configurations when the view will disappear.
+     - Parameters:
+       - animated: If true, the disappearance of the view is animated.
+     */
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillAppear(animated)
     }
     
+    /**
+     Handles the registration process when the register button is tapped.
+     - Parameters:
+       - sender: The button that triggers this action.
+     */
     @IBAction func registerButton(_ sender: Any) {
-
-        // Register the user with Firebase Authentication
-        
-
         // Register the user with Firebase Authentication
         guard let name = nameTextField.text, !name.isEmpty,
               let email = emailTextField.text, !email.isEmpty,
@@ -89,7 +95,6 @@ class RegisterViewController: UIViewController {
         view.addSubview(activityIndicator)
         activityIndicator.startAnimating()
 
-
         firebaseController.signUpWithEmail(email: email, password: password, displayName: name) { [weak self] result in
             activityIndicator.stopAnimating()
             guard let self = self else { return }
@@ -104,16 +109,27 @@ class RegisterViewController: UIViewController {
                 self.showAlert(title: "Registration Error", message: error.localizedDescription)
             }
         }
-        
     }
     
-    
+    /**
+     Validates if an email address is in a correct format.
+     - Parameters:
+       - email: The email string to validate.
+     - Returns: Boolean indicating if the email is in a valid format.
+     */
     func isValidEmail(_ email: String) -> Bool {
         let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
         let emailPredicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
         return emailPredicate.evaluate(with: email)
     }
     
+    /**
+     Displays an alert message with an optional completion handler.
+     - Parameters:
+       - title: Title of the alert.
+       - message: Message body of the alert.
+       - completion: Optional closure to execute after dismissing the alert.
+     */
     func showAlert(title: String, message: String, completion: (() -> Void)? = nil) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
@@ -122,9 +138,16 @@ class RegisterViewController: UIViewController {
         present(alert, animated: true)
     }
     
+    /**
+     Determines if the segue should be performed based on validation checks.
+     - Parameters:
+       - identifier: The identifier for the segue being considered.
+       - sender: The object that initiated the segue.
+     - Returns: Boolean indicating whether the segue should occur.
+     */
     override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
         if identifier == "showLogin" {
-      
+
             guard let name = nameTextField.text, !name.isEmpty,
                   let email = emailTextField.text, !email.isEmpty,
                   let password = passwordTextField.text, !password.isEmpty,
@@ -147,27 +170,37 @@ class RegisterViewController: UIViewController {
                 showAlert(title: "Input Error", message: "Password must be at least 6 characters.")
                 return false
             }
-
             return true
         }
-
         return true
     }
     
     
-    
+    /**
+     Toggles the visibility of the password text field.
+     - Parameters:
+       - sender: The button used to toggle visibility.
+     */
     @objc func togglePasswordVisibility(_ sender: UIButton) {
         passwordTextField.isSecureTextEntry.toggle()
         let imageName = passwordTextField.isSecureTextEntry ? "eye.slash" : "eye"
         sender.setImage(UIImage(systemName: imageName), for: .normal)
     }
     
+    /**
+    Toggles the visibility of the confirm password text field.
+    - Parameters:
+      - sender: The button used to toggle visibility.
+    */
     @objc func toggleConfirmPasswordVisibility(_ sender: UIButton) {
         confirmPasswordTextField.isSecureTextEntry.toggle()
         let imageName = confirmPasswordTextField.isSecureTextEntry ? "eye.slash" : "eye"
         sender.setImage(UIImage(systemName: imageName), for: .normal)
     }
 
+    /**
+    Configures the password and confirmation text fields with a visibility toggle button.
+    */
     func configurePasswordTextField() {
         let passwordVisibilityButton = UIButton(type: .system)
         passwordVisibilityButton.setImage(UIImage(systemName: "eye.slash"), for: .normal)
@@ -175,8 +208,6 @@ class RegisterViewController: UIViewController {
         passwordVisibilityButton.addTarget(self, action: #selector(togglePasswordVisibility(_:)), for: .touchUpInside)
         passwordTextField.rightView = passwordVisibilityButton
         passwordTextField.rightViewMode = .always
-//        passwordTextField.isSecureTextEntry = true
-//        passwordTextField.textContentType = .password
 
         // Confirmation password field
         let confirmVisibilityButton = UIButton(type: .system)
@@ -185,10 +216,6 @@ class RegisterViewController: UIViewController {
         confirmVisibilityButton.addTarget(self, action: #selector(toggleConfirmPasswordVisibility(_:)), for: .touchUpInside)
         confirmPasswordTextField.rightView = confirmVisibilityButton
         confirmPasswordTextField.rightViewMode = .always
-//        confirmPasswordTextField.isSecureTextEntry = true
-//        confirmPasswordTextField.textContentType = .password
-        
     }
-
     
 }
