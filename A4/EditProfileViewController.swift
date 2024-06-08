@@ -11,6 +11,10 @@ import FirebaseAuth
 import Firebase
 import TOCropViewController
 
+
+/**
+ EditProfileViewController manages the editing of user profiles, allowing users to change their display name, email, and profile picture using Firebase for authentication and Firestore for storing user data.
+ */
 class EditProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, TOCropViewControllerDelegate {
     
     var currentUser: FirebaseAuth.User?
@@ -23,11 +27,26 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
     
     @IBOutlet weak var profilePictureView: UIImageView!
     
-    
     @IBOutlet weak var nameTextField: UITextField!
     
     @IBOutlet weak var emailTextField: UITextField!
     
+    /**
+     Called after the controller's view is loaded into memory.
+     */
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        self.configureProfileImageView()
+        self.loadUserData()
+
+    }
+    
+    /**
+     Handles the action to edit the profile picture.
+     - Parameters:
+       - sender: The button that triggers this action.
+     */
     @IBAction func editProfilePictureButton(_ sender: Any) {
         let alert = UIAlertController(title: "Select an option", message: nil,  preferredStyle: .actionSheet)
         
@@ -48,19 +67,23 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
         present(alert, animated: true)
     }
     
+    /**
+     Handles the action to save the updated profile information.
+     - Parameters:
+       - sender: The button that triggers this action.
+     */
     @IBAction func saveButton(_ sender: Any) {
-        var updates: [String: Any] = [:]
+        var updates: [String: Any] = [:] // to store updates
         
-        guard let user = self.currentUser else { return }
+        guard let user = self.currentUser else { return } // Ensure there is a current user logged in
         
-        
+        // Retrieve the display name and email from the text fields
         let displayName = nameTextField.text ?? ""
         let email = emailTextField.text ?? ""
         
-        let userDocRef = usersReference.document(user.uid)
+        let userDocRef = usersReference.document(user.uid) // Reference to the user's document in Firestore
         
-        
-        if displayName != user.displayName {
+        if displayName != user.displayName { // Check if the display name has changed
             updates = ["displayName": displayName]
         }
         
@@ -68,10 +91,13 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
         if user.email != email {
             user.updateEmail(to: email) { error in
                 if let error = error {
+                    // Display error message if email update fails
                     print("Failed to update email: \(error.localizedDescription)")
                     self.displayMessage(title: "Error", message: "Failed to update email: \(error.localizedDescription)")
                     return
                 }
+                
+                // If email update succeeds, update Firestore document
                 updates["email"] = email
                 userDocRef.updateData(updates) { error in
                     if let error = error {
@@ -83,6 +109,7 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
                 }
             }
         } else {
+            // If email hasn't changed, only update display name in Firestore
             userDocRef.updateData(updates) { error in
                 if let error = error {
                     print("Error updating document: \(error)")
@@ -93,31 +120,37 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
             }
         }
         
-        guard let userID = self.currentUser?.uid else {
+        guard let userID = self.currentUser?.uid else { // Ensure there is a user ID available
             displayMessage(title: "Error", message: "No user logged in!")
             return
         }
         
+        // Check if the profile picture has been changed
         if self.changePicture == true {
+            // Ensure there is a new image to upload
             if let newImage = profilePictureView.image, let imageData = newImage.jpegData(compressionQuality: 0.8) {
                 let timestamp = UInt(Date().timeIntervalSince1970)
                 let filename = "\(timestamp).jpg"
                 
+                // Reference to the image storage location in Firebase Storage
                 let imageRef = storageReference.child("\(userID)/\(timestamp)")
                 let metadata = StorageMetadata()
                 metadata.contentType = "image/jpg"
                 
-                let uploadTask = imageRef.putData(imageData, metadata: metadata)
+                let uploadTask = imageRef.putData(imageData, metadata: metadata)  // Upload the image to Firebase Storage
                 
+                // Observe the success of the upload task
                 uploadTask.observe(.success) { snapshot in
+                    // Retrieve the download URL of the uploaded image
                     imageRef.downloadURL { (url, error) in
                         if let downloadURL = url {
-                            userDocRef.updateData(["storageURL": downloadURL.absoluteString])
+                            userDocRef.updateData(["storageURL": downloadURL.absoluteString]) // Update the user's document in Firestore with the image URL
                         }
                     }
                 }
-                
+                // Observe the failure of the upload task
                 uploadTask.observe(.failure) { snapshot in
+                    // Display an error message if the upload fails
                     self.displayMessage(title: "Error", message: "\(String(describing: snapshot.error))")
                 }
             }
@@ -128,14 +161,9 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
     @IBAction func changePasswordButtonn(_ sender: Any) {
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        self.configureProfileImageView()
-        self.loadUserData()
-
-    }
-    
+    /**
+     Loads the user's data from Firestore and populates the UI elements.
+     */
     func loadUserData() {
         guard let user = currentUser else { return }
         
@@ -161,12 +189,19 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
         }
     }
     
+    /**
+     Loads the profile image from a given URL string.
+     - Parameters:
+       - urlString: The URL string of the profile image.
+     */
     func loadProfileImage(urlString: String) {
         guard let url = URL(string: urlString) else { return }
         profilePictureView.sd_setImage(with: url, placeholderImage: UIImage(named: "default_picture"), options: .continueInBackground, completed: nil)
     }
 
-    
+    /**
+     Configures the profile image view to be circular and sets its content mode.
+     */
     private func configureProfileImageView() {
         // Make the image view circular
         profilePictureView.layer.cornerRadius = profilePictureView.frame.size.width / 2
@@ -181,8 +216,12 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
         if profilePictureView.image == nil {
             profilePictureView.image = UIImage(named: "default_picture")
         }
-}
+    }
     
+    
+    /**
+     Presents an action sheet to select an option for the profile picture.
+     */
     @objc func handleImageTap() {
         let alert = UIAlertController(title: "Select an option", message: nil,  preferredStyle: .actionSheet)
         
@@ -203,6 +242,12 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
         present(alert, animated: true)
     }
     
+    
+    /**
+     Opens the image picker for the specified source type.
+     - Parameters:
+       - sourceType: The source type for the image picker (e.g., camera, photo library).
+     */
     func pickImageFrom(_ sourceType: UIImagePickerController.SourceType) {
         let imagePicker = UIImagePickerController()
         imagePicker.sourceType = sourceType
@@ -211,25 +256,33 @@ class EditProfileViewController: UIViewController, UIImagePickerControllerDelega
         present(imagePicker, animated: true)
     }
     
+    /**
+     Handles the selected image from the image picker.
+     - Parameters:
+       - picker: The image picker controller.
+       - info: A dictionary containing the selected image and other relevant info.
+     */
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        
         dismiss(animated: true)
         if let pickedImage = info[.originalImage] as? UIImage {
             let cropViewController = TOCropViewController(croppingStyle: .circular, image: pickedImage)
             cropViewController.delegate = self
             self.present(cropViewController, animated: true, completion: nil)
         }
-        
     }
     
+    /**
+     Handles the cropped image from the crop view controller.
+     - Parameters:
+       - cropViewController: The crop view controller.
+       - image: The cropped image.
+       - cropRect: The cropping rectangle.
+       - angle: The rotation angle.
+     */
     func cropViewController(_ cropViewController: TOCropViewController, didCropToCircularImage image: UIImage, with cropRect: CGRect, angle: Int) {
         profilePictureView.image = image
         self.changePicture = true
         cropViewController.dismiss(animated: true, completion: nil)
     }
-    
-    
-    
-    
-   
+
 }
