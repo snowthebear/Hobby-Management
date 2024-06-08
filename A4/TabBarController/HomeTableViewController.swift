@@ -10,14 +10,23 @@ import FirebaseAuth
 import FirebaseFirestore
 
 
-
+/**
+ HomeTableViewController  manages the display of posts in a home feed layout within the app.
+ It fetches and displays posts from users that the current user follows, including their own posts.
+ This controller uses Firestore to fetch user and post data dynamically.
+*/
 class HomeTableViewController: UITableViewController {
+//---------- properties -----------
     var currentUser: User?
     var currentUserList: UserList?
     var userEmail: String?
-    
     var posts: [UserPost] = []
+// --------------------------------
     
+    
+    /**
+     Sets up the view each time it appears, hiding navigation elements and updating the title.
+    */
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.tabBarController?.navigationController?.isNavigationBarHidden = true
@@ -25,103 +34,35 @@ class HomeTableViewController: UITableViewController {
         fetchPosts()
     }
 
+    /**
+     Configures initial view settings and fetches posts for the current user upon view loading.
+    */
     override func viewDidLoad() {
         super.viewDidLoad()
         self.tabBarController?.navigationItem.hidesBackButton = true
-        self.tabBarController?.navigationController?.isNavigationBarHidden = true
-        self.title = "HOBSNAP"
+        self.tabBarController?.navigationController?.isNavigationBarHidden = true // hides the tab bar navigation controller
+        self.title = "HOBSNAP" // set the view controller title
      
      
-        if let user = UserManager.shared.currentUser {
+        if let user = UserManager.shared.currentUser { // assign the user
             if currentUser == nil{
                 currentUser = user
             }
             
-            if let list = UserManager.shared.currentUserList {
+            if let list = UserManager.shared.currentUserList { // assign the user hobby list
                 if currentUserList == nil {
                     currentUserList = list
                 }
             }
         }
-        fetchPosts()
+        fetchPosts() // fetch all post that user have.
         
     }
-    
-//    
-//    func fetchPosts() {
-//        guard let currentUserID = currentUser?.uid else {
-//            print("Current user ID is not set.")
-//            return
-//        }
-//
-//        let db = Firestore.firestore()
-//        let followingRef = db.collection("users").document(currentUserID).collection("following")
-//        
-//        // Fetch followed user IDs
-//        followingRef.getDocuments { [weak self] (snapshot, error) in
-//            guard let self = self else { return }
-//            
-//            if let error = error {
-//                print("Error fetching following list: \(error.localizedDescription)")
-//                return
-//            }
-//            
-//            if let snapshot = snapshot, !snapshot.documents.isEmpty {
-//                // Use document IDs as user IDs
-//                var followedUserIDs = snapshot.documents.map { $0.documentID }
-//                // Ensure the current user's posts are also fetched
-//                followedUserIDs.append(currentUserID)
-//                print("Fetched following user IDs: \(followedUserIDs)")
-//                
-//                // Fetch posts from followed users
-//                db.collection("posts").whereField("userID", in: followedUserIDs).order(by: "postDate", descending: true).getDocuments { (querySnapshot, error) in
-//                    if let error = error {
-//                        print("Error getting posts: \(error.localizedDescription)")
-//                        return
-//                    }
-//                    
-//                    guard let documents = querySnapshot?.documents, !documents.isEmpty else {
-//                        print("No posts found for followed users.")
-//                        return
-//                    }
-//                    
-//                    var fetchedPosts = [UserPost]()
-//                    let group = DispatchGroup()
-//                    
-//                    for document in documents {
-//                        group.enter()
-//                        let data = document.data()
-//                        let userID = data["userID"] as? String ?? ""
-//                        
-//                        db.collection("users").document(userID).getDocument { userSnapshot, userError in
-//                            if let userDoc = userSnapshot, userError == nil, let userData = userDoc.data() {
-//                                let userName = userData["displayName"] as? String ?? "Unknown"
-//                                let storageURL = userData["storageURL"] as? String
-//                                let userProfileImageURL = URL(string: storageURL ?? "")
-//                                
-//                                if let post = UserPost(dictionary: data, userName: userName, userProfileImageURL: userProfileImageURL) {
-//                                    fetchedPosts.append(post)
-//                                } else {
-//                                    print("Error parsing document data: \(data)")
-//                                }
-//                            } else if let userError = userError {
-//                                print("Error fetching user details: \(userError.localizedDescription)")
-//                            }
-//                            group.leave()
-//                        }
-//                    }
-//                    group.notify(queue: .main) {
-//                        print("Updating UI with \(fetchedPosts.count) posts.")
-//                        self.posts = fetchedPosts
-//                        self.tableView.reloadData()
-//                    }
-//                }
-//            } else {
-//                print("No following data found, or user does not follow anyone.")
-//            }
-//        }
-//    }
-    
+
+    /**
+     Fetches posts from Firestore for the current user and their followees, ordering by post date.
+     Updates the table view with these posts or handles errors appropriately.
+    */
     func fetchPosts() {
         guard let currentUserID = currentUser?.uid else {
             print("Current user ID is not set.")
@@ -129,7 +70,7 @@ class HomeTableViewController: UITableViewController {
         }
 
         let db = Firestore.firestore()
-        let followingRef = db.collection("users").document(currentUserID).collection("following")
+        let followingRef = db.collection("users").document(currentUserID).collection("following") // access the user's following collection
 
         // Fetch followed user IDs
         followingRef.getDocuments { [weak self] (snapshot, error) in
@@ -140,17 +81,16 @@ class HomeTableViewController: UITableViewController {
                 return
             }
             
-            var followedUserIDs = [String]()
+            var followedUserIDs = [String]() // to store all the followed users' id
             
             if let snapshot = snapshot, !snapshot.documents.isEmpty {
-                // Use document IDs as user IDs
                 followedUserIDs = snapshot.documents.map { $0.documentID }
             }
             
-            // Always include the current user's ID to ensure their posts are fetched
+            // always include themself
             followedUserIDs.append(currentUserID)
             
-            // Fetch posts from followed users (or just the user themselves if they follow no one)
+            // fetch posts from followed users
             db.collection("posts").whereField("userID", in: followedUserIDs).order(by: "postDate", descending: true).getDocuments { (querySnapshot, error) in
                 if let error = error {
                     print("Error getting posts: \(error.localizedDescription)")
@@ -161,19 +101,19 @@ class HomeTableViewController: UITableViewController {
                 if let documents = querySnapshot?.documents, !documents.isEmpty {
                     let group = DispatchGroup()
                     
-                    for document in documents {
+                    for document in documents { // loop through the document
                         group.enter()
                         let data = document.data()
                         let userID = data["userID"] as? String ?? ""
                         
                         db.collection("users").document(userID).getDocument { userSnapshot, userError in
                             if let userDoc = userSnapshot, userError == nil, let userData = userDoc.data() {
-                                let userName = userData["displayName"] as? String ?? "Unknown"
-                                let storageURL = userData["storageURL"] as? String
-                                let userProfileImageURL = URL(string: storageURL ?? "")
+                                let userName = userData["displayName"] as? String ?? "Unknown" // get the user name
+                                let storageURL = userData["storageURL"] as? String // get the user's storage url
+                                let userProfileImageURL = URL(string: storageURL ?? "") // get the profile picture by using the storage url
                                 
-                                if let post = UserPost(dictionary: data, userName: userName, userProfileImageURL: userProfileImageURL) {
-                                    fetchedPosts.append(post)
+                                if let post = UserPost(dictionary: data, userName: userName, userProfileImageURL: userProfileImageURL) { // make it as UserPost type to distinguish the viewed user and logged-in user.
+                                    fetchedPosts.append(post) // append all the pictures
                                 } else {
                                     print("Error parsing document data: \(data)")
                                 }
@@ -186,7 +126,7 @@ class HomeTableViewController: UITableViewController {
                     group.notify(queue: .main) {
                         print("Updating UI with \(fetchedPosts.count) posts.")
                         self.posts = fetchedPosts
-                        self.tableView.reloadData()
+                        self.tableView.reloadData() // reload the table view
                     }
                 } else {
                     print("No posts found for the user.")
@@ -198,65 +138,18 @@ class HomeTableViewController: UITableViewController {
     }
 
 
-
-
-
-
-    
-//    func fetchPosts() {
-//        let db = Firestore.firestore()
-//        db.collection("posts").order(by: "postDate", descending: true).getDocuments { [weak self] (querySnapshot, error) in
-//            guard let self = self else { return }
-//
-//            if let error = error {
-//                print("Error getting documents: \(error)")
-//                return
-//            }
-//
-//            var fetchedPosts = [UserPost]()
-//            let group = DispatchGroup()
-//            
-//            for document in querySnapshot!.documents {
-//                group.enter()
-//                let data = document.data()
-//                let userID = data["userID"] as? String ?? ""
-//                
-//                db.collection("users").document(userID).getDocument { userSnapshot, userError in
-//                    if let userDoc = userSnapshot, userError == nil, let userData = userDoc.data() {
-//                        let userName = userData["displayName"] as? String ?? "Unknown"
-//                        let storageURL = userData["storageURL"] as? String
-//                        let userProfileImageURL = URL(string: storageURL ?? "")
-//                        
-//                        if let post = UserPost(dictionary: data, userName: userName, userProfileImageURL: userProfileImageURL) {
-//                            fetchedPosts.append(post)
-//                        } else {
-//                            print("Error parsing document: \(data)")
-//                        }
-//                    }
-//                    group.leave()
-//                }
-//            }
-//
-//            group.notify(queue: .main) {
-//                self.posts = fetchedPosts
-//                self.tableView.reloadData()
-//            }
-//        }
-//    }
-
-    
-
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
+        // Determines the number of sections in the table view, which is a multiple of 5 for different cell types per post.
         return posts.count * 5
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        // Always returns 1 row per section, as each section represents a part of a single post.
         return 1
     }
     
-
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let postIndex = indexPath.section / 5

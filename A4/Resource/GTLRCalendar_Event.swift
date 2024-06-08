@@ -14,8 +14,8 @@ struct EventsResponse: Codable {
 
 struct GTLRCalendar_Event: Codable {
     let summary: String?
-    let start: EventDateTime
-    let end: EventDateTime
+    let start: EventDateTime?
+    let end: EventDateTime?
 }
 
 struct EventDateTime: Codable {

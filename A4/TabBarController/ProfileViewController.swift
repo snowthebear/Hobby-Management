@@ -14,37 +14,42 @@ import TOCropViewController
 import SDWebImage
 
 
+// Enum defining time periods that can be viewed in the profile.
 enum Period {
     case day
     case week
     case month
 }
 
+/**
+ ProfileViewController manages the user profile interface within the app.
+ It interacts with Firebase Firestore to fetch and display user details and posts,
+ and allows the user to edit their profile, follow/unfollow other users, and interact with various UI components.
+*/
+
+// ProfileViewController manages the user profile view, displaying personal data, posts, and interaction options such as following or unfollowing.
 class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, HamburgerViewControllerDelegate, UIGestureRecognizerDelegate, TOCropViewControllerDelegate {
     
-    private var hobbyColors: [String: UIColor] = [:]
-    
-    @IBOutlet weak var postCollectionView: UICollectionView!
-    
+    // ------------------- properties ----------------------
+    private var hobbyColors: [String: UIColor] = [:] // stores colors for chart representation of hobbies.
     var hamburgerViewController: HamburgerViewController? //initialize the delegate
-    var usersReference = Firestore.firestore().collection("users")
-    var storageReference = Storage.storage().reference()
+    var usersReference = Firestore.firestore().collection("users") // Reference to Firebase Firestore to interact with the user data.
+    var storageReference = Storage.storage().reference() // Reference to Firebase Storage to manage user profile images.
     
-    var currentUser: FirebaseAuth.User?
-    var currentUserList: UserList?
-    var userProfile: UserProfile?
-    var isCurrentUser: Bool = true
-    var userEmail: String?
+    var currentUser: FirebaseAuth.User? // Current logged-in Firebase user.
+    var currentUserList: UserList? // List of hobbies for current user.
+    var userProfile: UserProfile? // Profile model for any user being viewed.
+    var isCurrentUser: Bool = true // Indicates if the current profile is of the logged-in user.
 
-    var imageUrls: [String] = []
+    var imageUrls: [String] = [] // Stores URLs of images for posts.
     
-    private var isHamburgerMenuShown: Bool = false
+    private var isHamburgerMenuShown: Bool = false // Flag to track visibility of the hamburger menu.
     
+    // --------------------- outlet -----------------------
+    @IBOutlet weak var postCollectionView: UICollectionView!
     @IBOutlet weak var hamburgerMenu: UIBarButtonItem!
     @IBOutlet weak var goalsMenu: UIBarButtonItem!
-    
     @IBOutlet weak var leadingConstraintForHM: NSLayoutConstraint!
-    
     @IBOutlet weak var hamburgerView: UIView!
     @IBOutlet weak var backViewForHamburger: UIView!
     @IBOutlet weak var followButton: UIButton!
@@ -53,58 +58,56 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     @IBOutlet weak var followersLabel: UILabel!
     @IBOutlet weak var followingLabel: UILabel!
     @IBOutlet weak var totalPostsLabel: UILabel!
-    
     @IBOutlet weak var allPostsLabel: UILabel!
-    
     @IBOutlet weak var profilePictureView: UIImageView!
-    
     @IBOutlet weak var customBarChartView: CustomBarChartView!
-    
     @IBOutlet weak var progressSegmentedControl: UISegmentedControl!
+    
     
     @IBAction func changeSegment(_ sender: UISegmentedControl) {
         updateChartData()
     }
     
+    // Sets up initial UI elements, fetches user data, and configures collection view on view load.
     override func viewDidLoad() {
         super.viewDidLoad()
-        hamburgerView.isHidden = true
-        self.currentUser = UserManager.shared.currentUser
-        self.currentUserList = UserManager.shared.currentUserList
-
+        hamburgerView.isHidden = true // hides the hamburger view as it is not needed at first
+        self.backViewForHamburger.isHidden = true // hides the back view for hamburger view as it is not needed at first
+        self.currentUser = UserManager.shared.currentUser // assign
+        self.currentUserList = UserManager.shared.currentUserList // assign
         hamburgerViewController?.currentUser = self.currentUser
-        setupUI()
-
-        self.backViewForHamburger.isHidden = true
         
+        setupUI() // setting up the UI
+        
+        // tap gesture for the user profile picture
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleImageTap))
         profilePictureView.isUserInteractionEnabled = isCurrentUser
         profilePictureView.addGestureRecognizer(tapGesture)
-//        profilePictureView.isUserInteractionEnabled = true
         
         configureProfileImageView()
         addUploadHintImage()
         
+        // check if its the logged in user
         if isCurrentUser {
             Task {
                 await loadUserData()
             }
         }
         
-        _ = setProfilePicture()
+        _ = setProfilePicture() // set the profile picture to the hamburger view
         
-        customBarChartView.setupChart()
-        loadUserSettings()
-        loadDailyData()
+        customBarChartView.setupChart() // setting up the chart
+        loadUserSettings() //load user setting
+        loadDailyData() // load daily data for the chart
 
-        setupCollectionView()
+        setupCollectionView() // setup the profile post's collections
         updateFollowersFollowingLabels()
 
         postCollectionView.delegate = self
         postCollectionView.dataSource = self
         postCollectionView.register(PhotoCollectionViewCell.self, forCellWithReuseIdentifier: PhotoCollectionViewCell.identifier)
         
-        if let userID = currentUser?.uid {
+        if let userID = currentUser?.uid { // fetch all the user post's
             fetchImagesURL(userID: userID) { [weak self] fetchedUrls in
                 self?.imageUrls = fetchedUrls
                 DispatchQueue.main.async {
@@ -119,7 +122,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
 
     }
     
-    override func viewWillAppear(_ animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) { // setting up the view controller whenever we go this controller
         super.viewWillAppear(animated)
         self.tabBarController?.navigationController?.isNavigationBarHidden = true
 
@@ -153,7 +156,6 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     override func viewDidLayoutSubviews() {
-
         super.viewDidLayoutSubviews()
 
         let allPostsLabelHeight = allPostsLabel.frame.size.height + 5
@@ -166,109 +168,12 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         postCollectionView.frame = CGRect(x: 0, y: yOffset, width: view.bounds.width, height: collectionViewHeight)
     }
     
-    func followUser(withID viewedUserID: String, completion: @escaping () -> Void) {
-        let db = Firestore.firestore()
-        let currentUserID = currentUser?.uid ?? ""
-        let batch = db.batch()
-        
-        // References to the user documents
-        let currentUserRef = db.collection("users").document(currentUserID)
-        let viewedUserRef = db.collection("users").document(viewedUserID)
-        
-        // Update following and followers subcollections
-        let currentUserFollowingRef = currentUserRef.collection("following").document(viewedUserID)
-        let viewedUserFollowersRef = viewedUserRef.collection("followers").document(currentUserID)
-        
-        batch.setData([:], forDocument: currentUserFollowingRef)
-        batch.setData([:], forDocument: viewedUserFollowersRef)
-        
-        
-        // Update following and followers counts
-        
-        batch.updateData(["following": FieldValue.increment(Int64(1))], forDocument: currentUserRef)
-        batch.updateData(["followers": FieldValue.increment(Int64(1))], forDocument: viewedUserRef)
-        
-        // Commit the batch
-        batch.commit { error in
-            if let error = error {
-                print("Error updating following/followers: \(error.localizedDescription)")
-            } else {
-                print("Successfully followed user")
-                completion()
-            }
-        }
-    }
-    
-    func unfollowUser(withID viewedUserID: String, completion: @escaping () -> Void) {
-        let db = Firestore.firestore()
-        let currentUserID = currentUser?.uid ?? ""
-        let batch = db.batch()
-        
-        // References to the user documents
-        let currentUserRef = db.collection("users").document(currentUserID)
-        let viewedUserRef = db.collection("users").document(viewedUserID)
-        
-        // Update following and followers subcollections
-        let currentUserFollowingRef = currentUserRef.collection("following").document(viewedUserID)
-        let viewedUserFollowersRef = viewedUserRef.collection("followers").document(currentUserID)
-        
-        batch.deleteDocument(currentUserFollowingRef)
-        batch.deleteDocument(viewedUserFollowersRef)
-        
-        // Update following and followers counts
-        batch.updateData(["following": FieldValue.increment(Int64(-1))], forDocument: currentUserRef)
-        batch.updateData(["followers": FieldValue.increment(Int64(-1))], forDocument: viewedUserRef)
-        
-        // Commit the batch
-        batch.commit { error in
-            if let error = error {
-                print("Error updating following/followers: \(error.localizedDescription)")
-            } else {
-                print("Successfully unfollowed user")
-                completion()
-            }
-        }
-    }
 
-    
-//    func followUser(withID userID: String, completion: @escaping () -> Void) {
-//        guard let currentUserID = currentUser?.uid else { return }
-//        let batch = Firestore.firestore().batch()
-//        let followRef = usersReference.document(currentUserID).collection("following").document(userID)
-//        let followerRef = usersReference.document(userID).collection("followers").document(currentUserID)
-//        batch.setData([:], forDocument: followRef)
-//        batch.setData([:], forDocument: followerRef)
-//
-//        batch.commit { error in
-//            if let error = error {
-//                print("Error following user: \(error)")
-//            } else {
-//                print("User followed successfully.")
-//                completion()
-//            }
-//        }
-//    }
-
-//    func unfollowUser(withID userID: String, completion: @escaping () -> Void) {
-//        guard let currentUserID = currentUser?.uid else { return }
-//        let batch = Firestore.firestore().batch()
-//        let followRef = usersReference.document(currentUserID).collection("following").document(userID)
-//        let followerRef = usersReference.document(userID).collection("followers").document(currentUserID)
-//        batch.deleteDocument(followRef)
-//        batch.deleteDocument(followerRef)
-//
-//        batch.commit { error in
-//            if let error = error {
-//                print("Error unfollowing user: \(error)")
-//            } else {
-//                print("User unfollowed successfully.")
-//                completion()
-//            }
-//        }
-//    }
-    
+    /**
+     Responds to the Follow/Unfollow button press. Ensures a user cannot follow themselves and toggles between follow and unfollow states for other users.
+    */
     @IBAction func followButton(_ sender: Any) {
-        
+        // avoid follow the user itself.
         guard let viewedUserID = userProfile?.userID,
               let currentUserID = currentUser?.uid,
               viewedUserID != currentUserID else {
@@ -276,139 +181,24 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             return
         }
         
+        // if the user havent follow that other user
         if (sender as AnyObject).title(for: .normal) == "Follow" {
             followUser(withID: viewedUserID) { [weak self] in
                 self?.followButton.setTitle("Unfollow", for: .normal)
                 self?.updateFollowersFollowingLabels()
             }
-        } else {
+        } else { // if the user wants to unfollow
             unfollowUser(withID: viewedUserID) { [weak self] in
                 self?.followButton.setTitle("Follow", for: .normal)
                 self?.updateFollowersFollowingLabels()
             }
         }
     }
-        
-//        guard let viewedUserID = userProfile?.userID,
-//              let currentUserID = currentUser?.uid,
-//              viewedUserID != currentUserID else {
-//            print("Cannot follow oneself or invalid user state")
-//            return
-//        }
-//
-//        // References to the followings subcollection of the current user and the followers subcollection of the viewed user
-//        let currentUserFollowingRef = usersReference.document(currentUserID).collection("following").document(viewedUserID)
-//        let viewedUserFollowersRef = usersReference.document(viewedUserID).collection("followers").document(currentUserID)
-//
-//        // Check if the current user is already following the viewed user
-//        currentUserFollowingRef.getDocument { [weak self] documentSnapshot, error in
-//            if let document = documentSnapshot, document.exists {
-//                print("Already following this user.")
-//            } else {
-//                // Not following yet, proceed to follow
-//                let batch = Firestore.firestore().batch()
-//                batch.setData([:], forDocument: currentUserFollowingRef)
-//                batch.setData([:], forDocument: viewedUserFollowersRef)
-//
-//                batch.commit { err in
-//                    if let err = err {
-//                        print("Error following user: \(err)")
-//                    } else {
-//                        print("User followed successfully")
-//                        DispatchQueue.main.async {
-//                            self?.updateFollowersFollowingLabels()
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        guard let viewedUserID = userProfile?.userID,
-//              let currentUserID = currentUser?.uid,
-//              viewedUserID != currentUserID else {
-//            print("Cannot follow oneself or invalid user state")
-//            return
-//        }
-//        
-//
-//        let viewedUserRef = usersReference.document(viewedUserID)
-//        let currentUserRef = usersReference.document(currentUserID)
-//        
-//        let db = Firestore.firestore()
-//        db.runTransaction({ (transaction, errorPointer) -> Any? in
-//            let viewedUserDocument: DocumentSnapshot
-//            let currentUserDocument: DocumentSnapshot
-//            do {
-//                try viewedUserDocument = transaction.getDocument(viewedUserRef)
-//                try currentUserDocument = transaction.getDocument(currentUserRef)
-//            } catch let fetchError as NSError {
-//                errorPointer?.pointee = fetchError
-//                return nil
-//            }
-//
-//            let currentViewedUserFollowers = viewedUserDocument.data()?["followers"] as? Int ?? 0
-//            let currentUserFollowing = currentUserDocument.data()?["following"] as? Int ?? 0
-//
-//            transaction.updateData(["followers": currentViewedUserFollowers + 1], forDocument: viewedUserRef)
-//            transaction.updateData(["following": currentUserFollowing + 1], forDocument: currentUserRef)
-//            return nil
-//
-//            
-//        }) { (object, error) in
-//            if let error = error {
-//                print("Transaction failed: \(error)")
-//            } else {
-//                print("Transaction successfully committed!")
-//                DispatchQueue.main.async {
-//                    self.updateFollowersFollowingLabels()
-//                }
-//            }
-//        }
-//    }
-    // -----------------------------
-    
-//    func updateFollowersFollowingLabels() {
-//        guard let currentUserID = currentUser?.uid else { return }
-//        
-//        if isCurrentUser {
-//            let currentUserRef = usersReference.document(currentUserID)
-//            currentUserRef.getDocument { [weak self] (document, error) in
-//                guard let self = self, let document = document, document.exists else { return }
-//                if let currentUserData = document.data() {
-//                    DispatchQueue.main.async {
-//                        if let followingCount = currentUserData["following"] as? Int {
-//                            self.followingLabel.text = "\(followingCount)"
-//                        }
-//                        if let followersCount = currentUserData["followers"] as? Int {
-//                            self.followersLabel.text = "\(followersCount)"
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        
-//        if !isCurrentUser {
-//            if let viewedUserID = userProfile?.userID, viewedUserID != currentUserID {
-//                let viewedUserRef = usersReference.document(viewedUserID)
-//                viewedUserRef.getDocument { [weak self] (document, error) in
-//                    if let document = document, document.exists {
-//                        if let viewedUserData = document.data() {
-//                            DispatchQueue.main.async {
-//                                if let followersCount = viewedUserData["followers"] as? Int {
-//                                    self?.followersLabel.text = "\(followersCount)"
-//                                }
-//                                if let followingCount = viewedUserData["following"] as? Int {
-//                                    self?.followingLabel.text = "\(followingCount)"
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        
-//    }
-    
-    func updateFollowersFollowingLabels() {
+
+    /**
+     Updates the display labels for followers and following counts by fetching data from Firestore.
+    */
+    func updateFollowersFollowingLabels() { // updating the label
         // Helper function to update labels based on the user's ID and labels
         func updateLabels(for userID: String, followersLabel: UILabel, followingLabel: UILabel) {
             let userRef = usersReference.document(userID)
@@ -446,9 +236,87 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             updateLabels(for: viewedUserID, followersLabel: self.followersLabel, followingLabel: self.followingLabel)
         }
     }
+    
+    
+    /**
+     Initiates following a user by updating Firestore collections and counters for both the current user and the viewed user.
+     
+     - Parameter viewedUserID: ID of the user to follow.
+     - Parameter completion: Closure to execute after the operation is completed.
+    */
+    func followUser(withID viewedUserID: String, completion: @escaping () -> Void) { // for updating the followers and following of the user and logged-in user
+        let db = Firestore.firestore()
+        let currentUserID = currentUser?.uid ?? ""
+        let batch = db.batch()
+        
+        // References to the user documents
+        let currentUserRef = db.collection("users").document(currentUserID)
+        let viewedUserRef = db.collection("users").document(viewedUserID)
+        
+        // Update following and followers subcollections
+        let currentUserFollowingRef = currentUserRef.collection("following").document(viewedUserID)
+        let viewedUserFollowersRef = viewedUserRef.collection("followers").document(currentUserID)
+        
+        batch.setData([:], forDocument: currentUserFollowingRef)
+        batch.setData([:], forDocument: viewedUserFollowersRef)
+        
+        
+        // Update following and followers counts
+        batch.updateData(["following": FieldValue.increment(Int64(1))], forDocument: currentUserRef)
+        batch.updateData(["followers": FieldValue.increment(Int64(1))], forDocument: viewedUserRef)
+        
+        // Commit the batch
+        batch.commit { error in
+            if let error = error {
+                print("Error updating following/followers: \(error.localizedDescription)")
+            } else {
+                print("Successfully followed user")
+                completion()
+            }
+        }
+    }
+    
+    /**
+     Initiates unfollowing a user by updating Firestore collections and counters for both the current user and the viewed user.
+     
+     - Parameter viewedUserID: ID of the user to unfollow.
+     - Parameter completion: Closure to execute after the operation is completed.
+    */
+    func unfollowUser(withID viewedUserID: String, completion: @escaping () -> Void) { // for updating the followers and following of the user and logged-in user
+        let db = Firestore.firestore()
+        let currentUserID = currentUser?.uid ?? ""
+        let batch = db.batch()
+        
+        // References to the user documents
+        let currentUserRef = db.collection("users").document(currentUserID)
+        let viewedUserRef = db.collection("users").document(viewedUserID)
+        
+        // Update following and followers subcollections
+        let currentUserFollowingRef = currentUserRef.collection("following").document(viewedUserID)
+        let viewedUserFollowersRef = viewedUserRef.collection("followers").document(currentUserID)
+        
+        batch.deleteDocument(currentUserFollowingRef)
+        batch.deleteDocument(viewedUserFollowersRef)
+        
+        // Update following and followers counts
+        batch.updateData(["following": FieldValue.increment(Int64(-1))], forDocument: currentUserRef)
+        batch.updateData(["followers": FieldValue.increment(Int64(-1))], forDocument: viewedUserRef)
+        
+        // Commit the batch
+        batch.commit { error in
+            if let error = error {
+                print("Error updating following/followers: \(error.localizedDescription)")
+            } else {
+                print("Successfully unfollowed user")
+                completion()
+            }
+        }
+    }
 
     
-    
+    /**
+         Sets up the layout and properties of the collection view used to display posts.
+     */
     private func setupCollectionView() {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
@@ -465,15 +333,28 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         postCollectionView.register(PhotoCollectionViewCell.self, forCellWithReuseIdentifier: PhotoCollectionViewCell.identifier)
     }
     
-    func setProfilePicture() -> UIImage {
+    /**
+     Returns the current image displayed as the profile picture in the profile view controller.
+     
+     - Returns: A UIImage object representing the current profile picture.
+    */
+    func setProfilePicture() -> UIImage { // setting up the profile picture in hamburger view
         return self.profilePictureView.image ?? UIImage(named: "default_picture")!
     }
 
-    func setName() -> String {
+    /**
+     Returns the current name displayed in the profile view controller.
+     
+     - Returns: A string representing the user's displayed name.
+    */
+    func setName() -> String { // setting up the name in hamburger view
         return self.displayNameLabel.text ?? "Unknown"
     }
 
-    private func setupUI() {
+    /**
+     Configures the initial UI settings for the profile view controller based on whether the current user is viewing their own profile.
+    */
+    private func setupUI() { // setting up the UI
         view.backgroundColor = .white
 
         hamburgerMenu.isHidden = !isCurrentUser
@@ -483,12 +364,17 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         followButton.isHidden = isCurrentUser
     }
     
-    
-    func editProfile() {
+    /**
+     Initiates the editing process for the user profile, performing a segue and setting up the edit profile view.
+    */
+    func editProfile() { // if the user press edit profile in hamburger view
         self.performSegue(withIdentifier: "editProfileSegue", sender: self)
         setupEditProfile()
     }
     
+    /**
+     Handles the user logout process, including signing out from Firebase Authentication and navigating to the login screen.
+    */
     func logout() {
         do {
             try Auth.auth().signOut()
@@ -515,17 +401,22 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         }
     }
     
+    
+    /**
+     Sets up the user interface elements based on the current user's profile data retrieved from Firestore.
+    */
     func setupEditProfile() {
+        // setting up the user data inside the edit profile such as name, email, and profile picture.
         guard let userID = Auth.auth().currentUser?.uid else { return }
         
         usersReference.document(userID).getDocument { [weak self] (document, error) in
             if let document = document, document.exists {
-                if let storageURL = document.data()?["storageURL"] as? String {
+                if let storageURL = document.data()?["storageURL"] as? String { //getting the profile picture
                     self?.profilePictureView.sd_setImage(with: URL(string: storageURL), completed: nil)
                 }
                 if let userData = document.data() {
                     UserManager.shared.userData = userData
-                    if let displayName = userData["displayName"] as? String {
+                    if let displayName = userData["displayName"] as? String { // getting the name
                         self?.displayNameLabel.text = displayName
                         
                     }
@@ -536,7 +427,13 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         }
     }
     
-    func checkIfUserIsFollowed(userID: String, completion: @escaping (Bool) -> Void) {
+    /**
+     Checks if the specified user is already followed by the current user.
+     
+     - Parameter userID: The user ID to check against the current user's following list.
+     - Parameter completion: The completion handler that returns the result as a boolean.
+    */
+    func checkIfUserIsFollowed(userID: String, completion: @escaping (Bool) -> Void) { // to check whether the user is followed
         guard let currentUserID = currentUser?.uid else { return }
 
         let followingRef = usersReference.document(currentUserID).collection("following").document(userID)
@@ -546,13 +443,18 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         
     }
     
-    func setupProfile(for userID: String) {
+    
+    /**
+     Configures the profile view based on the userID, distinguishing between current and searched users.
+
+     - Parameter userID: The user ID for which the profile needs to be set up.
+    */
+    func setupProfile(for userID: String) { // setup the profile for either searched user and logged-in user
+        // mark with the boolean
         if isCurrentUser {
-            loadCurrentUserProfile()
+            loadCurrentUserProfile() // for current logged-in user
         } else {
-            print(userID)
-            loadUserProfile(for: userID)
-            
+            loadUserProfile(for: userID) // for the searched user
             checkIfUserIsFollowed(userID: userID) { [weak self] isFollowed in
                 DispatchQueue.main.async {
                     self?.followButton.setTitle(isFollowed ? "Unfollow" : "Follow", for: .normal)
@@ -561,8 +463,13 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         }
     }
 
+    
+    /**
+     Retrieves and updates the UI with the current logged-in user's profile data.
 
-    private func loadCurrentUserProfile() {
+     - Uses Firestore to fetch user data and updates the UI accordingly.
+    */
+    private func loadCurrentUserProfile() { // retrieve all the logged-in user information
         guard let userID = Auth.auth().currentUser?.uid else { return }
         let usersReference = Firestore.firestore().collection("users")
         usersReference.document(userID).getDocument { [weak self] (document, error) in
@@ -574,7 +481,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             do {
                 var userProfile = try document.data(as: UserProfile.self)
                 userProfile.userID = userID // Set the userID manually
-                self.updateUI(with: userProfile)
+                self.updateUI(with: userProfile) // update all the UI inside the profile view controller with the current user information
                 self.fetchImagesURL(userID: userID) { [weak self] fetchedUrls in
                     self?.imageUrls = fetchedUrls
                     DispatchQueue.main.async {
@@ -589,9 +496,12 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     
-    
-    
-    private func loadUserProfile(for userID: String) {
+    /**
+     Fetches and sets up the profile for a user specified by userID, intended for viewing profiles other than the logged-in user.
+
+     - Parameter userID: The user ID of the profile to load.
+    */
+    private func loadUserProfile(for userID: String) {  // retrieve all the searched user information
         usersReference.document(userID).getDocument { [weak self] (document, error) in
             guard let self = self, let document = document, document.exists else {
                 print("Document does not exist or error occurred: \(error?.localizedDescription ?? "No error")")
@@ -603,6 +513,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                     return
                 }
                 
+                // update all the UI inside the profile view controller with the current user information
                 self.userProfile = userProfile
                 self.updateUI(with: userProfile)
                 self.updateFollowersFollowingLabels()
@@ -616,12 +527,15 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                 }
             }
         }
-        
     }
 
 
+    /**
+     Updates various UI components with the information from the user's profile data.
 
-    func updateUI(with userProfile: UserProfile) {
+     - Parameter userProfile: The user profile data used to update the UI.
+    */
+    func updateUI(with userProfile: UserProfile) { // update the profile picture, name, and chart for the user
         DispatchQueue.main.async {
             self.displayNameLabel.text = userProfile.displayName
             if let url = URL(string: userProfile.storageURL) {
@@ -630,87 +544,59 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             self.updateChartData()
         }
     }
-    
-    
-    func resetUI() {
-        displayNameLabel.text = ""
-        profilePictureView.image = UIImage(named: "defaultProfile")
-        imageUrls.removeAll()
-        postCollectionView.reloadData()
-    }
-    
-    func resolveHobbies(hobbyReferences: [DocumentReference], completion: @escaping ([Hobby]) -> Void) {
-        var hobbies: [Hobby] = []
-        let group = DispatchGroup()
-
-        for reference in hobbyReferences {
-            group.enter()
-            reference.getDocument { (documentSnapshot, error) in
-                if let document = documentSnapshot, document.exists {
-                    do {
-                        let hobby = try document.data(as: Hobby.self)
-                        hobbies.append(hobby)
-                    } catch let error {
-                        print("Error decoding hobby: \(error)")
-                    }
-                }
-                group.leave()
-            }
-        }
-
-        group.notify(queue: .main) {
-            completion(hobbies)
-        }
-    }
 
 
-    func hideHamburgerMenu() {
+    func hideHamburgerMenu() { // hide the hamburger menu
         self.hideHamburgerView()
     }
     
-    @objc func handleBackTap() {
+    @objc func handleBackTap() { // to handle the back tap of hamburger menu
         hideHamburgerMenu()
     }
     
-    private func hideHamburgerView(){
-        
+    private func hideHamburgerView(){ // the logic of hiding the hamburger view
         UIView.animate(withDuration: 0.2, animations: {
-            self.leadingConstraintForHM.constant = 10
+            self.leadingConstraintForHM.constant = 10 // the bounce of the animation of showing the hamburger view
                 self.view.layoutIfNeeded()
         }) {(status) in
             
             UIView.animate(withDuration: 0.2, animations: {
-                self.leadingConstraintForHM.constant = -280
+                self.leadingConstraintForHM.constant = -280 // set to this number as per our constraint
                 self.view.layoutIfNeeded()
             }) { (status) in
                 self.backViewForHamburger.alpha = 0.75
                 self.backViewForHamburger.isHidden = true
-                self.isHamburgerMenuShown = !self.backViewForHamburger.isHidden
+                self.isHamburgerMenuShown = !self.backViewForHamburger.isHidden // when the user press the hamburger menu, reverse it
             }
         }
     }
     
-    @IBAction func tappedOnHamburgerBackView(_ sender: Any) {
+    /**
+     Triggered when the user taps on the background view of the hamburger menu, used to close the menu.
+    */
+    @IBAction func tappedOnHamburgerBackView(_ sender: Any) { // hide the hamburger menu if the user tap the back view of hamburger view
         self.hideHamburgerView()
 
     }
     
-    
-    @IBAction func showHamburgerMenu(_ sender: Any) {
-        hamburgerView.isHidden = false
-        hamburgerViewController?.setupPicture()
-        hamburgerViewController?.setName()
+    /**
+     Displays the hamburger menu by setting visibility and updating UI elements within the menu.
+    */
+    @IBAction func showHamburgerMenu(_ sender: Any) { // showing the hamburger menu logic
+        hamburgerView.isHidden = false // showing the hamburger menu
+        hamburgerViewController?.setupPicture() // setup the picture inside the hamburger view
+        hamburgerViewController?.setName() // set the name inside the hamburgerview
         
         self.backViewForHamburger.isHidden = !self.backViewForHamburger.isHidden
         self.backViewForHamburger.alpha = 0.75
         
-        UIView.animate(withDuration: 0.2, animations: {
+        UIView.animate(withDuration: 0.2, animations: { // bounce animation of showing the hamburger menu
             self.leadingConstraintForHM.constant = 10
             self.view.layoutIfNeeded()
         }) {(status) in
             UIView.animate(withDuration: 0.2, animations: {
                 if self.backViewForHamburger.isHidden == false {
-                    self.leadingConstraintForHM.constant = 0
+                    self.leadingConstraintForHM.constant = 0 // set to this number as per our constraint
                     self.view.layoutIfNeeded()
                 }
                 else {
@@ -720,37 +606,45 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                 }
                 
             }) { (status) in
-//                self.backViewForHamburger.isHidden = !self.backViewForHamburger.isHidden
-                self.isHamburgerMenuShown = !self.backViewForHamburger.isHidden
+                self.isHamburgerMenuShown = !self.backViewForHamburger.isHidden // when the user press the hamburger menu, reverse it
             }
         }
         
     }
     
+    /**
+     Determines if a gesture should begin based on the touch location within the hamburger back view.
+    */
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        // for gesture recognitation.
         if touch.view == backViewForHamburger {
             return true
         }
         return false
     }
     
-    
-    private func configureProfileImageView() {
+    /**
+     Configures the initial appearance of the profile image view.
+    */
+    private func configureProfileImageView() { // configuring the profile picture UI
         // Make the image view circular
         profilePictureView.layer.cornerRadius = profilePictureView.frame.size.width / 2
         profilePictureView.clipsToBounds = true
       
         profilePictureView.contentMode = .scaleAspectFill
         
-        profilePictureView.layer.borderWidth = 0.5
+        profilePictureView.layer.borderWidth = 0.5 // give the profile picture a border
         profilePictureView.layer.borderColor = UIColor.black.cgColor
         
         if profilePictureView.image == nil {
-            profilePictureView.image = UIImage(named: "default_picture")
+            profilePictureView.image = UIImage(named: "default_picture") // if there's no profile picture, set it to the default picture.
         }
     }
     
-    private func addUploadHintImage() {
+    /**
+     Adds a visual hint to the profile image view indicating the user can upload an image.
+    */
+    private func addUploadHintImage() { // add upload hint '+' inside the profile picture to give a hint to the user.
         guard profilePictureView.subviews.first(where: { $0 is UIImageView }) == nil else { return }
         let hintLabel = UILabel()
         hintLabel.text = "+"
@@ -768,7 +662,11 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     
-    @objc func handleImageTap() {
+    /**
+     Presents an action sheet allowing the user to select a photo source or remove the current photo.
+    */
+    @objc func handleImageTap() { // if the user tap the profile picture
+        // showing up the option for user to uplaode the profile picture/
         let alert = UIAlertController(title: "Select an option", message: nil,  preferredStyle: .actionSheet)
         
         alert.addAction(UIAlertAction(title: "Take Photo", style: .default, handler: { _ in
@@ -788,29 +686,37 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         present(alert, animated: true)
     }
     
+    /**
+     Presents an image picker to allow the user to select an image from the specified source.
+    */
     func pickImageFrom(_ sourceType: UIImagePickerController.SourceType) {
-        let imagePicker = UIImagePickerController()
+        // pick the image for the source
+        let imagePicker = UIImagePickerController() // utilizing the UIImaagePickerController
         imagePicker.sourceType = sourceType
         imagePicker.allowsEditing = false
         imagePicker.delegate = self
         present(imagePicker, animated: true)
     }
     
+    /**
+     Handles the image selected by the user, potentially cropping it and updating the UI.
+    */
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        
+        // if the user chose a picture
         dismiss(animated: true)
         if let pickedImage = info[.originalImage] as? UIImage {
-            let cropViewController = TOCropViewController(croppingStyle: .circular, image: pickedImage)
+            let cropViewController = TOCropViewController(croppingStyle: .circular, image: pickedImage) // crop to a circle as the profile picture is set to be a circle
             cropViewController.delegate = self
             self.present(cropViewController, animated: true, completion: nil)
         
         }
     }
 
+    /**
+     Handles the cropped image, updates the user profile picture, and uploads it to storage.
+    */
     func cropViewController(_ cropViewController: TOCropViewController, didCropToCircularImage image: UIImage, with cropRect: CGRect, angle: Int) {
-        
-        profilePictureView.image = image
-//        let filename = "profile/\(UUID().uuidString).jpg"  // Ensure unique file names within the profile folder
+        profilePictureView.image = image // setting the UI image to the chosen picture.
         let filename = "profile/profile_picture.jpg"
 
         guard let data = image.jpegData(compressionQuality: 0.8) else {
@@ -822,7 +728,8 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             displayMessage(title: "Error", message: "No user logged in!")
             return
         }
-
+        
+        // save the picture to our firebase database
         let imageRef = storageReference.child("\(userID)/\(filename)")
         let metadata = StorageMetadata()
         metadata.contentType = "image/jpeg"
@@ -849,8 +756,10 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     
+    /**
+     Sets up the user's profile picture by retrieving it from Firestore and updating the UI accordingly.
+    */
     func setupProfilePicture() {
-        print("setupProfilePicture")
         guard let userID = Auth.auth().currentUser?.uid else { return }
         
         usersReference.document(userID).getDocument { [weak self] (document, error) in
@@ -860,8 +769,8 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                 }
                 if let userData = document.data() {
                     UserManager.shared.userData = userData
-                    if let displayName = userData["displayName"] as? String {
-                        self?.displayNameLabel.text = displayName
+                    if let displayName = userData["displayName"] as? String { // retrieving the name
+                        self?.displayNameLabel.text = displayName // set the name to the displayNameLabel
                     }
                 }
             } else {
@@ -875,7 +784,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     // ---------------------------------------- Chart -----------------------------------------------------
     
     
-    func updateChartData() {
+    func updateChartData() { // to update the chart from the segment user's choose.
         let userID = isCurrentUser ? currentUser?.uid : userProfile?.userID
         guard let userID = userID else { return }
         
@@ -891,29 +800,36 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         }
     }
     
-    func loadDailyData() {
+    func loadDailyData() { // load the daily data of the user spent on their hobby
         fetchData(for: .day) { dataEntries, hobbies in
             self.updateChart(with: dataEntries, hobbies: hobbies)
         }
     }
 
-    func loadWeeklyData() {
+    func loadWeeklyData() { // load the weekly data of the user spent on their hobby
         fetchData(for: .weekOfYear) { dataEntries, hobbies in
             self.updateChart(with: dataEntries, hobbies: hobbies)
         }
     }
 
-    func loadMonthlyData() {
+    func loadMonthlyData() { // load the monthly data of the user spent on their hobby
         fetchData(for: .month) { dataEntries, hobbies in
             self.updateChart(with: dataEntries, hobbies: hobbies)
         }
     }
 
     
-    func updateChart(with dataEntries: [BarChartDataEntry], hobbies: [String: Double]) {
+    /**
+     Updates the chart with new data entries and ensures the chart displays the latest hobby progress.
+
+     - Parameters:
+       - dataEntries: Array of bar chart data entries.
+       - hobbies: Dictionary of hobby names and their respective time spent in minutes.
+    */
+    func updateChart(with dataEntries: [BarChartDataEntry], hobbies: [String: Double]) { // updating the chart to show their progress on their hobby
         let sortedHobbies = hobbies.keys.sorted()
 
-        initializeHobbyColors(hobbies: sortedHobbies)
+        initializeHobbyColors(hobbies: sortedHobbies) // initialize each of the hobby with a color for the chart
 
         let sortedDataEntries = dataEntries.sorted {
             let hobby1 = Array(hobbies.keys)[Int($0.x)]
@@ -925,7 +841,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         dataSet.colors = sortedDataEntries.map { entry in
             let hobbyIndex = Int(entry.x)
             let hobby = sortedHobbies[hobbyIndex]
-            return hobbyColors[hobby] ?? .black
+            return hobbyColors[hobby] ?? .black // returning the color of the hobby
         }
 
         let data = BarChartData(dataSets: [dataSet])
@@ -935,28 +851,36 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
 
     
+    /**
+     Fetches hobby data for the specified time period and computes the duration spent on each hobby.
+
+     - Parameters:
+       - period: Time period component (day, weekOfYear, or month).
+       - completion: Closure that handles the result as bar chart data entries and a dictionary of hobby durations.
+    */
     private func fetchData(for period: Calendar.Component, completion: @escaping ([BarChartDataEntry], [String: Double]) -> Void) {
-        print("fetchData")
+        // fetching all the user data for the profile picture view controller from the database
+        
         guard let userID = isCurrentUser ? currentUser?.uid : userProfile?.userID else {
             print("No user ID available")
             completion([], [:])
             return
         }
-        
-        print("userprofile = \(userProfile)")
+   
         guard let hobbiesList = (isCurrentUser ? currentUserList?.hobbies : userProfile?.userHobby) else {
             print("No hobbies list available")
             completion([], [:])
             return
         }
             
-        var hobbyDurations = [String: Double]()
+        var hobbyDurations = [String: Double]() // to store the hobby and their duration spent on each hobby in minutes.
         for hobby in hobbiesList {
             hobbyDurations[hobby.name ?? ""] = 0.0
         }
         
         let db = Firestore.firestore()
         db.collection("posts").whereField("userID", isEqualTo: userID).getDocuments { (querySnapshot, error) in
+            // access the database "posts" document with finding the correect "userID" for the process.
             guard let documents = querySnapshot?.documents else {
                 print("Error fetching documents: \(String(describing: error))")
                 completion([], hobbyDurations)
@@ -967,9 +891,9 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             let now = Date()
             
             for document in documents {
-                if let postDate = (document.data()["postDate"] as? Timestamp)?.dateValue(),
-                   let hobbyName = document.data()["hobby"] as? String,
-                   let duration = document.data()["duration"] as? Double,
+                if let postDate = (document.data()["postDate"] as? Timestamp)?.dateValue(), // getting the post date
+                   let hobbyName = document.data()["hobby"] as? String, // getting the hobby name
+                   let duration = document.data()["duration"] as? Double, // getting the total duration
                    hobbyDurations[hobbyName] != nil { // Only count durations for hobbies in the current list
                     
                     var shouldInclude = false
@@ -985,14 +909,14 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
                     }
                     
                     if shouldInclude {
-                        hobbyDurations[hobbyName]! += duration
+                        hobbyDurations[hobbyName]! += duration // increment the duration
                     }
                 }
             }
             
             let dataEntries = hobbyDurations.compactMap { (hobby, duration) -> BarChartDataEntry? in
-                if let index = hobbiesList.firstIndex(where: {$0.name == hobby}) {
-                    let visualValue = max(0.1, duration) // Ensure a minimum height of 0.5 for visual effect
+                if let index = hobbiesList.firstIndex(where: {$0.name == hobby}) { // getting the obby from the hobbiesList
+                    let visualValue = max(0.1, duration) // 0.1 just to show the visual of the bart chart
                     let entry = BarChartDataEntry(x: Double(index), y: visualValue)
                     entry.data = Int(duration) as AnyObject
                     return entry
@@ -1005,26 +929,35 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
 
     
-    private func initializeHobbyColors(hobbies: [String]) {
-        loadUserSettings()
-        let colors = generateDistinctColors()
+    /**
+     Initializes colors for hobbies to ensure each hobby is represented by a distinct color in the chart.
+
+     - Parameters:
+       - hobbies: List of hobby names to assign colors to.
+    */
+    private func initializeHobbyColors(hobbies: [String]) { // initialize the hobby color
+        loadUserSettings() // load the uesr setting to ensure no repeating color assignment if the user has already initialize it
+        let colors = generateDistinctColors() // generate different color for each hobby
         var colorIndex = 0
         for hobby in hobbies {
             if hobbyColors[hobby] == nil {
                 hobbyColors[hobby] = colors[colorIndex % colors.count]
-                colorIndex += 1
+                colorIndex += 1 // increment the index to avoid using the same color.
             }
         }
-        saveUserSettings()
+        saveUserSettings() // save the user setting
     }
     
-//    private func generateUniqueColor() -> UIColor {
-//        return UIColor(hue: CGFloat(drand48()), saturation: 1, brightness: 1, alpha: 1)
-//    }
-//    
 
+    /**
+     Creates legend entries for the chart based on the sorted hobbies and their assigned colors.
+
+     - Parameters:
+       - hobbies: Dictionary of hobbies and their durations.
+       - sortedKeys: Sorted list of hobby names.
+     - Returns: Array of LegendEntry objects for the chart legend.
+    */
     private func createLegendEntries(hobbies: [String: Double],  sortedKeys: [String]) -> [LegendEntry] {
-        
         return sortedKeys.map { hobby in
             let entry = LegendEntry(label: hobby)
             entry.form = .square
@@ -1038,8 +971,14 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
     
-    // Helper function to convert from UIColor to Data
-    func colorToData(color: UIColor) -> Data? {
+    /**
+     Converts a UIColor to a Data object for storage in UserDefaults.
+
+     - Parameters:
+       - color: The UIColor instance to convert.
+     - Returns: Optional Data representation of the UIColor.
+    */
+    func colorToData(color: UIColor) -> Data? { // Helper function to convert from UIColor to Data
         do {
             let data = try NSKeyedArchiver.archivedData(withRootObject: color, requiringSecureCoding: false)
             return data
@@ -1048,9 +987,15 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             return nil
         }
     }
+    
+    /**
+     Converts stored Data back to a UIColor instance.
 
-    // Helper function to convert from Data to UIColor
-    func dataToColor(data: Data) -> UIColor? {
+     - Parameters:
+       - data: Data object representing a UIColor.
+     - Returns: Optional UIColor derived from the Data.
+    */
+    func dataToColor(data: Data) -> UIColor? { // Helper function to convert from Data to UIColor
         do {
             if let color = try NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: data) {
                 return color
@@ -1061,7 +1006,7 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         return nil
     }
     
-    func loadUserSettings() {
+    func loadUserSettings() { // load the user setting for the hobby colors.
         let userDefaults = UserDefaults.standard
         if let storedHobbyColors = userDefaults.object(forKey: "HobbyColors") as? [String: Data] {
             hobbyColors = storedHobbyColors.compactMapValues { dataToColor(data: $0) }
@@ -1069,14 +1014,18 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     }
 
-    func saveUserSettings() {
+    func saveUserSettings() { // save the setting for the hobby colors for each user.
         let userDefaults = UserDefaults.standard
         let storedHobbyColors = hobbyColors.compactMapValues { colorToData(color: $0) }
         userDefaults.set(storedHobbyColors, forKey: "HobbyColors")
     }
     
-    
-    private func generateDistinctColors() -> [UIColor] {
+    /**
+     Generates a list of distinct colors used for differentiating hobbies in the chart.
+     
+     - Returns: Array of UIColor instances.
+    */
+    private func generateDistinctColors() -> [UIColor] { // generating different color for each hobbies.
         return [
             
             UIColor.red,
@@ -1130,11 +1079,20 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     }
     
 // ====================== touch back hamburger =================================================
+    // reference : https://www.youtube.com/watch?v=L6zB8xABwjs , https://github.com/kashyapbhatt/iOSHamburgerMenu/blob/main/HamburgerMenu/HamburgerViewController.swift
     
-    private var beginPoint:CGFloat = 0.0
-    private var differences:CGFloat = 0.0
+    private var beginPoint:CGFloat = 0.0 // initial touch point on the screen used for calculating the drag distance.
+    private var differences:CGFloat = 0.0 // difference between the initial touch point and the current touch point during a drag.
     
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+    
+    /**
+     Handles the beginning of a touch event. Records the initial touch point used later to calculate drag distances.
+
+     - Parameters:
+       - touches: A set of UITouch instances that represent the touches for the starting phase of the event, which are typically the touches involved in the initial tap.
+       - event: An object encapsulating the information about the touch event.
+    */
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) { // for the first time user tap
         if (self.isHamburgerMenuShown) {
             if let touch = touches.first {
                 let location = touch.location(in: backViewForHamburger)
@@ -1145,10 +1103,16 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         else {
             return
         }
-        
     }
     
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+    /**
+     Responds to movements of a touch event within the view. Adjusts the leading constraint of the hamburger menu based on the drag distance to create a sliding effect.
+
+     - Parameters:
+       - touches: A set of UITouch instances that represent the touches during the moving phase of the event.
+       - event: An object encapsulating the information about the touch event.
+    */
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) { // when there's a movement from the tap
         if (self.isHamburgerMenuShown) {
             if let touch = touches.first {
                 let location = touch.location(in: backViewForHamburger)
@@ -1164,7 +1128,14 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         
     }
     
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+    /**
+     Responds to movements of a touch event within the view. Adjusts the leading constraint of the hamburger menu based on the drag distance to create a sliding effect.
+
+     - Parameters:
+       - touches: A set of UITouch instances that represent the touches during the moving phase of the event.
+       - event: An object encapsulating the information about the touch event.
+    */
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) { // the moment the tap stopped.
         if (self.isHamburgerMenuShown) {
             if (differences < 15) {
                 self.leadingConstraintForHM.constant = 0
@@ -1196,7 +1167,15 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
     
     // ==============================================================================
     
-    func loadUserData() async{
+    /**
+     Loads the current user's data asynchronously to populate UI elements such as the display name, profile image, and total posts label. This method fetches the user document from Firestore based on the current user's ID.
+
+     This function ensures that UI updates are performed on the main thread to prevent issues with UI access from background threads.
+
+     - Precondition: `currentUser` must be non-nil.
+     - Postcondition: UI elements are updated with user data.
+    */
+    func loadUserData() async{ // load user data to display the name, profile image, and total posts label.
         guard let user = currentUser else { return }
         
         let userDocRef = usersReference.document(user.uid)
@@ -1216,22 +1195,37 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
             }
     }
     
-    func loadProfileImage(urlString: String) {
+    /**
+     Loads and sets the user's profile image into the profilePictureView using the SDWebImage library, which caches images and manages loading them efficiently to optimize performance and network usage.
+
+     - Parameter urlString: The URL string of the user's profile image.
+     - Precondition: `urlString` must be a valid URL.
+     - Postcondition: The user's profile image is updated in the UI.
+    */
+    func loadProfileImage(urlString: String) { // load the user profile image and use SDImageWeb to avoid retrieving multiple times.
         guard let url = URL(string: urlString) else { return }
         profilePictureView.sd_setImage(with: url, placeholderImage: UIImage(named: "default_picture"), options: .continueInBackground, completed: nil)
     }
     
     
-    func fetchImagesURL(userID: String, completion: @escaping ([String]) -> Void) {
-        let postsRef = Firestore.firestore().collection("posts").whereField("userID", isEqualTo: userID)
+    /**
+     Fetches the URLs of all images associated with a user's posts from Firestore. This function accesses the 'posts' collection and filters documents by the user's ID to retrieve all associated image URLs.
+
+     - Parameter userID: The user ID for which to fetch post images.
+     - Parameter completion: A closure that takes an array of strings (image URLs) and returns void. It is called when the image URLs are fetched successfully or on failure.
+     - Precondition: `userID` should be a valid identifier corresponding to a user.
+     - Postcondition: Returns an array of image URLs or an empty array if an error occurs.
+    */
+    func fetchImagesURL(userID: String, completion: @escaping ([String]) -> Void) { // fetching the image for all the user's posts
+        let postsRef = Firestore.firestore().collection("posts").whereField("userID", isEqualTo: userID) // access the database posts using the userID
         postsRef.getDocuments { (snapshot, error) in
             var imageUrls: [String] = []
             if let error = error {
-                print("Error fetching posts: \(error)")
+                print("Error fetching posts: \(error)") // error handling
                 completion([])
             } else {
                 for document in snapshot!.documents {
-                    if let imageUrl = document.data()["imageUrl"] as? String {
+                    if let imageUrl = document.data()["imageUrl"] as? String { // retrieve all the image url from the "imageUrl" in the document data
                         imageUrls.append(imageUrl)
                     } else {
                         print("Document \(document.documentID) does not contain a valid 'imageUrl'")
@@ -1242,29 +1236,59 @@ class ProfileViewController: UIViewController, UIImagePickerControllerDelegate, 
         }
     }
     
-    func fetchPostCount(for userID: String) {
+    
+    
+    /**
+     Retrieves and updates the total number of posts made by a user. This method queries the 'posts' collection for documents matching the provided user ID and counts them.
+
+     - Parameter userID: The identifier for the user whose post count is to be retrieved.
+     - Precondition: `userID` must correspond to a valid user.
+     - Postcondition: Updates the UI element displaying the total number of posts.
+    */
+    func fetchPostCount(for userID: String) { // retrieve the total posts the user has so far
         let postsRef = Firestore.firestore().collection("posts").whereField("userID", isEqualTo: userID)
         postsRef.getDocuments { [weak self] (querySnapshot, error) in
             guard let self = self else { return }
             
             if let error = error {
                 print("Error fetching posts: \(error)")
-                self.totalPostsLabel.text = "0"  // Show 0 in case of error
+                self.totalPostsLabel.text = "0"  // show 0 in case of error
             } else if let snapshot = querySnapshot {
-                let count = snapshot.documents.count
-                self.totalPostsLabel.text = "\(count)"
+                let count = snapshot.documents.count // count the posts user has
+                self.totalPostsLabel.text = "\(count)" // showing the correct total of user's post
             }
         }
     }
 }
 
 
+/**
+ Extension for ProfileViewController that conforms to UICollectionViewDelegate, UICollectionViewDataSource, and UICollectionViewDelegateFlowLayout protocols. This extension manages the display and interaction of a UICollectionView which shows images related to the user's profile.
+ */
 extension ProfileViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
+    
+    /**
+     Determines the number of items in the collection view's section, which corresponds to the number of images available.
+     
+     - Parameters:
+        - collectionView: The collection view requesting this information.
+        - section: An integer identifying the section of the collection view.
+     - Returns: The number of items (images) in the section.
+     */
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return imageUrls.count
     }
     
+    
+    /**
+     Provides the cell to be used for a specific location in the collection view. Cells are reused as they scroll off-screen using the cell's reuse identifier.
+     
+     - Parameters:
+        - collectionView: The collection view requesting the cell.
+        - indexPath: An index path locating the item in the collection view.
+     - Returns: A configured cell object. If no cell is available for reuse and cannot be created, a fatal error is triggered.
+     */
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PhotoCollectionViewCell.identifier, for: indexPath) as? PhotoCollectionViewCell else {
@@ -1278,6 +1302,14 @@ extension ProfileViewController: UICollectionViewDelegate, UICollectionViewDataS
         return cell
     }
     
+    
+    /**
+     Handles the selection event of a cell in the collection view. This function is called when a user taps on a cell.
+     
+     - Parameters:
+        - collectionView: The collection view where the selection occurred.
+        - indexPath: An index path locating the selected item in the collection view.
+     */
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         // when the user tap on one of the collection
         collectionView.deselectItem(at: indexPath, animated: true)
