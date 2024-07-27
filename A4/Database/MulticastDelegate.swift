@@ -2,7 +2,7 @@
 //  MulticastDelegate.swift
 //
 //  Created by Michael Wybrow on 23/3/19.
-//  Copyright © 2019 Monash University.
+//  Copyright © 2019
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
